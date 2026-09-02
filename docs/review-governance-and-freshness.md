@@ -2,6 +2,8 @@
 
 Status: approved sixth architectural requirement. This document specifies future domain behavior; Tranche 0 does not implement monitoring or review-domain tables.
 
+The earlier foundation-level review-policy proposal is superseded. Review identities, roles, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only.
+
 ## Trust boundary and record states
 
 Automated extraction may write only to quarantined ingestion candidates and immutable source observations. It cannot create or modify authoritative proposition versions or publication decisions. A researcher may promote verified material into a new unpublished draft. `draft`, `reviewed`, `published`, `stale`, and `withdrawn` are distinct, auditable states; editing published or reviewed content always creates a new unpublished immutable version.
@@ -28,6 +30,19 @@ Reviews normally target exactly one immutable version. If a grouped review is la
 Default gates are researcher/author preparation; independent official-source verification; independent substantive legal review; qualified local-jurisdiction review for national material; translation review when a non-authoritative translation is used; editorial/data-quality/accessibility review; and an independent publication decision.
 
 At minimum, author, substantive legal reviewer, and publisher are different human principals. Automated agents cannot approve, satisfy a human gate, or publish. Review records include principal, role, qualifications, qualification expiry, conflicts of interest, recusals, exact version/hash, result, limitations, decision time, and next review due.
+
+The later governance slice must enforce all of the following:
+
+- no self-grant, self-verification, or self-publication;
+- author/promoter differs from official-source verifier;
+- author differs from substantive legal reviewer and publisher;
+- substantive legal reviewer differs from publisher;
+- qualification scope is immutable and sealed with its assertion;
+- language, jurisdiction, subject-area, and coverage matching are explicit and fail closed;
+- policy seals validate the complete required-gate set and canonical payload hash;
+- policy adoption is attributable to a qualified human—never anonymous or a service principal;
+- mandatory gates are non-waivable and approvals count distinct eligible humans;
+- active policy versions cannot overlap, reopen, or resurrect unexpectedly.
 
 ## Fail-closed public eligibility
 

@@ -1,6 +1,6 @@
 # Legal Atlas data model v2 — reconciled implementation specification
 
-Status: all six architectural requirements and the four implementation choices are approved. Tranche 0 is implemented. The exact proposed Tranche 1 physical specification is documented in [Tranche 1 foundation schema](schema-v2-tranche-1.md) and remains pending migration approval. No `atlas_*` domain migration is authorized yet.
+Status: all six architectural requirements and the implementation conventions are approved. Tranche 0 is implemented. The 45-table Tranche 1 proposal is rejected and superseded in Git history by the minimal [Tranche 1A authority-entry foundations](schema-v2-tranche-1.md), which remains pending migration approval. No `atlas_*` production migration is authorized.
 
 The database is a reusable legal knowledge base, not a company compliance database. It stores source-backed propositions, contextual archetypes, control/evidence expectations, and editorial projections. Organization systems, candidates, named personnel, vendors, and evidence artifacts belong in a later bounded context.
 
@@ -19,7 +19,7 @@ The approved gated-review and continuous-freshness architecture is specified in 
 
 ## Logical cross-tranche schema catalog
 
-This remains the cross-tranche logical catalog. For Tranche 1, the exact physical catalog and proposed executable DDL supersede the abbreviated foundation descriptions below.
+This remains the cross-tranche logical catalog. It is not a claim that all structures belong in one migration. The Tranche 1A document and proposed executable DDL supersede the abbreviated foundation descriptions below.
 
 SQLite uses `INTEGER` IDs/booleans (booleans constrained to 0/1), `TEXT` codes/enums/dates (`YYYY-MM-DD`) and JSON expressions, and `BLOB` hashes. Foreign keys are enabled. Published historical records are versioned or deprecated, not deleted. Derived values are labelled as derived.
 
@@ -125,12 +125,12 @@ Filters support explicit `ANY`/`ALL` per dimension; dimensions combine with AND.
 
 0. **Completed:** migration integrity and frozen-v1 upgrade harness.
 
-1. Parallel `atlas_*` foundations: territorial jurisdictions, memberships, non-territorial coverage scopes, taxonomies, review principals.
-2. Authority graph: instruments, sources, immutable versions, provisions, translations, instrument relations.
-3. Proposition core: stable propositions, immutable versions, actions/subjects, citations, relations, legal events.
-4. Semantic context: stage/lens/actor/ground assignments, ground sets, applicability trees.
-5. Operational context: data, technology, deployment, control, evidence archetypes.
-6. Governance/national comparison: review/verification targets, publication decisions, coverage, comparisons.
+1. **Proposed 1A:** attribution principals, principal status history, standalone languages, stable jurisdictions, jurisdiction versions, and external identifiers.
+2. Authority/source entry: sourced containment/membership, instruments, sources, immutable source observations/versions, provisions, translations, and instrument relations.
+3. Proposition core and semantic context: propositions/versions, actions/subjects, citations/relations/events, plus stages, lenses, actors, roles, grounds, data-category vocabularies, ground sets, and legacy taxonomy crosswalk design.
+4. Sourced applicability and national context: applicability trees, sectors, employer size/type, collective-agreement/personal coverage, jurisdiction coverage, and national comparisons.
+5. Operational context: reusable data, technology, deployment, control, and evidence archetypes.
+6. Review-governance vertical slice: review roles/grants, sealed qualifications and scope, versioned policies/gates/separation rules, actual exact-version reviews, publication decisions, and fail-closed evaluator. Before this slice, research remains quarantined and cannot be reviewed or published.
 7. Freshness evidence and candidate-review workflow.
 8. Crosswalk and separate auditable backfill.
 9. API v2 and legacy parity.
@@ -143,4 +143,4 @@ Require migration checksums/edit detection; fresh install and upgrade from froze
 
 ## Approval boundary
 
-The naming/enums, tranche boundaries, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The exact physical `atlas_*` catalog for Tranche 1 is complete as a proposal and must be approved before any domain migration begins.
+The naming conventions, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The narrowed seven-table Tranche 1A physical proposal must be approved before any domain migration begins.

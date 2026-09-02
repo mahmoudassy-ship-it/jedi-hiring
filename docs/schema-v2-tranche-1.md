@@ -1,102 +1,99 @@
-# Tranche 1 foundation schema — exact physical specification
+# Tranche 1A authority-entry foundations
 
-Status: proposed for approval; not a production migration. The executable counterpart is [`schema/tranche-1-foundations.proposed.sql`](schema/tranche-1-foundations.proposed.sql). It creates 45 `atlas_*` tables, 16 named indexes, and 56 named triggers. Counts are generated from the DDL in a temporary SQLite database.
+Status: proposed for approval; not a production migration. This seven-table proposal supersedes the rejected 45-table Tranche 1 design preserved in Git history. Its executable DDL is [`schema/tranche-1-foundations.proposed.sql`](schema/tranche-1-foundations.proposed.sql), and its reproducible validator is [`schema/validate-tranche-1a.mjs`](schema/validate-tranche-1a.mjs).
 
-Scope is limited to principals/reviewer authority, review-policy definitions, territorial jurisdictions/memberships, non-territorial coverage, and controlled vocabularies. It contains no instruments, sources, provisions, propositions, content reviews, publication decisions, monitoring records, backfill, API, frontend, credentials, or substantive legal assertions. Existing v1 objects are untouched.
+Tranche 1A enables safe attribution and jurisdiction naming for future quarantined official-source research. Until the review-governance vertical slice exists, later source records remain quarantined: nothing can become a reviewed proposition or public content.
 
-## Conventions and lifecycle
+## Included and deferred
 
-`NN` means `NOT NULL`; omitted defaults mean no default. Dates are ISO `YYYY-MM-DD`, UTC timestamps are ISO-8601 text, `valid_from` is inclusive, and `valid_to` is exclusive/null for open-ended. All foreign keys use `ON UPDATE RESTRICT ON DELETE RESTRICT`. Stable identities may change display metadata but are not deleted after reference. Version/history rows are immutable or append-only. Interval overlap is `existing.valid_from < COALESCE(new.valid_to,'9999-12-31') AND new.valid_from < COALESCE(existing.valid_to,'9999-12-31')`.
+Included: stable human/service principals for attribution only, append-only principal status, standalone languages, stable territorial/legal jurisdictions, immutable jurisdiction descriptions, and versioned external identifiers.
 
-## Exact table catalog
+Deferred:
 
-### Principals, roles, and qualifications
+- jurisdiction containment and membership to the authority tranche, where assertions receive official-source provenance;
+- hiring stages, lenses, actors, normative roles, grounds, data categories, and their legacy mapping to the proposition/semantic tranche;
+- roles, grants, qualifications, policies, reviews, publication decisions, and evaluator to one review-governance vertical slice;
+- sectors, employer thresholds/types, collective-agreement and personal coverage to the sourced applicability/national-context tranche;
+- instruments, sources, provisions, propositions, monitoring, API, and backfill to their approved later tranches.
 
-| Table and purpose | Exact columns, constraints, behavior, indexes | Future references |
-|---|---|---|
-| `atlas_principals` — auditable human/service identity, never credentials | `id INTEGER PK`; `principal_code TEXT NN UNIQUE`; `principal_kind_code TEXT NN CHECK human/service`; `display_name TEXT NN`; `external_subject TEXT UNIQUE`; `is_active INTEGER NN DEFAULT 1 CHECK 0/1`; `created_at TEXT NN`; `retired_at TEXT CHECK null or > created_at`. Stable mutable identity; restricted deletes. | reviews, authorship, publication, monitoring actors |
-| `atlas_review_roles` — authority role vocabulary | `id PK`; `role_code TEXT NN UNIQUE`; label/description NN; `eligible_principal_kind_code CHECK human/service/either`; `is_human_review_role NN CHECK 0/1`; `is_publication_role NN DEFAULT 0 CHECK 0/1`; `is_active NN DEFAULT 1`; CHECK human gates and publication roles are human. Structural rows mutable by deprecation. | grants, policy requirements, review decisions |
-| `atlas_principal_role_grants` — immutable time-bounded grants | `id PK`; principal, role, grantor FKs NN; `valid_from TEXT NN`; `valid_to TEXT`; `granted_at`, `rationale` NN; UNIQUE principal/role/from; valid interval CHECK. Immutable UPDATE/DELETE and overlap triggers; named `as_of` index. Principal-kind trigger rejects service grants to human roles. | reviewer authorization checks |
-| `atlas_principal_role_revocations` — append-only early revocation | `id PK`; grant/grantor FKs NN; `revoked_on`, `recorded_at`, reason NN; UNIQUE grant/revoked date. Append-only triggers; grant/date index. | authorization checks at `as_of` |
-| `atlas_qualification_types` — evolving qualification vocabulary | `id PK`; stable `qualification_type_code TEXT NN UNIQUE`; label/description NN; active boolean. Mutable by deprecation. | assertions, policy requirements |
-| `atlas_qualification_assertions` — immutable scoped qualification claim/verification | `id PK`; principal/type/assertor FKs NN; verifier FK nullable; status CHECK asserted/verified/rejected; inclusive/exclusive validity; asserted timestamp NN; verified timestamp; supersedes self-FK; evidence reference; status/verifier consistency, interval and no-self-supersession CHECKs. Immutable triggers; principal/type/as-of index. | future exact-version review eligibility |
-| `atlas_qualification_revocations` — append-only revocation | `id PK`; assertion/revoker FKs NN; revoked/recorded timestamps and reason NN; UNIQUE assertion/revoked date. Append-only triggers; assertion/date index. | eligibility predicate |
-| `atlas_qualification_jurisdictions` | assertion/jurisdiction FKs NN composite PK. Immutable in practice; deletion restricted. | jurisdiction-matched gates |
-| `atlas_qualification_coverage_scopes` | assertion/coverage FKs NN composite PK. | coverage-scoped gates |
-| `atlas_qualification_subject_areas` | assertion/subject-area subtype FKs NN composite PK. | subject-matched gates |
-| `atlas_qualification_languages` | assertion/language subtype FKs NN composite PK. | translation gates |
+## Physical conventions
 
-An assertion is effective at caller-supplied `as_of` only when verified, `valid_from <= as_of < valid_to` (or open), not superseded by an effective verified assertion, and without a revocation effective on/before `as_of`. Missing scope never implies qualification.
+All tables are plural `snake_case` with `atlas_` prefix, `id` primary keys, and `<entity>_id` foreign keys. Dates are canonical `YYYY-MM-DD`; timestamps are canonical UTC `YYYY-MM-DDTHH:MM:SS.sssZ`. CHECK constraints round-trip values through SQLite date/time functions before lexical comparison is permitted. SHA-256 is lowercase 64-character hexadecimal. The SQL has no transaction-management statement; `applyMigrations` owns the transaction. There are no seeds because Tranche 1A requires no operational structural row and source-dependent facts are deferred.
 
-### Review-policy computation
+Stable identity rows are immutable. Status/retirement/replacement is append-only. Jurisdiction descriptions and external identifiers use immutable successor chains rather than mutable open-ended intervals. At an `as_of` date, select eligible rows with `effective_from <= :as_of`, then the unsuperseded leaf (or deterministically the latest `recorded_at,id` while resolving a backdated correction). Missing records mean unknown/not recorded and never imply applicability, equivalence, membership, or qualification.
 
-| Table and purpose | Exact columns, constraints, behavior, indexes | Future references |
-|---|---|---|
-| `atlas_review_policies` — stable transition identity | `id PK`; `policy_code TEXT NN UNIQUE`; `transition_code TEXT NN UNIQUE CHECK candidate_to_draft/proposition_to_public`; label/description NN; active boolean; created timestamp NN. | content workflows |
-| `atlas_review_policy_versions` — immutable effective policy | `id PK`; policy FK NN; `version_number INTEGER NN CHECK >0`; valid interval; 64-char `content_hash`; created timestamp/optional creator; UNIQUE policy/version and policy/from; immutable triggers; policy/as-of index. Later versions may supersede an open-ended earlier version without mutating it. | future decisions must pin this ID |
-| `atlas_review_policy_version_seals` — append-only completion seal | policy-version PK/FK; sealed timestamp; optional sealer FK; canonical payload hash. Append-only triggers; once present, requirement/separation inserts are rejected. | policy selection and future decisions |
-| `atlas_review_gates` — gate vocabulary | `id PK`; stable `gate_code UNIQUE`; label/description NN; active boolean. | policy requirements, future review results |
-| `atlas_review_policy_requirements` — computable gate requirements | `id PK`; policy-version/gate/role FKs NN; optional qualification-type FK; `condition_code CHECK always/national_material/non_authoritative_translation`; `minimum_approvals >0`; human-only, qualification-required, jurisdiction-match and non-waivable booleans; optional positive maximum age; positive sequence; UNIQUE policy/gate and policy/sequence; qualification and jurisdiction consistency CHECKs. Human-only trigger prevents service/either gate roles. Policy/sequence index. | gate evaluator |
-| `atlas_review_policy_separation_rules` — non-waivable separation of duty | `id PK`; policy-version, left/right role FKs NN; `rule_code CHECK different_principal`; `is_non_waivable CHECK =1`; UNIQUE policy/role pair; canonical `left_role_id < right_role_id` CHECK rejects self/reversed duplicates. | reviewer assignment evaluator |
+## Exact tables
 
-The applicable policy version is the sealed row where `policy_code = ?`, `valid_from <= :as_of`, and (`valid_to IS NULL OR :as_of < valid_to`), ordered by `valid_from DESC, version_number DESC, id DESC LIMIT 1`. Latest-valid-from precedence makes selection deterministic without mutating an earlier open-ended version. Future publication decisions must store the exact `atlas_review_policy_versions.id` and evaluated sealed hash.
+### `atlas_principals`
 
-Seeded transition policies are:
+Purpose: stable attribution identity only; not authentication or authorization.
 
-- `candidate_to_draft`: independent, qualified, human official-source verification.
-- `proposition_to_public`: non-waivable source, substantive legal, editorial/data-quality/accessibility and publication gates, plus conditional local-jurisdiction and translation gates. Separation rules require author ≠ substantive reviewer, author ≠ publisher, and substantive reviewer ≠ publisher.
+Columns: `id INTEGER PRIMARY KEY`; `principal_code TEXT NOT NULL UNIQUE`; `principal_kind_code TEXT NOT NULL CHECK human/service`; `display_name TEXT NOT NULL`; nullable unique `external_subject TEXT`; canonical `created_at TEXT NOT NULL`. Code is lowercase `[a-z0-9._-]+`.
 
-There is no general bypass. Service principals remain auditable but cannot satisfy these human gates.
+Behavior: entire row rejects UPDATE/DELETE. Principal kind and code cannot be repurposed. Named indexes: none beyond PK/UNIQUE. Future references: source observations, drafts, reviews, publications, monitor runs, and audit events.
 
-### Territorial jurisdiction and membership
+### `atlas_principal_status_events`
 
-| Table and purpose | Exact columns, constraints, behavior, indexes | Future references |
-|---|---|---|
-| `atlas_jurisdictions` — stable territorial identity | `id PK`; `jurisdiction_code TEXT NN UNIQUE`; kind CHECK supranational/state/regional/devolved/local; active boolean; created timestamp. No membership inference. | instruments, proposition scope, reviewer scope |
-| `atlas_jurisdiction_versions` — immutable names/descriptions | `id PK`; jurisdiction FK NN; name NN; description; valid interval; content hash NN length 64; created timestamp/creator; UNIQUE jurisdiction/from; overlap and immutable triggers; as-of index. | localized display and historical lookup |
-| `atlas_jurisdiction_containments` — territorial containment only | `id PK`; parent/child FKs NN; valid interval and recorded timestamp; UNIQUE parent/child/from; no-self and interval CHECKs. Insert triggers reject overlapping parentage and cycles; parent/child as-of indexes. Rows are historical assertions; correction is new interval. | territorial resolution |
-| `atlas_membership_types` — association vocabulary | `id PK`; stable code UNIQUE; label/description; active boolean. | membership facts |
-| `atlas_jurisdiction_memberships` — time-bounded EU/EEA/other association | `id PK`; member/organization/type FKs NN; valid interval, recorded timestamp; UNIQUE member/organization/type/from; no-self and interval CHECKs; overlap trigger; member and organization as-of indexes. | applicability context after sourced facts exist |
+Purpose: append-only active, retired, or replaced history for a principal.
 
-No membership facts are seeded because source-dependent authority records arrive later. Missing containment or membership means unknown/not recorded, never non-membership or equivalent law.
+Columns: `id PK`; `principal_id FK NOT NULL`; `status_code CHECK active/retired/replaced`; nullable replacement principal FK; canonical `effective_on` and `recorded_at`; reason; UNIQUE principal/effective/recorded. Replacement is required only for `replaced` and cannot be self.
 
-### Non-territorial coverage
+Behavior: UPDATE/DELETE rejected; replacement-cycle insert rejected. Named index `atlas_principal_status_events_as_of_idx`. Current status derives from latest `(effective_on, recorded_at, id)` eligible at `as_of`. Future references: attribution eligibility and governance evaluator.
 
-| Table and purpose | Exact columns, constraints, behavior, indexes | Future references |
-|---|---|---|
-| `atlas_coverage_scopes` — stable non-territorial scope identity | `id PK`; `coverage_scope_code TEXT NN UNIQUE`; kind CHECK sector/employer_size/employer_type/collective_agreement/personal; active boolean; created timestamp. | applicability, qualifications |
-| `atlas_coverage_scope_versions` — immutable scope meaning | `id PK`; scope FK NN; label/definition NN; valid interval; 64-char hash; created timestamp/creator; UNIQUE scope/from; overlap/immutable triggers; as-of index. | historical applicability |
-| `atlas_sector_scopes` | `coverage_scope_id INTEGER PK/FK`. Type-safe marker. | sector predicates |
-| `atlas_employer_size_scopes` | scope PK/FK; nullable nonnegative min/max workers; CHECK max ≥ min. | threshold predicates |
-| `atlas_employer_type_scopes` | scope PK/FK. | employer-type predicates |
-| `atlas_collective_agreement_scopes` | scope PK/FK. | agreement coverage predicates |
-| `atlas_personal_scopes` | scope PK/FK. | personal coverage predicates |
+### `atlas_languages`
 
-The application must insert exactly one matching subtype; future migration may add deferred validation for completeness. Coverage never occupies the territorial hierarchy.
+Purpose: standalone BCP 47-compatible language identity usable before generic taxonomies exist.
 
-### Shared vocabulary with type-safe subtypes
+Columns: `id PK`; lowercase `language_code TEXT NOT NULL UNIQUE` using `[a-z0-9-]`, length 2–35; display name; canonical creation timestamp.
 
-| Table and purpose | Exact columns, constraints, behavior, indexes | Future references |
-|---|---|---|
-| `atlas_taxonomy_types` | `id PK`; type code UNIQUE; label/description; active boolean. | terms |
-| `atlas_terms` | `id PK`; taxonomy FK; `term_code`; active boolean/default; created timestamp; UNIQUE taxonomy/code; type/code index. | term versions/subtypes |
-| `atlas_term_versions` | `id PK`; term FK; label/definition; valid interval; 64-char hash; created timestamp/creator; UNIQUE term/from; overlap/immutable triggers; as-of index. | localized labels, historical display |
-| `atlas_languages` | `term_id PK/FK`; `bcp47_code UNIQUE` length 2–35; subtype trigger. | translations/labels/qualifications |
-| `atlas_hiring_stages`, `atlas_legal_lenses` | `term_id PK/FK`; positive unique `display_order`; subtype triggers. | proposition assignment junctions |
-| `atlas_actor_types`, `atlas_normative_roles`, `atlas_protected_grounds`, `atlas_data_categories`, `atlas_lifecycle_states`, `atlas_subject_areas` | each `term_id PK/FK` with subtype trigger. | type-safe future FKs; grounds remain distinct from data categories |
-| `atlas_term_labels` | `id PK`; term-version/language subtype FKs; label; preferred boolean/default; UNIQUE version/language/label. | multilingual display |
-| `atlas_term_aliases` | `id PK`; term/language FKs; alias; valid interval; UNIQUE term/language/alias/from; alias/as-of index. | search normalization |
-| `atlas_term_replacements` | `id PK`; old/new term FKs; valid-from; reason; UNIQUE old/new/from; no-self CHECK. | deprecation redirects |
-| `atlas_term_change_events` | `id PK`; term/optional actor/optional before/after version FKs; kind CHECK created/versioned/deprecated/replaced/reactivated; changed timestamp/reason. Append-only triggers and term/date index. | audit/history |
+Behavior: UPDATE/DELETE rejected; new identity replaces any changed meaning. No named secondary index. Future references: source representations, translations, jurisdiction versions, and qualification scope.
 
-Structural seeds include the approved stages, lenses, actor types, normative roles, protected grounds, data categories, `en`, lifecycle states, subject areas, review roles/gates/qualification types, and two policy definitions. These are classifications, not legal propositions or membership facts.
+### `atlas_jurisdictions`
 
-## Trigger inventory and update/delete rules
+Purpose: stable territorial/legal-jurisdiction identity, without containment or membership assertions.
 
-Named triggers enforce jurisdiction cycles and overlapping containment/membership; overlapping role grants and term, jurisdiction, and coverage versions; principal-kind compatibility; human-only gates; sealed policy composition; type-safe taxonomy/coverage subtypes; immutability of version/grant/assertion rows; and append-only revocation/change histories. UPDATE support for interval-bearing assertions is intentionally absent: corrections create successor rows or revocations. Future references use restricted deletion so history cannot be orphaned.
+Columns: `id PK`; lowercase `jurisdiction_code TEXT NOT NULL UNIQUE`; kind CHECK `supranational/state/regional/devolved/local`; canonical creation timestamp.
 
-The 16 additional named indexes are `atlas_principal_role_grants_as_of_idx`, `atlas_principal_role_revocations_as_of_idx`, `atlas_qualification_assertions_as_of_idx`, `atlas_qualification_revocations_as_of_idx`, `atlas_terms_type_code_idx`, `atlas_term_versions_as_of_idx`, `atlas_term_aliases_lookup_idx`, `atlas_term_change_events_term_at_idx`, `atlas_jurisdiction_versions_as_of_idx`, `atlas_jurisdiction_containments_child_as_of_idx`, `atlas_jurisdiction_containments_parent_as_of_idx`, `atlas_jurisdiction_memberships_member_as_of_idx`, `atlas_jurisdiction_memberships_organization_as_of_idx`, `atlas_coverage_scope_versions_as_of_idx`, `atlas_review_policy_versions_as_of_idx`, and `atlas_review_policy_requirements_policy_idx`. All other lookup enforcement uses SQLite indexes generated by PK and UNIQUE constraints; no unstated application index is assumed.
+Behavior: UPDATE/DELETE rejected. No named secondary index. Future references: instruments, propositions, source mapping, applicability, qualifications, containment, memberships, and national comparisons.
 
-## Validation result required before migration approval
+### `atlas_jurisdiction_status_events`
 
-Execute the proposed SQL against a disposable database containing migrations 001–003, compute v1 row digests before/after, enumerate `sqlite_master`, run integrity/FK checks, and run negative tests for cycles, intervals, stable-code uniqueness, immutable/append-only mutation, principal/gate compatibility, qualification effectiveness, separation rules, and policy selection. This file is not copied into `data/migrations` until separately approved.
+Purpose: append-only retirement/replacement history for jurisdiction identities.
+
+Columns and behavior mirror principal status events with jurisdiction FKs. UPDATE/DELETE and replacement cycles are rejected. Named index `atlas_jurisdiction_status_events_as_of_idx`. Status derives at caller-supplied `as_of`.
+
+### `atlas_jurisdiction_versions`
+
+Purpose: immutable effective-from name/description versions for one jurisdiction and language.
+
+Columns: `id PK`; jurisdiction and language FKs; name; nullable description; canonical `effective_from` and `recorded_at`; lowercase hexadecimal `content_sha256`; nullable unique self-FK `supersedes_jurisdiction_version_id`; UNIQUE jurisdiction/language/effective/recorded.
+
+Behavior: UPDATE/DELETE rejected. Successor trigger requires the same jurisdiction and language; immutable backward references plus cycle validation prevent cycles. Named index `atlas_jurisdiction_versions_as_of_idx`. A later or backdated correction is a new row that supersedes the prior row; no mutable `valid_to` is used. Future references: public jurisdiction labels and source-backed authority metadata.
+
+### `atlas_jurisdiction_external_identifiers`
+
+Purpose: immutable, effective-from mapping for ISO, ELI/EUR-Lex, or national-source identifiers without assuming a fixed scheme list.
+
+Columns: `id PK`; jurisdiction FK; lowercase stable `scheme_code`; non-empty `identifier_value`; canonical `effective_from` and `recorded_at`; nullable unique self-FK `supersedes_external_identifier_id`; UNIQUE scheme/value/effective/recorded.
+
+Behavior: UPDATE/DELETE rejected. Successor trigger requires the same jurisdiction and scheme and rejects cycles. Named indexes `atlas_jurisdiction_external_identifiers_as_of_idx` and `atlas_jurisdiction_external_identifiers_lookup_idx`. Scheme/value mappings are never silently repurposed; corrections or changes create successors. Future references: authority-source ingestion and identifier resolution.
+
+## Exact generated objects
+
+Tables (7):
+
+1. `atlas_principals`
+2. `atlas_principal_status_events`
+3. `atlas_languages`
+4. `atlas_jurisdictions`
+5. `atlas_jurisdiction_status_events`
+6. `atlas_jurisdiction_versions`
+7. `atlas_jurisdiction_external_identifiers`
+
+Named indexes (5): the two status `as_of` indexes, jurisdiction-version `as_of`, and external-identifier `as_of` plus lookup indexes. PK/UNIQUE constraints create SQLite autoindexes not counted as named proposal indexes.
+
+Named triggers (18): fourteen UPDATE/DELETE immutability or append-only triggers, two replacement-cycle triggers, and two same-identity successor/cycle triggers.
+
+## Validation contract
+
+The committed validator copies frozen migrations 001–003 and the proposal into a temporary migration directory as temporary `004_tranche_1a_foundations.sql`. It invokes the real `applyMigrations` for a fresh database and for an independently constructed legacy database with the original two-column ledger. It verifies object counts, v1 row digests, integrity/FKs, format rejection, stable-identity immutability, successor insertion, append-only enforcement, and transactional rollback. No file under `data/migrations` is added or changed.
