@@ -87,9 +87,55 @@ test('repository search and taxonomy filters return source-backed requirements',
   const fixture = createTestDatabase(); const repository = createRepository(fixture.databasePath)
   try {
     const result = repository.listRequirements({ q: 'automated decisions', lens: 'ai-automation' })
+    assert.ok(result.total >= 1)
     assert.ok(result.items.some((item) => item.slug === 'gdpr-solely-automated-decisions'))
     assert.ok(result.items.every((item) => item.official_url.startsWith('https://eur-lex.europa.eu/')))
+    const detail = repository.getRequirement('ai-employment-high-risk-regime')
+    assert.equal(detail.status, 'upcoming')
+    assert.equal(detail.effective_from, '2027-12-02')
+    assert.ok(detail.relations.length >= 3)
   } finally { repository.close(); fixture.remove() }
+})
+
+test('legacy checksum bootstrap is atomic and recovers after injected failure', () => {
+  const fixture = createFrozenLegacyDatabase()
+  try {
+    assert.throws(() => applyMigrations({
+      databasePath: fixture.databasePath,
+      migrationsDirectory,
+      onChecksumBootstrapRow: ({ index }) => { if (index === 0) throw new Error('injected bootstrap failure') },
+    }), /injected bootstrap failure/)
+    let database = new DatabaseSync(fixture.databasePath, { readOnly: true })
+    assert.equal(database.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table' AND name = 'migration_checksums'").get().n, 0)
+    database.close()
+
+    assert.deepEqual(applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }).appliedNow, [])
+    database = new DatabaseSync(fixture.databasePath, { readOnly: true })
+    assert.deepEqual(
+      Object.fromEntries(database.prepare('SELECT name, sha256 FROM migration_checksums ORDER BY name').all().map((row) => [row.name, row.sha256])),
+      FROZEN_CHECKSUMS,
+    )
+    database.close()
+  } finally { fixture.remove() }
+})
+
+test('pre-existing incomplete checksum ledger fails closed before mutation', () => {
+  const fixture = createFrozenLegacyDatabase()
+  try {
+    const database = new DatabaseSync(fixture.databasePath)
+    database.exec(`CREATE TABLE migration_checksums (
+      name TEXT PRIMARY KEY REFERENCES schema_migrations(name) ON DELETE CASCADE,
+      sha256 TEXT NOT NULL CHECK (length(sha256) = 64), recorded_at TEXT NOT NULL
+    )`)
+    database.prepare('INSERT INTO migration_checksums VALUES (?, ?, ?)')
+      .run('001_schema.sql', FROZEN_CHECKSUMS['001_schema.sql'], '2026-01-04T00:00:00.000Z')
+    database.close()
+    assert.throws(() => applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }), /Checksum missing/)
+    const check = new DatabaseSync(fixture.databasePath, { readOnly: true })
+    assert.equal(check.prepare('SELECT COUNT(*) AS n FROM migration_checksums').get().n, 1)
+    assert.equal(check.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'rollback_probe'").get().n, 0)
+    check.close()
+  } finally { fixture.remove() }
 })
 
 test('failed migration rolls back its DDL and ledger records', () => {

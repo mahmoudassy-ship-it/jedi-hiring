@@ -78,7 +78,7 @@ function inspectExistingDatabase(databasePath, migrations) {
   }
 }
 
-export function applyMigrations({ databasePath, migrationsDirectory }) {
+export function applyMigrations({ databasePath, migrationsDirectory, onChecksumBootstrapRow }) {
   const migrations = readMigrations(migrationsDirectory)
   const preflight = inspectExistingDatabase(databasePath, migrations)
   fs.mkdirSync(path.dirname(databasePath), { recursive: true })
@@ -87,25 +87,27 @@ export function applyMigrations({ databasePath, migrationsDirectory }) {
 
   try {
     database.exec('PRAGMA foreign_keys = ON')
-    if (preflight.needsLedger) {
-      database.exec('CREATE TABLE schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)')
-    }
-    database.exec(`CREATE TABLE IF NOT EXISTS migration_checksums (
-      name TEXT PRIMARY KEY REFERENCES schema_migrations(name) ON DELETE CASCADE,
-      sha256 TEXT NOT NULL CHECK (length(sha256) = 64),
-      recorded_at TEXT NOT NULL
-    )`)
-
-    if (preflight.needsChecksumBootstrap) {
-      database.exec('BEGIN IMMEDIATE')
-      try {
-        const insert = database.prepare('INSERT INTO migration_checksums (name, sha256, recorded_at) VALUES (?, ?, ?)')
-        for (const { name } of preflight.applied) insert.run(name, FROZEN_CHECKSUMS[name], new Date().toISOString())
-        database.exec('COMMIT')
-      } catch (error) {
-        database.exec('ROLLBACK')
-        throw error
+    database.exec('BEGIN IMMEDIATE')
+    try {
+      if (preflight.needsLedger) {
+        database.exec('CREATE TABLE schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)')
       }
+      database.exec(`CREATE TABLE IF NOT EXISTS migration_checksums (
+        name TEXT PRIMARY KEY REFERENCES schema_migrations(name) ON DELETE CASCADE,
+        sha256 TEXT NOT NULL CHECK (length(sha256) = 64),
+        recorded_at TEXT NOT NULL
+      )`)
+      if (preflight.needsChecksumBootstrap) {
+        const insert = database.prepare('INSERT INTO migration_checksums (name, sha256, recorded_at) VALUES (?, ?, ?)')
+        for (const [index, { name }] of preflight.applied.entries()) {
+          insert.run(name, FROZEN_CHECKSUMS[name], new Date().toISOString())
+          onChecksumBootstrapRow?.({ index, name })
+        }
+      }
+      database.exec('COMMIT')
+    } catch (error) {
+      database.exec('ROLLBACK')
+      throw error
     }
 
     database.exec('PRAGMA journal_mode = WAL')

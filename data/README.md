@@ -13,7 +13,7 @@ The schema separates:
 - official legal instruments and application dates;
 - plain-language requirements;
 - hiring stages, legal lenses, and responsible actors;
-- requirement relationships and future country overlays;
+- requirement relationships and `country_overlays` in the legacy v1 model;
 - official-source verification metadata.
 
-The seed records are EU-level research entries checked on 2026-09-02. Plain-language summaries are editorial and remain connected to the official instrument and article/location. National implementation and legal advice must be added as explicit overlays rather than silently inferred. Existing databases are safely bootstrapped only for the verified frozen 001–003 hashes; unknown applied migrations fail closed. Failed migrations roll back transactionally and repeat runs are no-ops.
+The seed records are EU-level research entries checked on 2026-09-02. Plain-language summaries are editorial and remain connected to the official instrument and article/location. In v2, national laws will be first-class source-backed propositions connected to EU baselines through typed comparison relationships; absence of a comparison will not imply equivalence. Existing databases are safely bootstrapped only for the verified frozen 001–003 hashes; unknown applied migrations fail closed. Metadata initialization and checksum bootstrap are atomic, failed migrations roll back transactionally, and repeat runs are no-ops.
