@@ -1,6 +1,6 @@
 # Legal Atlas data model v2 — reconciled implementation specification
 
-Status: all six architectural requirements and the implementation conventions are approved. Tranche 0 is implemented. Both earlier physical Tranche 1 proposals (45 tables and 7 tables) are rejected and superseded in Git history by the four-table [minimal Tranche 1A authority-entry foundations](schema-v2-tranche-1.md), which remains pending migration approval. No `atlas_*` production migration is authorized.
+Status: all six architectural requirements and the implementation conventions are approved. Tranche 0 and the empty four-table Tranche 1A foundation are implemented. Both earlier physical Tranche 1 proposals (45 tables and 7 tables) are rejected and superseded in Git history. The authoritative Tranche 1A DDL is migration `004_tranche_1a_foundations.sql`; its retained [proposal](schema/tranche-1-foundations.proposed.sql) is a byte-identical audit artifact. No later domain tranche is authorized.
 
 The database is a reusable legal knowledge base, not a company compliance database. It stores source-backed propositions, contextual archetypes, control/evidence expectations, and editorial projections. Organization systems, candidates, named personnel, vendors, and evidence artifacts belong in a later bounded context.
 
@@ -125,7 +125,7 @@ Filters support explicit `ANY`/`ALL` per dimension; dimensions combine with AND.
 
 0. **Completed:** migration integrity and frozen-v1 upgrade harness.
 
-1. **Proposed 1A:** immutable attribution principals, standalone canonical languages, stable jurisdictions, and correction-safe jurisdiction versions only.
+1. **Implemented 1A (empty):** immutable attribution principals, standalone canonical languages, stable jurisdictions, and correction-safe jurisdiction versions only. It has no seeds or operational writer.
 2. Authority/source entry: jurisdiction lifecycle/succession, controlled external identifiers, sourced containment/membership, instruments, sources, immutable source observations/versions, provisions, translations, and instrument relations.
 3. Proposition core and semantic context: propositions/versions, actions/subjects, citations/relations/events, plus stages, lenses, actors, roles, grounds, data-category vocabularies, ground sets, and legacy taxonomy crosswalk design.
 4. Sourced applicability and national context: applicability trees, sectors, employer size/type, collective-agreement/personal coverage, jurisdiction coverage, and national comparisons.
@@ -143,4 +143,4 @@ Require migration checksums/edit detection; fresh install and upgrade from froze
 
 ## Approval boundary
 
-The naming conventions, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The hardened four-table Tranche 1A proposal must be approved before any domain migration begins.
+The naming conventions, fail-closed publication policy, query-time status derivation, review/freshness architecture, and empty four-table Tranche 1A foundation are approved and implemented. Every later domain tranche requires separate approval.

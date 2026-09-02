@@ -12,6 +12,7 @@ const schemaDirectory = path.dirname(fileURLToPath(import.meta.url))
 const projectDirectory = path.resolve(schemaDirectory, '../..')
 const productionMigrationsDirectory = path.join(projectDirectory, 'data/migrations')
 const proposalPath = path.join(schemaDirectory, 'tranche-1-foundations.proposed.sql')
+const productionMigrationPath = path.join(productionMigrationsDirectory, '004_tranche_1a_foundations.sql')
 const frozenNames = ['001_schema.sql', '002_reference_data.sql', '003_seed_eu_core.sql']
 const legacyTables = ['jurisdictions','legal_instruments','requirements','hiring_stages','legal_lenses','actors','requirement_hiring_stages','requirement_legal_lenses','requirement_actors','requirement_relations','country_overlays','source_checks','requirement_search']
 const expectedObjects = {
@@ -63,6 +64,7 @@ function projection(database,jurisdictionId,languageId,effectiveAsOf,knownAt) {
 }
 
 const proposal=fs.readFileSync(proposalPath,'utf8')
+assert.equal(fs.readFileSync(productionMigrationPath,'utf8'),proposal,'production 004 must be byte-identical to the retained proposal')
 assert.doesNotMatch(proposal,/^\s*(BEGIN(?:\s+(?:IMMEDIATE|DEFERRED|EXCLUSIVE))?|COMMIT|ROLLBACK)\s*;/im)
 assert.doesNotMatch(proposal,/sha256/i)
 const cleanup=[]
@@ -156,5 +158,5 @@ try {
   assert.throws(()=>applyMigrations({databasePath:brokenPath,migrationsDirectory:brokenDirectory}),/Migration 004_tranche_1a_foundations.sql failed/)
   const broken=new DatabaseSync(brokenPath,{readOnly:true}); assert.equal(broken.prepare("SELECT count(*) count FROM sqlite_master WHERE name LIKE 'atlas_%' OR name='rollback_probe'").get().count,0); assert.equal(broken.prepare("SELECT count(*) count FROM schema_migrations WHERE name='004_tranche_1a_foundations.sql'").get().count,0); broken.close()
 
-  console.log(JSON.stringify({fresh_install:'passed',frozen_upgrade:'passed',no_op_rerun:'passed',migration_runner:'applyMigrations',legacy_digests_preserved:legacyTables.length,empty_seed_boundary:'passed',bootstrap_exclusion:'passed',record_time_causality:'passed',withdrawal_reinstatement:'passed',language_canonicalization:'passed',hash_fields:'deferred_no_input_surface',integrity_check:'ok',foreign_key_check:'clean',bitemporal_projection:'passed',recursive_triggers_off_replace_protection:'passed',broken_004_rollback:'passed',objects:Object.fromEntries(Object.entries(objects).map(([type,names])=>[type,names.length]))},null,2))
+  console.log(JSON.stringify({proposal_migration_byte_equality:'passed',fresh_install:'passed',frozen_upgrade:'passed',no_op_rerun:'passed',migration_runner:'applyMigrations',legacy_digests_preserved:legacyTables.length,empty_seed_boundary:'passed',bootstrap_exclusion:'passed',record_time_causality:'passed',withdrawal_reinstatement:'passed',language_canonicalization:'passed',hash_fields:'deferred_no_input_surface',integrity_check:'ok',foreign_key_check:'clean',bitemporal_projection:'passed',recursive_triggers_off_replace_protection:'passed',broken_004_rollback:'passed',objects:Object.fromEntries(Object.entries(objects).map(([type,names])=>[type,names.length]))},null,2))
 } finally { for(const directory of cleanup) fs.rmSync(directory,{recursive:true,force:true}) }

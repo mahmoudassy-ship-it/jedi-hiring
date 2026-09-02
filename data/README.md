@@ -1,6 +1,6 @@
 # Data
 
-The local SQLite database is built from ordered SQL migrations. Applied migration files are protected by SHA-256 checksums in `migration_checksums`; the runner validates filenames, ordering, missing files, and checksums before applying anything new.
+The local SQLite database is built from ordered SQL migrations. Applied migration files are protected by SHA-256 checksums in `migration_checksums`; the runner validates filenames, ordering, missing files, and checksums before applying anything new. Migration `004_tranche_1a_foundations.sql` implements four empty, immutable `STRICT` Atlas foundation tables for attribution, canonical languages, jurisdictions, and correction-safe jurisdiction names. It contains no seeds; operational Atlas writes remain prohibited until the authority/source quarantine path exists.
 
 ```bash
 npm run data:build

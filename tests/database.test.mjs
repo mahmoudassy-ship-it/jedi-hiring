@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
+import { spawnSync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
 import test from 'node:test'
@@ -13,6 +14,8 @@ import { createTestDatabase } from './helpers.mjs'
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const migrationsDirectory = path.join(projectDirectory, 'data', 'migrations')
 const frozenMigrations = ['001_schema.sql', '002_reference_data.sql', '003_seed_eu_core.sql']
+const tranche1aMigration = '004_tranche_1a_foundations.sql'
+const proposalPath = path.join(projectDirectory, 'docs', 'schema', 'tranche-1-foundations.proposed.sql')
 const legacyTables = [
   'jurisdictions', 'legal_instruments', 'requirements', 'hiring_stages', 'legal_lenses', 'actors',
   'requirement_hiring_stages', 'requirement_legal_lenses', 'requirement_actors',
@@ -70,15 +73,51 @@ test('fresh installation applies every discovered migration and reruns as a no-o
   } finally { fixture.remove() }
 })
 
+test('production Tranche 1A matches its proposal and remains empty, strict, and adversarially validated', () => {
+  assert.equal(
+    fs.readFileSync(path.join(migrationsDirectory, tranche1aMigration), 'utf8'),
+    fs.readFileSync(proposalPath, 'utf8'),
+  )
+  const fixture = createTestDatabase()
+  try {
+    const database = new DatabaseSync(fixture.databasePath, { readOnly: true })
+    const objects = database.prepare("SELECT type, name, sql FROM sqlite_master WHERE name LIKE 'atlas_%' ORDER BY type, name").all()
+    assert.equal(objects.filter(({ type }) => type === 'table').length, 4)
+    assert.equal(objects.filter(({ type }) => type === 'index').length, 3)
+    assert.equal(objects.filter(({ type }) => type === 'trigger').length, 17)
+    for (const table of ['atlas_principals', 'atlas_languages', 'atlas_jurisdictions', 'atlas_jurisdiction_versions']) {
+      assert.equal(database.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n, 0)
+      assert.match(objects.find((object) => object.type === 'table' && object.name === table).sql, /\) STRICT$/)
+    }
+    assert.equal(database.prepare('PRAGMA integrity_check').get().integrity_check, 'ok')
+    assert.deepEqual(database.prepare('PRAGMA foreign_key_check').all(), [])
+    database.close()
+
+    const validation = spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', 'docs/schema/validate-tranche-1a.mjs'], {
+      cwd: projectDirectory,
+      encoding: 'utf8',
+    })
+    assert.equal(validation.status, 0, validation.stderr)
+    const result = JSON.parse(validation.stdout)
+    assert.equal(result.proposal_migration_byte_equality, 'passed')
+    assert.equal(result.bootstrap_exclusion, 'passed')
+    assert.equal(result.record_time_causality, 'passed')
+    assert.equal(result.withdrawal_reinstatement, 'passed')
+    assert.equal(result.recursive_triggers_off_replace_protection, 'passed')
+    assert.equal(result.broken_004_rollback, 'passed')
+  } finally { fixture.remove() }
+})
+
 test('independent frozen 001-003 database bootstraps exact checksums without changing legacy content', () => {
   const fixture = createFrozenLegacyDatabase()
   try {
     const before = tableDigests(fixture.databasePath)
-    assert.deepEqual(applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }).appliedNow, [])
+    assert.deepEqual(applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }).appliedNow, [tranche1aMigration])
     assert.deepEqual(tableDigests(fixture.databasePath), before)
     const database = new DatabaseSync(fixture.databasePath, { readOnly: true })
     const checksums = Object.fromEntries(database.prepare('SELECT name, sha256 FROM migration_checksums ORDER BY name').all().map((row) => [row.name, row.sha256]))
-    assert.deepEqual(checksums, FROZEN_CHECKSUMS)
+    assert.deepEqual(Object.fromEntries(frozenMigrations.map((name) => [name, checksums[name]])), FROZEN_CHECKSUMS)
+    assert.equal(checksums[tranche1aMigration], crypto.createHash('sha256').update(fs.readFileSync(path.join(migrationsDirectory, tranche1aMigration))).digest('hex'))
     database.close()
   } finally { fixture.remove() }
 })
@@ -109,12 +148,11 @@ test('legacy checksum bootstrap is atomic and recovers after injected failure', 
     assert.equal(database.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table' AND name = 'migration_checksums'").get().n, 0)
     database.close()
 
-    assert.deepEqual(applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }).appliedNow, [])
+    assert.deepEqual(applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory }).appliedNow, [tranche1aMigration])
     database = new DatabaseSync(fixture.databasePath, { readOnly: true })
-    assert.deepEqual(
-      Object.fromEntries(database.prepare('SELECT name, sha256 FROM migration_checksums ORDER BY name').all().map((row) => [row.name, row.sha256])),
-      FROZEN_CHECKSUMS,
-    )
+    const checksums = Object.fromEntries(database.prepare('SELECT name, sha256 FROM migration_checksums ORDER BY name').all().map((row) => [row.name, row.sha256]))
+    assert.deepEqual(Object.fromEntries(frozenMigrations.map((name) => [name, checksums[name]])), FROZEN_CHECKSUMS)
+    assert.equal(checksums[tranche1aMigration], crypto.createHash('sha256').update(fs.readFileSync(path.join(migrationsDirectory, tranche1aMigration))).digest('hex'))
     database.close()
   } finally { fixture.remove() }
 })
@@ -138,15 +176,15 @@ test('pre-existing incomplete checksum ledger fails closed before mutation', () 
   } finally { fixture.remove() }
 })
 
-test('failed migration rolls back its DDL and ledger records', () => {
+test('failed migration after Tranche 1A rolls back its DDL and ledger records', () => {
   const fixture = createTestDatabase(); const directory = copyMigrations()
   try {
-    fs.writeFileSync(path.join(directory, '004_failure.sql'), 'CREATE TABLE rollback_probe (id INTEGER PRIMARY KEY);\nINVALID SQL;')
-    assert.throws(() => applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory: directory }), /Migration 004_failure.sql failed/)
+    fs.writeFileSync(path.join(directory, '005_failure.sql'), 'CREATE TABLE rollback_probe (id INTEGER PRIMARY KEY);\nINVALID SQL;')
+    assert.throws(() => applyMigrations({ databasePath: fixture.databasePath, migrationsDirectory: directory }), /Migration 005_failure.sql failed/)
     const database = new DatabaseSync(fixture.databasePath, { readOnly: true })
     assert.equal(database.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'rollback_probe'").get().n, 0)
-    assert.equal(database.prepare("SELECT COUNT(*) AS n FROM schema_migrations WHERE name = '004_failure.sql'").get().n, 0)
-    assert.equal(database.prepare("SELECT COUNT(*) AS n FROM migration_checksums WHERE name = '004_failure.sql'").get().n, 0)
+    assert.equal(database.prepare("SELECT COUNT(*) AS n FROM schema_migrations WHERE name = '005_failure.sql'").get().n, 0)
+    assert.equal(database.prepare("SELECT COUNT(*) AS n FROM migration_checksums WHERE name = '005_failure.sql'").get().n, 0)
     database.close()
   } finally { fs.rmSync(directory, { recursive: true, force: true }); fixture.remove() }
 })

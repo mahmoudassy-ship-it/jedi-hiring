@@ -4,6 +4,8 @@ Status: approved sixth architectural requirement. This document specifies future
 
 The earlier foundation-level review-policy proposal is superseded. Principal lifecycle/status, review roles, grants, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only. Any policy/content hash in that slice must define and test canonical UTF-8 serialization, field order, null representation, normalization, and recomputation.
 
+Tranche 1A principal 1 (`system.bootstrap`, service) is only the technical creation trust root. It cannot record languages, jurisdictions, or jurisdiction versions and can never satisfy a human, reviewer, qualification, adoption, or publication requirement. Creation attribution is evidence of who or what recorded a row; it is not authentication, authorization, qualification, or review eligibility.
+
 ## Trust boundary and record states
 
 Automated extraction may write only to quarantined ingestion candidates and immutable source observations. It cannot create or modify authoritative proposition versions or publication decisions. A researcher may promote verified material into a new unpublished draft. `draft`, `reviewed`, `published`, `stale`, and `withdrawn` are distinct, auditable states; editing published or reviewed content always creates a new unpublished immutable version.

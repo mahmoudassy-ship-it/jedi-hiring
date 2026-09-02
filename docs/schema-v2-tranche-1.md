@@ -1,6 +1,6 @@
 # Minimal Tranche 1A authority-entry foundations
 
-Status: proposed, not a production migration. Both earlier physical proposals (45 tables and 7 tables) are rejected and superseded in Git history. The current proposal contains exactly four empty `STRICT` tables in [the proposed SQL](schema/tranche-1-foundations.proposed.sql) and is validated by [the committed harness](schema/validate-tranche-1a.mjs).
+Status: implemented as production migration `004_tranche_1a_foundations.sql`. Both earlier physical proposals (45 tables and 7 tables) are rejected and superseded in Git history. The retained [proposed SQL](schema/tranche-1-foundations.proposed.sql) is a byte-identical audit artifact; automated tests reject drift. The migration contains exactly four empty `STRICT` tables and is validated by [the committed harness](schema/validate-tranche-1a.mjs).
 
 Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by the next authority/source tranche. Until that tranche provides quarantine and the later review-governance slice provides gates, no `atlas_*` row may be inserted operationally, reviewed, published, exported, or exposed by an API. The existing frontend remains explicitly v1-backed.
 
@@ -94,4 +94,4 @@ Named triggers (17): bootstrap and subsequent-principal attribution guards; lang
 - Coverage scopes: sourced applicability/national-context tranche.
 - Roles, qualifications, policies, reviews, publication and evaluator: review-governance vertical slice.
 
-No structural or legal row is seeded by Tranche 1A.
+No structural or legal row is seeded by Tranche 1A. The production database, repository, API, export, and legacy frontend perform no Atlas writes or reads; the frontend remains backed exclusively by v1.
