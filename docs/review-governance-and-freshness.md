@@ -2,6 +2,10 @@
 
 Status: approved sixth architectural requirement. This document specifies future domain behavior; Tranche 0 does not implement monitoring or review-domain tables.
 
+The earlier foundation-level review-policy proposal is superseded. Principal lifecycle/status, review roles, grants, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only. Any policy/content hash in that slice must define and test canonical UTF-8 serialization, field order, null representation, normalization, and recomputation.
+
+Tranche 1A principal 1 (`system.bootstrap`, service) is only the technical creation trust root. It cannot record languages, jurisdictions, or jurisdiction versions and can never satisfy a human, reviewer, qualification, adoption, or publication requirement. Creation attribution is evidence of who or what recorded a row; it is not authentication, authorization, qualification, or review eligibility.
+
 ## Trust boundary and record states
 
 Automated extraction may write only to quarantined ingestion candidates and immutable source observations. It cannot create or modify authoritative proposition versions or publication decisions. A researcher may promote verified material into a new unpublished draft. `draft`, `reviewed`, `published`, `stale`, and `withdrawn` are distinct, auditable states; editing published or reviewed content always creates a new unpublished immutable version.
@@ -12,13 +16,35 @@ The pipeline is:
 source observation -> quarantined candidate -> researcher draft -> gated reviews -> publication decision
 ```
 
+These are four separate state machines:
+
+1. **Observation outcome:** `attempted -> retrieved | not_modified | network_failed | http_failed | parse_failed`. It records retrieval facts only.
+2. **Change candidate:** `detected -> deduplicated -> awaiting_triage -> no_material_impact | parser_only | false_positive | confirmed_material | uncertain_escalated -> closed`. Only a human triage decision moves beyond `awaiting_triage`.
+3. **Legal content:** `quarantined -> unpublished_draft -> reviewed -> published -> stale | withdrawn`. A confirmed impact creates a new unpublished version; history is never overwritten.
+4. **Publication/freshness eligibility:** computed for one immutable version and one `as_of` time from publication decision, mandatory gates, review freshness, holds, and withdrawals. It is not stored as a universal status.
+
 ## Version-specific review gates
 
 Every approval targets the exact immutable content version and its hash. A content change creates a new version and invalidates only approvals affected by that version.
 
+Reviews normally target exactly one immutable version. If a grouped review is later supported for workflow convenience, the junction must record a separate result, limitations, and next-review date for every target; no group-level result may imply approval of all targets.
+
 Default gates are researcher/author preparation; independent official-source verification; independent substantive legal review; qualified local-jurisdiction review for national material; translation review when a non-authoritative translation is used; editorial/data-quality/accessibility review; and an independent publication decision.
 
 At minimum, author, substantive legal reviewer, and publisher are different human principals. Automated agents cannot approve, satisfy a human gate, or publish. Review records include principal, role, qualifications, qualification expiry, conflicts of interest, recusals, exact version/hash, result, limitations, decision time, and next review due.
+
+The later governance slice must enforce all of the following:
+
+- no self-grant, self-verification, or self-publication;
+- author/promoter differs from official-source verifier;
+- author differs from substantive legal reviewer and publisher;
+- substantive legal reviewer differs from publisher;
+- qualification scope is immutable and sealed with its assertion;
+- language, jurisdiction, subject-area, and coverage matching are explicit and fail closed;
+- policy seals validate the complete required-gate set and canonical payload hash;
+- policy adoption is attributable to a qualified human—never anonymous or a service principal;
+- mandatory gates are non-waivable and approvals count distinct eligible humans;
+- active policy versions cannot overlap, reopen, or resurrect unexpectedly.
 
 ## Fail-closed public eligibility
 
@@ -42,6 +68,21 @@ A detected change creates or reuses a deduplicated review candidate, preserves b
 A human reviewer classifies the candidate as `no_material_impact`, `formatting_or_parser_change`, `correction_or_corrigendum`, `amendment_or_repeal`, `new_implementing_or_interpretive_authority`, `false_positive`, or `uncertain_requires_escalation`. Confirmed impact creates new unpublished source/legal/proposition versions and restarts affected gates.
 
 Network failures and parser failures are observations, not legal changes. They update monitoring health and may create staleness/escalation but do not alter recorded law.
+
+Raw-byte or layout-only differences create a candidate but do not automatically block publication. Normalized-text equality, parser version, and human triage determine whether a hold is warranted.
+
+## Deterministic hold matrix
+
+| Condition | Existing version | Required signal | Who may clear it |
+|---|---|---|---|
+| Monitor request/parser failure before due date | Remains public | Monitoring-health degradation; no legal change | Successful later run; operator may close infrastructure incident |
+| Monitor run overdue | Remains public with freshness warning until risk-policy grace expires; then withheld | `monitor_overdue` with last attempt/success | Successful run plus automated health recomputation; human required if hold was escalated |
+| Human legal review overdue/expired | Withheld; warning cannot bypass | `human_review_stale` | New qualified independent reviewer approval |
+| Detected change awaiting triage | Risk policy decides warning or temporary hold; high-risk/source-loss cases withheld | `change_pending_review` | Qualified human triager records a supported classification |
+| Confirmed material change | Existing affected version withheld; new version starts unpublished | `material_change_confirmed` | Full affected review gates plus independent publisher on new version |
+| Emergency withdrawal | Immediately withheld | `emergency_withdrawal` | Authorized independent publisher/legal governance principal through a new decision; history retained |
+
+No automated principal clears a legal/publication hold. Automated recovery may clear only an infrastructure-health warning that policy explicitly defines as non-legal and that never invalidated human review.
 
 ## Transparent freshness display
 
@@ -75,3 +116,11 @@ The pilot may use a candidate-only GitHub Action with scheduled and manual trigg
 - Automated checks cannot create legal events or publication decisions.
 - Historical versions remain retrievable.
 - Every public version exposes sources, applicable-as-of date, human verification date, and freshness state.
+
+## Future implementation tranches
+
+7. Freshness evidence and candidate-review workflow.
+8. Crosswalk and auditable backfill.
+9. API v2 and parity.
+10. Operational scheduler, durable storage, alerts, and missed-run heartbeat — separately approved.
+11. Legacy retirement — separately approved.

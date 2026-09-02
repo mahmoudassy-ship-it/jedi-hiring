@@ -18,7 +18,8 @@
     "build": "npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
     "test": "node --disable-warning=ExperimentalWarning --test",
+    "schema:validate": "node --disable-warning=ExperimentalWarning docs/schema/validate-tranche-1a.mjs",
     "security:check": "node scripts/check-secrets.mjs",
-    "check": "npm run data:build && npm run data:check && npm test && npm run build && npm run security:check"
+    "check": "npm run data:build && npm run data:check && npm run schema:validate && npm test && npm run build && npm run security:check"
   }
 }
