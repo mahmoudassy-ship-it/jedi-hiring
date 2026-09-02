@@ -86,7 +86,13 @@ export function applyMigrations({ databasePath, migrationsDirectory, onChecksumB
   const appliedNow = []
 
   try {
-    database.exec('PRAGMA foreign_keys = ON')
+    database.exec('PRAGMA foreign_keys = ON; PRAGMA recursive_triggers = ON')
+    if (database.prepare('PRAGMA foreign_keys').get().foreign_keys !== 1) {
+      throw new Error('Migration writer requires foreign_keys=ON')
+    }
+    if (database.prepare('PRAGMA recursive_triggers').get().recursive_triggers !== 1) {
+      throw new Error('Migration writer requires recursive_triggers=ON')
+    }
     database.exec('BEGIN IMMEDIATE')
     try {
       if (preflight.needsLedger) {

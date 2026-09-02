@@ -2,7 +2,7 @@
 
 Status: approved sixth architectural requirement. This document specifies future domain behavior; Tranche 0 does not implement monitoring or review-domain tables.
 
-The earlier foundation-level review-policy proposal is superseded. Review identities, roles, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only.
+The earlier foundation-level review-policy proposal is superseded. Principal lifecycle/status, review roles, grants, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only. Any policy/content hash in that slice must define and test canonical UTF-8 serialization, field order, null representation, normalization, and recomputation.
 
 ## Trust boundary and record states
 

@@ -1,6 +1,6 @@
 # Legal Atlas data model v2 — reconciled implementation specification
 
-Status: all six architectural requirements and the implementation conventions are approved. Tranche 0 is implemented. The 45-table Tranche 1 proposal is rejected and superseded in Git history by the minimal [Tranche 1A authority-entry foundations](schema-v2-tranche-1.md), which remains pending migration approval. No `atlas_*` production migration is authorized.
+Status: all six architectural requirements and the implementation conventions are approved. Tranche 0 is implemented. Both earlier physical Tranche 1 proposals (45 tables and 7 tables) are rejected and superseded in Git history by the four-table [minimal Tranche 1A authority-entry foundations](schema-v2-tranche-1.md), which remains pending migration approval. No `atlas_*` production migration is authorized.
 
 The database is a reusable legal knowledge base, not a company compliance database. It stores source-backed propositions, contextual archetypes, control/evidence expectations, and editorial projections. Organization systems, candidates, named personnel, vendors, and evidence artifacts belong in a later bounded context.
 
@@ -21,11 +21,11 @@ The approved gated-review and continuous-freshness architecture is specified in 
 
 This remains the cross-tranche logical catalog. It is not a claim that all structures belong in one migration. The Tranche 1A document and proposed executable DDL supersede the abbreviated foundation descriptions below.
 
-SQLite uses `INTEGER` IDs/booleans (booleans constrained to 0/1), `TEXT` codes/enums/dates (`YYYY-MM-DD`) and JSON expressions, and `BLOB` hashes. Foreign keys are enabled. Published historical records are versioned or deprecated, not deleted. Derived values are labelled as derived.
+SQLite uses `INTEGER` IDs/booleans and canonical `TEXT` codes, dates, and timestamps. Content hashes are deferred until each hashed layer defines canonical UTF-8 serialization, field order, null representation, normalization, and recomputation tests. Foreign keys and recursive triggers are enabled and asserted on writers. Historical records are versioned or deprecated, not deleted. Derived values are labelled as derived.
 
 ### Foundation tables
 
-`jurisdictions`: hierarchical territorial nodes (`id INTEGER PRIMARY KEY`, stable `code TEXT UNIQUE NOT NULL`, `name TEXT`, `level CHECK eu/eea/state/regional/devolved`, `parent_id FK`, `active`, `replaced_by_id`, `notes`). `jurisdiction_memberships` records time-bounded membership/association. Non-territorial `coverage_scopes` separately model sector, employer size/type, collective-agreement coverage, and personal scope. Parent deletion is restricted; indexes cover parent, level and intervals.
+Tranche 1A contains immutable Atlas attribution principals, standalone canonical language tags, immutable jurisdiction identities, and correction-safe jurisdiction name/description versions. Jurisdiction hierarchy, lifecycle, membership, external identifier schemes, coverage, and general taxonomies are explicitly deferred to source-backed consumer tranches.
 
 Separate controlled tables `hiring_stages`, `legal_lenses`, `actor_roles`, `protected_grounds`, and `data_categories` each have `id PK`, stable `code UNIQUE`, `label`, `definition`, lifecycle (`active/deprecated/replaced`), and governance timestamps. `taxonomy_labels` and `taxonomy_aliases` provide multilingual labels/aliases; `taxonomy_changes` is append-only (`old_value`, `new_value`, reviewer, reason). FKs/unique composites prevent duplicate assignments; historical values are never silently deleted. Optional interface ordering is editorial, not legal truth.
 
@@ -116,7 +116,7 @@ Filters support explicit `ANY`/`ALL` per dimension; dimensions combine with AND.
 
 ## Approved implementation decisions
 
-1. All v2 tables will use plural `atlas_`-prefixed `snake_case` names, `id` PKs, `<entity>_id` FKs, `_code`, `_on`, `_at`, and `valid_from`/exclusive `valid_to`. Version tables are immutable; events/decisions append-only. Closed structural values may use CHECKs; evolving legal/editorial vocabularies use reference tables. No polymorphic targets, no v1 table overwrite, and no fixed table-count claim.
+1. All v2 tables use plural `atlas_`-prefixed `snake_case` names, `id` PKs, `<entity>_id` FKs, `_code`, `_on`, and `_at`. True intervals use inclusive `valid_from` and exclusive `valid_to`; correction-safe bitemporal assertions instead use a natural `effective_from` point plus immutable correction/withdrawal records. Version tables are immutable; events/decisions append-only. Closed structural values may use CHECKs; evolving legal/editorial vocabularies use reference tables. No polymorphic targets, no v1 overwrite, and no fixed cross-tranche table-count claim.
 2. Tranches are: migration integrity/frozen-v1 harness; foundations; authority graph; proposition core; semantic context; operational context; governance/national comparison; auditable crosswalk/backfill; API v2/parity. Legacy retirement requires separate approval.
 3. Public eligibility is version-scoped and fail-closed: explicit `publish_validated`/`publish_with_warning`, current qualifying review for the immutable version, official immutable authoritative support, resolved atomicity/source mapping/translation/local validation, and no later block. Warnings are machine- and human-readable; ineligible records are omitted/404; edits create unpublished versions.
 4. `status_projection` is disabled for Phase 2. Status is derived at query time from indexed append-only events using one request-wide `as_of` date.
@@ -125,8 +125,8 @@ Filters support explicit `ANY`/`ALL` per dimension; dimensions combine with AND.
 
 0. **Completed:** migration integrity and frozen-v1 upgrade harness.
 
-1. **Proposed 1A:** attribution principals, principal status history, standalone languages, stable jurisdictions, jurisdiction versions, and external identifiers.
-2. Authority/source entry: sourced containment/membership, instruments, sources, immutable source observations/versions, provisions, translations, and instrument relations.
+1. **Proposed 1A:** immutable attribution principals, standalone canonical languages, stable jurisdictions, and correction-safe jurisdiction versions only.
+2. Authority/source entry: jurisdiction lifecycle/succession, controlled external identifiers, sourced containment/membership, instruments, sources, immutable source observations/versions, provisions, translations, and instrument relations.
 3. Proposition core and semantic context: propositions/versions, actions/subjects, citations/relations/events, plus stages, lenses, actors, roles, grounds, data-category vocabularies, ground sets, and legacy taxonomy crosswalk design.
 4. Sourced applicability and national context: applicability trees, sectors, employer size/type, collective-agreement/personal coverage, jurisdiction coverage, and national comparisons.
 5. Operational context: reusable data, technology, deployment, control, and evidence archetypes.
@@ -143,4 +143,4 @@ Require migration checksums/edit detection; fresh install and upgrade from froze
 
 ## Approval boundary
 
-The naming conventions, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The narrowed seven-table Tranche 1A physical proposal must be approved before any domain migration begins.
+The naming conventions, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The hardened four-table Tranche 1A proposal must be approved before any domain migration begins.

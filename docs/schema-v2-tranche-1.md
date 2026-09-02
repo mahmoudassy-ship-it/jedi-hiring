@@ -1,99 +1,97 @@
-# Tranche 1A authority-entry foundations
+# Minimal Tranche 1A authority-entry foundations
 
-Status: proposed for approval; not a production migration. This seven-table proposal supersedes the rejected 45-table Tranche 1 design preserved in Git history. Its executable DDL is [`schema/tranche-1-foundations.proposed.sql`](schema/tranche-1-foundations.proposed.sql), and its reproducible validator is [`schema/validate-tranche-1a.mjs`](schema/validate-tranche-1a.mjs).
+Status: proposed, not a production migration. Both earlier physical proposals (45 tables and 7 tables) are rejected and superseded in Git history. The current proposal contains exactly four empty `STRICT` tables in [the proposed SQL](schema/tranche-1-foundations.proposed.sql) and is validated by [the committed harness](schema/validate-tranche-1a.mjs).
 
-Tranche 1A enables safe attribution and jurisdiction naming for future quarantined official-source research. Until the review-governance vertical slice exists, later source records remain quarantined: nothing can become a reviewed proposition or public content.
+Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by the next authority/source tranche. Until that tranche provides quarantine and the later review-governance slice provides gates, no `atlas_*` row may be inserted operationally, reviewed, published, exported, or exposed by an API. The existing frontend remains explicitly v1-backed.
 
-## Included and deferred
+## Physical schema
 
-Included: stable human/service principals for attribution only, append-only principal status, standalone languages, stable territorial/legal jurisdictions, immutable jurisdiction descriptions, and versioned external identifiers.
-
-Deferred:
-
-- jurisdiction containment and membership to the authority tranche, where assertions receive official-source provenance;
-- hiring stages, lenses, actors, normative roles, grounds, data categories, and their legacy mapping to the proposition/semantic tranche;
-- roles, grants, qualifications, policies, reviews, publication decisions, and evaluator to one review-governance vertical slice;
-- sectors, employer thresholds/types, collective-agreement and personal coverage to the sourced applicability/national-context tranche;
-- instruments, sources, provisions, propositions, monitoring, API, and backfill to their approved later tranches.
-
-## Physical conventions
-
-All tables are plural `snake_case` with `atlas_` prefix, `id` primary keys, and `<entity>_id` foreign keys. Dates are canonical `YYYY-MM-DD`; timestamps are canonical UTC `YYYY-MM-DDTHH:MM:SS.sssZ`. CHECK constraints round-trip values through SQLite date/time functions before lexical comparison is permitted. SHA-256 is lowercase 64-character hexadecimal. The SQL has no transaction-management statement; `applyMigrations` owns the transaction. There are no seeds because Tranche 1A requires no operational structural row and source-dependent facts are deferred.
-
-Stable identity rows are immutable. Status/retirement/replacement is append-only. Jurisdiction descriptions and external identifiers use immutable successor chains rather than mutable open-ended intervals. At an `as_of` date, select eligible rows with `effective_from <= :as_of`, then the unsuperseded leaf (or deterministically the latest `recorded_at,id` while resolving a backdated correction). Missing records mean unknown/not recorded and never imply applicability, equivalence, membership, or qualification.
-
-## Exact tables
+All FKs use `ON UPDATE RESTRICT ON DELETE RESTRICT`. Dates are canonical `YYYY-MM-DD`; timestamps are canonical UTC `YYYY-MM-DDTHH:MM:SS.sssZ`. Checks include UTF-8 byte length through `CAST(value AS BLOB)`, embedded-NUL rejection, shape validation, and date/time round trips. The proposed body has no transaction control; the real migration runner owns the transaction and enables/asserts foreign keys and recursive triggers.
 
 ### `atlas_principals`
 
-Purpose: stable attribution identity only; not authentication or authorization.
+Atlas editorial/service attribution identity only—not candidates, client personnel, credentials, authentication, authorization, role, or qualification.
 
-Columns: `id INTEGER PRIMARY KEY`; `principal_code TEXT NOT NULL UNIQUE`; `principal_kind_code TEXT NOT NULL CHECK human/service`; `display_name TEXT NOT NULL`; nullable unique `external_subject TEXT`; canonical `created_at TEXT NOT NULL`. Code is lowercase `[a-z0-9._-]+`.
+| Column | Definition |
+|---|---|
+| `id` | `INTEGER PRIMARY KEY` |
+| `principal_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, `[a-z0-9._-]`, no whitespace edge/NUL |
+| `principal_kind_code` | `TEXT NOT NULL CHECK ('human','service')`; immutable kind |
+| `created_by_principal_id` | self-FK `INTEGER NOT NULL`; attribution |
+| `created_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-Behavior: entire row rejects UPDATE/DELETE. Principal kind and code cannot be repurposed. Named indexes: none beyond PK/UNIQUE. Future references: source observations, drafts, reviews, publications, monitor runs, and audit events.
-
-### `atlas_principal_status_events`
-
-Purpose: append-only active, retired, or replaced history for a principal.
-
-Columns: `id PK`; `principal_id FK NOT NULL`; `status_code CHECK active/retired/replaced`; nullable replacement principal FK; canonical `effective_on` and `recorded_at`; reason; UNIQUE principal/effective/recorded. Replacement is required only for `replaced` and cannot be self.
-
-Behavior: UPDATE/DELETE rejected; replacement-cycle insert rejected. Named index `atlas_principal_status_events_as_of_idx`. Current status derives from latest `(effective_on, recorded_at, id)` eligible at `as_of`. Future references: attribution eligibility and governance evaluator.
+The sole bootstrap exception is an explicit first row with `id=1`, code `bootstrap`, kind `human`, and self-attribution. Every later principal must name a different existing creator. This establishes audit attribution only, not authority. UPDATE/DELETE and colliding INSERT—including `INSERT OR REPLACE`—are rejected. Future profile/display metadata and authentication identifiers belong in separate versioned/authentication structures.
 
 ### `atlas_languages`
 
-Purpose: standalone BCP 47-compatible language identity usable before generic taxonomies exist.
+| Column | Definition |
+|---|---|
+| `id` | `INTEGER PRIMARY KEY` |
+| `language_code` | canonical BCP 47 tag `TEXT NOT NULL UNIQUE`, 2–35 bytes |
+| `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
+| `recorded_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-Columns: `id PK`; lowercase `language_code TEXT NOT NULL UNIQUE` using `[a-z0-9-]`, length 2–35; display name; canonical creation timestamp.
-
-Behavior: UPDATE/DELETE rejected; new identity replaces any changed meaning. No named secondary index. Future references: source representations, translations, jurisdiction versions, and qualification scope.
+The database defensively rejects NUL, whitespace edges, non-ASCII shape, leading/trailing/repeated hyphens, and malformed primary shape. The committed `Intl.getCanonicalLocales` validator enforces full canonical form before insertion (for example, `en-US`, not `en-us`). Display labels are deferred. UPDATE/DELETE/REPLACE collisions are rejected.
 
 ### `atlas_jurisdictions`
 
-Purpose: stable territorial/legal-jurisdiction identity, without containment or membership assertions.
+Stable legal/territorial identity only; no containment, membership, succession, source identifier, or applicability claim.
 
-Columns: `id PK`; lowercase `jurisdiction_code TEXT NOT NULL UNIQUE`; kind CHECK `supranational/state/regional/devolved/local`; canonical creation timestamp.
+| Column | Definition |
+|---|---|
+| `id` | `INTEGER PRIMARY KEY` |
+| `jurisdiction_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, no whitespace edge/NUL |
+| `jurisdiction_kind_code` | `TEXT NOT NULL CHECK international/supranational/state/territory/regional/devolved/local` |
+| `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
+| `recorded_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-Behavior: UPDATE/DELETE rejected. No named secondary index. Future references: instruments, propositions, source mapping, applicability, qualifications, containment, memberships, and national comparisons.
-
-### `atlas_jurisdiction_status_events`
-
-Purpose: append-only retirement/replacement history for jurisdiction identities.
-
-Columns and behavior mirror principal status events with jurisdiction FKs. UPDATE/DELETE and replacement cycles are rejected. Named index `atlas_jurisdiction_status_events_as_of_idx`. Status derives at caller-supplied `as_of`.
+Kinds mean: `international` is a treaty/intergovernmental legal track without its own supranational legal order; `supranational` is a legal order above participating states; `state` is a sovereign national jurisdiction; `territory` is a legally distinct territory; `regional`, `devolved`, and `local` are successively narrower substate kinds without asserting containment. Codes and kinds cannot be repurposed. UPDATE/DELETE/REPLACE collisions are rejected.
 
 ### `atlas_jurisdiction_versions`
 
-Purpose: immutable effective-from name/description versions for one jurisdiction and language.
+Immutable jurisdiction name/description assertions with separate effective and record time.
 
-Columns: `id PK`; jurisdiction and language FKs; name; nullable description; canonical `effective_from` and `recorded_at`; lowercase hexadecimal `content_sha256`; nullable unique self-FK `supersedes_jurisdiction_version_id`; UNIQUE jurisdiction/language/effective/recorded.
+| Column | Definition |
+|---|---|
+| `id` | `INTEGER PRIMARY KEY` |
+| `jurisdiction_id` | `INTEGER NOT NULL FK atlas_jurisdictions` |
+| `language_id` | `INTEGER NOT NULL FK atlas_languages` |
+| `effective_from` | canonical date; natural effective point component |
+| `record_kind_code` | `assertion`, `correction`, or `withdrawal` |
+| `name` | nonblank/no-NUL for assertion/correction; null for withdrawal |
+| `description` | nullable/no-NUL; null for withdrawal |
+| `corrects_jurisdiction_version_id` | nullable unique self-FK; required for correction/withdrawal |
+| `reason` | nonblank/no-NUL `TEXT NOT NULL` |
+| `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
+| `recorded_at` | canonical UTC timestamp, later than corrected predecessor |
 
-Behavior: UPDATE/DELETE rejected. Successor trigger requires the same jurisdiction and language; immutable backward references plus cycle validation prevent cycles. Named index `atlas_jurisdiction_versions_as_of_idx`. A later or backdated correction is a new row that supersedes the prior row; no mutable `valid_to` is used. Future references: public jurisdiction labels and source-backed authority metadata.
+Natural effective point: `(jurisdiction_id, language_id, effective_from)`. Each point has exactly one root assertion. A correction or withdrawal must target the current leaf at the same point; one predecessor has at most one successor. Withdrawals are terminal. Different effective dates are substantive historical changes. Correcting an effective date requires withdrawing the erroneous point and inserting a new root. UPDATE/DELETE/REPLACE identity collisions are rejected. Content hashes are deferred until a canonical content serialization is defined.
 
-### `atlas_jurisdiction_external_identifiers`
+## Bitemporal projection
 
-Purpose: immutable, effective-from mapping for ISO, ELI/EUR-Lex, or national-source identifiers without assuming a fixed scheme list.
+Inputs are `:effective_as_of` and `:known_at`. First restrict rows by jurisdiction/language, `effective_from <= :effective_as_of`, and `recorded_at <= :known_at`. Within each natural effective point, select the row with no correction successor also known by `:known_at`. Exclude leaves whose kind is `withdrawal`. From remaining points select `ORDER BY effective_from DESC, recorded_at DESC, id DESC LIMIT 1`.
 
-Columns: `id PK`; jurisdiction FK; lowercase stable `scheme_code`; non-empty `identifier_value`; canonical `effective_from` and `recorded_at`; nullable unique self-FK `supersedes_external_identifier_id`; UNIQUE scheme/value/effective/recorded.
+This answers “what name/history applied at the effective date, using only what Atlas had recorded by the knowledge timestamp?” A backdated correction changes results only for `known_at` values on or after its recording time.
 
-Behavior: UPDATE/DELETE rejected. Successor trigger requires the same jurisdiction and scheme and rejects cycles. Named indexes `atlas_jurisdiction_external_identifiers_as_of_idx` and `atlas_jurisdiction_external_identifiers_lookup_idx`. Scheme/value mappings are never silently repurposed; corrections or changes create successors. Future references: authority-source ingestion and identifier resolution.
+## Generated object inventory
 
-## Exact generated objects
+Tables (4): `atlas_principals`, `atlas_languages`, `atlas_jurisdictions`, `atlas_jurisdiction_versions`.
 
-Tables (7):
+Named indexes (3):
 
-1. `atlas_principals`
-2. `atlas_principal_status_events`
-3. `atlas_languages`
-4. `atlas_jurisdictions`
-5. `atlas_jurisdiction_status_events`
-6. `atlas_jurisdiction_versions`
-7. `atlas_jurisdiction_external_identifiers`
+- `atlas_jurisdiction_versions_one_root_idx`
+- `atlas_jurisdiction_versions_bitemporal_idx`
+- `atlas_jurisdiction_versions_correction_idx`
 
-Named indexes (5): the two status `as_of` indexes, jurisdiction-version `as_of`, and external-identifier `as_of` plus lookup indexes. PK/UNIQUE constraints create SQLite autoindexes not counted as named proposal indexes.
+Named triggers (15): bootstrap and subsequent-principal attribution guards; four INSERT collision guards; jurisdiction-version correction validation; and UPDATE/DELETE rejection for every table. Collision guards prevent `INSERT OR REPLACE` from deleting/recreating rows even with recursive triggers disabled.
 
-Named triggers (18): fourteen UPDATE/DELETE immutability or append-only triggers, two replacement-cycle triggers, and two same-identity successor/cycle triggers.
+## Deferred work
 
-## Validation contract
+- Principal lifecycle/status/replacement: review-governance tranche.
+- Jurisdiction retirement, succession, split/merge, containment and membership: source-backed authority tranche.
+- External identifiers: authority tranche with controlled scheme registry, entity-type scope, provenance, correction/withdrawal and deterministic resolution. ELI, EUR-Lex and CELEX identify instruments/sources, never jurisdictions.
+- Semantic taxonomies: proposition/semantic tranche with reviewed seeds and legacy crosswalk.
+- Coverage scopes: sourced applicability/national-context tranche.
+- Roles, qualifications, policies, reviews, publication and evaluator: review-governance vertical slice.
 
-The committed validator copies frozen migrations 001–003 and the proposal into a temporary migration directory as temporary `004_tranche_1a_foundations.sql`. It invokes the real `applyMigrations` for a fresh database and for an independently constructed legacy database with the original two-column ledger. It verifies object counts, v1 row digests, integrity/FKs, format rejection, stable-identity immutability, successor insertion, append-only enforcement, and transactional rollback. No file under `data/migrations` is added or changed.
+No structural or legal row is seeded by Tranche 1A.
