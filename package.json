@@ -1,0 +1,24 @@
+{
+  "name": "jedi-hiring-legal-atlas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "predev": "npm run data:build",
+    "dev": "node scripts/dev.mjs",
+    "data:build": "node --disable-warning=ExperimentalWarning data/scripts/migrate.mjs",
+    "data:check": "node --disable-warning=ExperimentalWarning data/scripts/check.mjs",
+    "build": "npm run build --workspace frontend",
+    "start": "npm run start --workspace backend",
+    "test": "node --disable-warning=ExperimentalWarning --test",
+    "security:check": "node scripts/check-secrets.mjs",
+    "check": "npm run data:build && npm run data:check && npm test && npm run build && npm run security:check"
+  }
+}

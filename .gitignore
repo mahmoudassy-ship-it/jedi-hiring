@@ -1,0 +1,25 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# Local database files
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+data/cache/
+
+# Logs and local tooling
+*.log
+*.swp
+.DS_Store
+.idea/
+.vscode/

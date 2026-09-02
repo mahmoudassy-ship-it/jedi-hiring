@@ -1,0 +1,9 @@
+{
+  "name": "@jedi-hiring/backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --disable-warning=ExperimentalWarning --env-file-if-exists=../.env src/server.mjs",
+    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=../.env src/server.mjs"
+  }
+}
