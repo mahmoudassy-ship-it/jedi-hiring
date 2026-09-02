@@ -19,12 +19,15 @@ const expectedObjects = {
   table: ['atlas_jurisdiction_versions','atlas_jurisdictions','atlas_languages','atlas_principals'],
   trigger: [
     'atlas_jurisdiction_versions_collision_guard','atlas_jurisdiction_versions_immutable_delete','atlas_jurisdiction_versions_immutable_update','atlas_jurisdiction_versions_validate_insert',
-    'atlas_jurisdictions_collision_guard','atlas_jurisdictions_immutable_delete','atlas_jurisdictions_immutable_update',
-    'atlas_languages_collision_guard','atlas_languages_immutable_delete','atlas_languages_immutable_update',
+    'atlas_jurisdictions_attribution_guard','atlas_jurisdictions_collision_guard','atlas_jurisdictions_immutable_delete','atlas_jurisdictions_immutable_update',
+    'atlas_languages_attribution_guard','atlas_languages_collision_guard','atlas_languages_immutable_delete','atlas_languages_immutable_update',
     'atlas_principals_attribution_guard','atlas_principals_bootstrap_guard','atlas_principals_collision_guard','atlas_principals_immutable_delete','atlas_principals_immutable_update',
   ],
 }
-const timestamp = '2026-09-02T12:00:00.000Z'
+const bootstrapAt = '2026-01-01T00:00:00.000Z'
+const recorderAt = '2026-01-02T00:00:00.000Z'
+const languageAt = '2026-01-03T00:00:00.000Z'
+const jurisdictionAt = '2026-01-04T00:00:00.000Z'
 
 function tempDirectory(prefix) { return fs.mkdtempSync(path.join(os.tmpdir(), prefix)) }
 function migrationDirectory(proposal = fs.readFileSync(proposalPath, 'utf8')) {
@@ -49,7 +52,7 @@ function writer(databasePath, recursiveTriggers = true) {
 function digest(database,table) { const columns=database.prepare(`PRAGMA table_info(${table})`).all().map(x=>x.name); const rows=database.prepare(`SELECT * FROM "${table}" ORDER BY ${columns.map(x=>`"${x}"`).join(',')}`).all().map(x=>({...x})); return crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex') }
 function digests(databasePath) { const database=new DatabaseSync(databasePath,{readOnly:true}); try{return Object.fromEntries(legacyTables.map(table=>[table,digest(database,table)]))}finally{database.close()} }
 function reject(database,sql,values,pattern) { assert.throws(()=>database.prepare(sql).run(...values),pattern) }
-function insertLanguage(database, tag, principalId=1) { assertCanonicalBcp47(tag); return database.prepare('INSERT INTO atlas_languages(language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?) RETURNING id').get(tag,principalId,timestamp).id }
+function insertLanguage(database, tag, principalId=2, recordedAt=languageAt) { assertCanonicalBcp47(tag); return database.prepare('INSERT INTO atlas_languages(language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?) RETURNING id').get(tag,principalId,recordedAt).id }
 function projection(database,jurisdictionId,languageId,effectiveAsOf,knownAt) {
   return database.prepare(`WITH eligible AS (
     SELECT * FROM atlas_jurisdiction_versions WHERE jurisdiction_id=? AND language_id=? AND effective_from<=? AND recorded_at<=?
@@ -78,45 +81,72 @@ try {
   assert.equal(database.prepare('PRAGMA integrity_check').get().integrity_check,'ok'); assert.deepEqual(database.prepare('PRAGMA foreign_key_check').all(),[])
   for(const table of expectedObjects.table) assert.equal(database.prepare(`SELECT count(*) count FROM ${table}`).get().count,0)
 
-  reject(database,'INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,?,?,?)',[2,'not-bootstrap','human',2,timestamp],/first principal/)
-  database.prepare('INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(1,?,?,1,?)').run('bootstrap','human',timestamp)
-  reject(database,'INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(2,?,?,2,?)',['self','human',timestamp],/different recorded creator/)
-  database.prepare('INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(2,?,?,1,?)').run('researcher','human',timestamp)
-  for(const bad of [' ','bad code','nul\0code']) reject(database,'INSERT INTO atlas_principals(principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,1,?)',[bad,'human',timestamp],/CHECK/)
+  const principalSql='INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,?,?,?)'
+  reject(database,principalSql,[2,'not-bootstrap','human',2,bootstrapAt],/first principal/)
+  database.prepare(principalSql).run(1,'system.bootstrap','service',1,bootstrapAt)
+  reject(database,principalSql,[2,'self','human',2,recorderAt],/different existing creator/)
+  reject(database,principalSql,[2,'early.creator','human',1,'2025-12-31T23:59:59.999Z'],/created no later/)
+  database.prepare(principalSql).run(2,'researcher','human',1,recorderAt)
+  for(const bad of [' ','bad code','nul\0code','.leading','trailing-']) reject(database,'INSERT INTO atlas_principals(principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,1,?)',[bad,'human',recorderAt],/CHECK/)
+  reject(database,'INSERT INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,?,?,?)',[0,'zero','service',1,recorderAt],/CHECK/)
   reject(database,'INSERT INTO atlas_principals(principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(?,?,1,?)',['badtime','service','2026-09-02T25:00:00.000Z'],/CHECK/)
 
-  for(const bad of ['-en','en-','en--US','1n','en\0US']) assert.throws(()=>assertCanonicalBcp47(bad),/language tag|BCP 47/)
+  for(const bad of ['-en','en-','en--US','1n','en\0US','abcdefgh-abcdefgh-abcdefgh-abcdefgh-ab']) assert.throws(()=>assertCanonicalBcp47(bad),/language tag|BCP 47|35-byte/)
   assert.throws(()=>assertCanonicalBcp47('en-us'),/noncanonical/); assert.equal(assertCanonicalBcp47('en-US'),'en-US')
-  for(const bad of ['-en','en-','en--US','1n','en\0US']) reject(database,'INSERT INTO atlas_languages(language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?)',[bad,1,timestamp],/CHECK/)
-  reject(database,'INSERT INTO atlas_languages(language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?)',['en-US',999,timestamp],/FOREIGN KEY/)
+  const languageInsert='INSERT INTO atlas_languages(language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?)'
+  for(const bad of ['-en','en-','en--US','1n','en\0US']) reject(database,languageInsert,[bad,2,languageAt],/CHECK/)
+  reject(database,languageInsert,['en-US',999,languageAt],/FOREIGN KEY|non-bootstrap recorder/)
+  reject(database,languageInsert,['en-US',1,languageAt],/non-bootstrap recorder/)
+  reject(database,languageInsert,['en-US',2,'2026-01-01T12:00:00.000Z'],/created no later/)
+  reject(database,'INSERT INTO atlas_languages(id,language_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?)',[0,'fr',2,languageAt],/CHECK/)
   const languageId=insertLanguage(database,'en-US')
+  reject(database,languageInsert,['en-us',2,languageAt],/UNIQUE|collision/)
 
-  for(const bad of [' ','bad code','nul\0code']) reject(database,'INSERT INTO atlas_jurisdictions(jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,1,?)',[bad,'state',timestamp],/CHECK/)
-  reject(database,'INSERT INTO atlas_jurisdictions(jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,999,?)',['bad-recorder','state',timestamp],/FOREIGN KEY/)
-  const jurisdictionId=database.prepare('INSERT INTO atlas_jurisdictions(jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,1,?) RETURNING id').get('example','international',timestamp).id
-  const otherJurisdictionId=database.prepare('INSERT INTO atlas_jurisdictions(jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,1,?) RETURNING id').get('other','state',timestamp).id
+  const jurisdictionInsert='INSERT INTO atlas_jurisdictions(jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?)'
+  for(const bad of [' ','bad code','nul\0code','.leading','trailing-']) reject(database,jurisdictionInsert,[bad,'state',2,jurisdictionAt],/CHECK/)
+  reject(database,jurisdictionInsert,['bad-recorder','state',999,jurisdictionAt],/FOREIGN KEY|non-bootstrap recorder/)
+  reject(database,jurisdictionInsert,['bootstrap-recorder','state',1,jurisdictionAt],/non-bootstrap recorder/)
+  reject(database,jurisdictionInsert,['early','state',2,'2026-01-01T12:00:00.000Z'],/created no later/)
+  reject(database,'INSERT INTO atlas_jurisdictions(id,jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?)',[0,'zero','state',2,jurisdictionAt],/CHECK/)
+  const jurisdictionId=database.prepare(`${jurisdictionInsert} RETURNING id`).get('example','international',2,jurisdictionAt).id
+  const otherJurisdictionId=database.prepare(`${jurisdictionInsert} RETURNING id`).get('other','state',2,jurisdictionAt).id
   const versionSql='INSERT INTO atlas_jurisdiction_versions(jurisdiction_id,language_id,effective_from,record_kind_code,name,description,corrects_jurisdiction_version_id,reason,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING id'
   const insertVersion=database.prepare(versionSql)
-  reject(database,versionSql,[jurisdictionId,languageId,'2026-01-01','assertion','Bad recorder',null,null,'Invalid recorder',999,'2026-01-02T00:00:00.000Z'],/FOREIGN KEY/)
-  const root=insertVersion.get(jurisdictionId,languageId,'2026-01-01','assertion','Original',null,null,'Initial recording',1,'2026-01-02T00:00:00.000Z').id
-  reject(database,versionSql,[jurisdictionId,languageId,'2026-01-01','assertion','Duplicate',null,null,'Duplicate root',1,'2026-01-03T00:00:00.000Z'],/initial assertion|UNIQUE/)
-  reject(database,versionSql,[otherJurisdictionId,languageId,'2026-01-01','correction','Wrong',null,root,'Wrong subject',1,'2026-02-01T00:00:00.000Z'],/same effective point/)
-  reject(database,versionSql,[jurisdictionId,languageId,'2026-01-01','correction','Too early',null,root,'Bad chronology',1,'2026-01-01T00:00:00.000Z'],/recorded later/)
-  const correction=insertVersion.get(jurisdictionId,languageId,'2026-01-01','correction','Corrected',null,root,'Data correction',1,'2026-02-01T00:00:00.000Z').id
-  assert.equal(projection(database,jurisdictionId,languageId,'2026-05-01','2026-01-15T00:00:00.000Z').name,'Original')
-  assert.equal(projection(database,jurisdictionId,languageId,'2026-05-01','2026-03-01T00:00:00.000Z').name,'Corrected')
-  insertVersion.get(jurisdictionId,languageId,'2026-06-01','assertion','Later change',null,null,'Substantive historical change',1,'2026-06-01T00:00:00.000Z')
-  assert.equal(projection(database,jurisdictionId,languageId,'2026-07-01','2026-07-01T00:00:00.000Z').name,'Later change')
-  insertVersion.get(jurisdictionId,languageId,'2026-01-01','withdrawal',null,null,correction,'Void erroneous effective point',1,'2026-04-01T00:00:00.000Z')
-  assert.equal(projection(database,jurisdictionId,languageId,'2026-05-01','2026-05-01T00:00:00.000Z'),undefined)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Bad recorder',null,null,'Invalid recorder',999,'2026-01-05T00:00:00.000Z'],/non-bootstrap recorder|FOREIGN KEY/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Bootstrap recorder',null,null,'Invalid recorder',1,'2026-01-05T00:00:00.000Z'],/non-bootstrap recorder/)
+  database.prepare(principalSql).run(3,'late.researcher','human',1,'2026-01-10T00:00:00.000Z')
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Early recorder',null,null,'Bad chronology',3,'2026-01-09T00:00:00.000Z'],/created no later/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Before language',null,null,'Bad chronology',2,'2026-01-02T12:00:00.000Z'],/predate its language/)
+  const laterLanguageId=insertLanguage(database,'fr',2,'2026-01-06T00:00:00.000Z')
+  reject(database,versionSql,[jurisdictionId,laterLanguageId,'2020-01-01','assertion','Before language',null,null,'Bad chronology',2,'2026-01-05T00:00:00.000Z'],/predate its language/)
+  const laterJurisdictionId=database.prepare(`${jurisdictionInsert} RETURNING id`).get('later','state',2,'2026-01-06T00:00:00.000Z').id
+  reject(database,versionSql,[laterJurisdictionId,languageId,'2020-01-01','assertion','Before jurisdiction',null,null,'Bad chronology',2,'2026-01-05T00:00:00.000Z'],/predate its jurisdiction/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Whitespace reason',null,null,'\t\n',2,'2026-01-05T00:00:00.000Z'],/CHECK/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','\t\n',null,null,'Bad name',2,'2026-01-05T00:00:00.000Z'],/CHECK/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Nul\0name',null,null,'Bad name',2,'2026-01-05T00:00:00.000Z'],/CHECK/)
+  reject(database,'INSERT INTO atlas_jurisdiction_versions(id,jurisdiction_id,language_id,effective_from,record_kind_code,name,reason,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?,?,?,?,?)',[0,jurisdictionId,languageId,'2020-01-01','assertion','Zero','Invalid id',2,'2026-01-05T00:00:00.000Z'],/CHECK/)
+  const root=insertVersion.get(jurisdictionId,languageId,'2020-01-01','assertion','Original',null,null,'Initial recording',2,'2026-01-05T00:00:00.000Z').id
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','assertion','Duplicate',null,null,'Duplicate root',2,'2026-01-06T00:00:00.000Z'],/initial assertion|UNIQUE/)
+  reject(database,versionSql,[otherJurisdictionId,languageId,'2020-01-01','correction','Wrong',null,root,'Wrong subject',2,'2026-02-01T00:00:00.000Z'],/same effective point/)
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','correction','Too early',null,root,'Bad chronology',2,'2026-01-04T00:00:00.000Z'],/recorded later/)
+  const correction=insertVersion.get(jurisdictionId,languageId,'2020-01-01','correction','Corrected',null,root,'Data correction',2,'2026-02-01T00:00:00.000Z').id
+  const withdrawal=insertVersion.get(jurisdictionId,languageId,'2020-01-01','withdrawal',null,null,correction,'Mistaken withdrawal',2,'2026-03-01T00:00:00.000Z').id
+  const reinstatement=insertVersion.get(jurisdictionId,languageId,'2020-01-01','correction','Reinstated',null,withdrawal,'Correct mistaken withdrawal',2,'2026-04-01T00:00:00.000Z').id
+  assert.equal(projection(database,jurisdictionId,languageId,'2025-01-01','2026-01-15T00:00:00.000Z').name,'Original')
+  assert.equal(projection(database,jurisdictionId,languageId,'2025-01-01','2026-02-15T00:00:00.000Z').name,'Corrected')
+  assert.equal(projection(database,jurisdictionId,languageId,'2025-01-01','2026-03-15T00:00:00.000Z'),undefined)
+  assert.equal(projection(database,jurisdictionId,languageId,'2025-01-01','2026-04-15T00:00:00.000Z').name,'Reinstated')
+  reject(database,versionSql,[jurisdictionId,languageId,'2020-01-01','correction','Not current',null,withdrawal,'Not current leaf',2,'2026-05-01T00:00:00.000Z'],/current leaf/)
+  insertVersion.get(jurisdictionId,languageId,'2021-01-01','assertion','Later change',null,null,'Substantive historical change',2,'2026-05-01T00:00:00.000Z')
+  assert.equal(projection(database,jurisdictionId,languageId,'2022-01-01','2026-06-01T00:00:00.000Z').name,'Later change')
   database.close()
 
   database=writer(frozen.databasePath,false)
   const replaceCases=[
-    ["INSERT OR REPLACE INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(1,'bootstrap','service',1,?)",[timestamp]],
-    ["INSERT OR REPLACE INTO atlas_languages(id,language_code,recorded_by_principal_id,recorded_at)VALUES(?, 'en-US',1,?)",[languageId,timestamp]],
-    ["INSERT OR REPLACE INTO atlas_jurisdictions(id,jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?, 'example','state',1,?)",[jurisdictionId,timestamp]],
-    ["INSERT OR REPLACE INTO atlas_jurisdiction_versions(id,jurisdiction_id,language_id,effective_from,record_kind_code,name,reason,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?,?,?,?,?)",[root,jurisdictionId,languageId,'2025-01-01','assertion','Replacement','Replace attempt',1,'2026-08-01T00:00:00.000Z']],
+    ["INSERT OR REPLACE INTO atlas_principals(id,principal_code,principal_kind_code,created_by_principal_id,created_at)VALUES(1,'system.bootstrap','service',1,?)",[bootstrapAt]],
+    ["INSERT OR REPLACE INTO atlas_languages(id,language_code,recorded_by_principal_id,recorded_at)VALUES(?, 'en-US',2,?)",[languageId,languageAt]],
+    ["INSERT OR REPLACE INTO atlas_jurisdictions(id,jurisdiction_code,jurisdiction_kind_code,recorded_by_principal_id,recorded_at)VALUES(?, 'example','state',2,?)",[jurisdictionId,jurisdictionAt]],
+    ["INSERT OR REPLACE INTO atlas_jurisdiction_versions(id,jurisdiction_id,language_id,effective_from,record_kind_code,name,reason,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?,?,?,?,?)",[root,jurisdictionId,languageId,'2019-01-01','assertion','Replacement','Replace attempt',2,'2026-08-01T00:00:00.000Z']],
   ]
   for(const [sql,values] of replaceCases) reject(database,sql,values,/collision/)
   for(const table of expectedObjects.table) { reject(database,`UPDATE ${table} SET id=id WHERE id=(SELECT min(id) FROM ${table})`,[],/immutable/); reject(database,`DELETE FROM ${table} WHERE id=(SELECT min(id) FROM ${table})`,[],/immutable/) }
@@ -126,5 +156,5 @@ try {
   assert.throws(()=>applyMigrations({databasePath:brokenPath,migrationsDirectory:brokenDirectory}),/Migration 004_tranche_1a_foundations.sql failed/)
   const broken=new DatabaseSync(brokenPath,{readOnly:true}); assert.equal(broken.prepare("SELECT count(*) count FROM sqlite_master WHERE name LIKE 'atlas_%' OR name='rollback_probe'").get().count,0); assert.equal(broken.prepare("SELECT count(*) count FROM schema_migrations WHERE name='004_tranche_1a_foundations.sql'").get().count,0); broken.close()
 
-  console.log(JSON.stringify({fresh_install:'passed',frozen_upgrade:'passed',no_op_rerun:'passed',migration_runner:'applyMigrations',legacy_digests_preserved:legacyTables.length,empty_seed_boundary:'passed',hash_fields:'deferred_no_input_surface',integrity_check:'ok',foreign_key_check:'clean',bitemporal_projection:'passed',recursive_triggers_off_replace_protection:'passed',broken_004_rollback:'passed',objects:Object.fromEntries(Object.entries(objects).map(([type,names])=>[type,names.length]))},null,2))
+  console.log(JSON.stringify({fresh_install:'passed',frozen_upgrade:'passed',no_op_rerun:'passed',migration_runner:'applyMigrations',legacy_digests_preserved:legacyTables.length,empty_seed_boundary:'passed',bootstrap_exclusion:'passed',record_time_causality:'passed',withdrawal_reinstatement:'passed',language_canonicalization:'passed',hash_fields:'deferred_no_input_surface',integrity_check:'ok',foreign_key_check:'clean',bitemporal_projection:'passed',recursive_triggers_off_replace_protection:'passed',broken_004_rollback:'passed',objects:Object.fromEntries(Object.entries(objects).map(([type,names])=>[type,names.length]))},null,2))
 } finally { for(const directory of cleanup) fs.rmSync(directory,{recursive:true,force:true}) }

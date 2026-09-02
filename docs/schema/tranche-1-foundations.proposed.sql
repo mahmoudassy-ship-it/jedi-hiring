@@ -2,7 +2,7 @@ PRAGMA foreign_keys = ON;
 PRAGMA recursive_triggers = ON;
 
 CREATE TABLE atlas_principals (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY CHECK (id > 0),
   principal_code TEXT NOT NULL UNIQUE,
   principal_kind_code TEXT NOT NULL CHECK (principal_kind_code IN ('human', 'service')),
   created_by_principal_id INTEGER NOT NULL REFERENCES atlas_principals(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
@@ -19,12 +19,14 @@ CREATE TABLE atlas_principals (
     AND principal_code = trim(principal_code)
     AND principal_code = lower(principal_code)
     AND principal_code NOT GLOB '*[^a-z0-9._-]*'
+    AND substr(principal_code, 1, 1) GLOB '[a-z0-9]'
+    AND substr(principal_code, -1, 1) GLOB '[a-z0-9]'
   )
 ) STRICT;
 
 CREATE TABLE atlas_languages (
-  id INTEGER PRIMARY KEY,
-  language_code TEXT NOT NULL UNIQUE,
+  id INTEGER PRIMARY KEY CHECK (id > 0),
+  language_code TEXT NOT NULL COLLATE NOCASE UNIQUE,
   recorded_by_principal_id INTEGER NOT NULL REFERENCES atlas_principals(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   recorded_at TEXT NOT NULL CHECK (
     length(CAST(recorded_at AS BLOB)) = 24
@@ -46,7 +48,7 @@ CREATE TABLE atlas_languages (
 ) STRICT;
 
 CREATE TABLE atlas_jurisdictions (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY CHECK (id > 0),
   jurisdiction_code TEXT NOT NULL UNIQUE,
   jurisdiction_kind_code TEXT NOT NULL CHECK (
     jurisdiction_kind_code IN ('international', 'supranational', 'state', 'territory', 'regional', 'devolved', 'local')
@@ -65,11 +67,13 @@ CREATE TABLE atlas_jurisdictions (
     AND jurisdiction_code = trim(jurisdiction_code)
     AND jurisdiction_code = lower(jurisdiction_code)
     AND jurisdiction_code NOT GLOB '*[^a-z0-9._-]*'
+    AND substr(jurisdiction_code, 1, 1) GLOB '[a-z0-9]'
+    AND substr(jurisdiction_code, -1, 1) GLOB '[a-z0-9]'
   )
 ) STRICT;
 
 CREATE TABLE atlas_jurisdiction_versions (
-  id INTEGER PRIMARY KEY,
+  id INTEGER PRIMARY KEY CHECK (id > 0),
   jurisdiction_id INTEGER NOT NULL REFERENCES atlas_jurisdictions(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   language_id INTEGER NOT NULL REFERENCES atlas_languages(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   effective_from TEXT NOT NULL CHECK (
@@ -95,7 +99,7 @@ CREATE TABLE atlas_jurisdiction_versions (
   CHECK (
     length(CAST(reason AS BLOB)) > 0
     AND instr(reason, char(0)) = 0
-    AND trim(reason) <> ''
+    AND trim(reason, ' ' || char(9) || char(10) || char(11) || char(12) || char(13)) <> ''
   ),
   CHECK (
     (record_kind_code = 'assertion' AND corrects_jurisdiction_version_id IS NULL AND name IS NOT NULL)
@@ -106,7 +110,7 @@ CREATE TABLE atlas_jurisdiction_versions (
     name IS NULL OR (
       length(CAST(name AS BLOB)) > 0
       AND instr(name, char(0)) = 0
-      AND trim(name) <> ''
+      AND trim(name, ' ' || char(9) || char(10) || char(11) || char(12) || char(13)) <> ''
     )
   ),
   CHECK (description IS NULL OR instr(description, char(0)) = 0),
@@ -128,17 +132,24 @@ BEFORE INSERT ON atlas_principals
 WHEN NOT EXISTS (SELECT 1 FROM atlas_principals)
   AND NOT (
     NEW.id = 1
-    AND NEW.principal_code = 'bootstrap'
-    AND NEW.principal_kind_code = 'human'
+    AND NEW.principal_code = 'system.bootstrap'
+    AND NEW.principal_kind_code = 'service'
     AND NEW.created_by_principal_id = NEW.id
   )
-BEGIN SELECT RAISE(ABORT, 'first principal must be the explicit self-attributed human bootstrap identity'); END;
+BEGIN SELECT RAISE(ABORT, 'first principal must be the explicit self-attributed service bootstrap identity'); END;
 
 CREATE TRIGGER atlas_principals_attribution_guard
 BEFORE INSERT ON atlas_principals
 WHEN EXISTS (SELECT 1 FROM atlas_principals)
-  AND NEW.created_by_principal_id = NEW.id
-BEGIN SELECT RAISE(ABORT, 'subsequent principals require a different recorded creator'); END;
+  AND (
+    NEW.created_by_principal_id = NEW.id
+    OR NOT EXISTS (
+      SELECT 1 FROM atlas_principals creator
+      WHERE creator.id = NEW.created_by_principal_id
+        AND creator.created_at <= NEW.created_at
+    )
+  )
+BEGIN SELECT RAISE(ABORT, 'subsequent principal requires a different existing creator created no later than it'); END;
 
 CREATE TRIGGER atlas_principals_collision_guard
 BEFORE INSERT ON atlas_principals
@@ -150,10 +161,30 @@ BEFORE INSERT ON atlas_languages
 WHEN EXISTS (SELECT 1 FROM atlas_languages WHERE id = NEW.id OR language_code = NEW.language_code)
 BEGIN SELECT RAISE(ABORT, 'language identity collision'); END;
 
+CREATE TRIGGER atlas_languages_attribution_guard
+BEFORE INSERT ON atlas_languages
+WHEN NEW.recorded_by_principal_id = 1
+  OR NOT EXISTS (
+    SELECT 1 FROM atlas_principals recorder
+    WHERE recorder.id = NEW.recorded_by_principal_id
+      AND recorder.created_at <= NEW.recorded_at
+  )
+BEGIN SELECT RAISE(ABORT, 'language requires a non-bootstrap recorder created no later than the record'); END;
+
 CREATE TRIGGER atlas_jurisdictions_collision_guard
 BEFORE INSERT ON atlas_jurisdictions
 WHEN EXISTS (SELECT 1 FROM atlas_jurisdictions WHERE id = NEW.id OR jurisdiction_code = NEW.jurisdiction_code)
 BEGIN SELECT RAISE(ABORT, 'jurisdiction identity collision'); END;
+
+CREATE TRIGGER atlas_jurisdictions_attribution_guard
+BEFORE INSERT ON atlas_jurisdictions
+WHEN NEW.recorded_by_principal_id = 1
+  OR NOT EXISTS (
+    SELECT 1 FROM atlas_principals recorder
+    WHERE recorder.id = NEW.recorded_by_principal_id
+      AND recorder.created_at <= NEW.recorded_at
+  )
+BEGIN SELECT RAISE(ABORT, 'jurisdiction requires a non-bootstrap recorder created no later than the record'); END;
 
 CREATE TRIGGER atlas_jurisdiction_versions_collision_guard
 BEFORE INSERT ON atlas_jurisdiction_versions
@@ -163,6 +194,24 @@ BEGIN SELECT RAISE(ABORT, 'jurisdiction version identity collision'); END;
 CREATE TRIGGER atlas_jurisdiction_versions_validate_insert
 BEFORE INSERT ON atlas_jurisdiction_versions
 BEGIN
+  SELECT CASE WHEN NEW.recorded_by_principal_id = 1 OR NOT EXISTS (
+    SELECT 1 FROM atlas_principals recorder
+    WHERE recorder.id = NEW.recorded_by_principal_id
+      AND recorder.created_at <= NEW.recorded_at
+  ) THEN RAISE(ABORT, 'jurisdiction version requires a non-bootstrap recorder created no later than the record') END;
+
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1 FROM atlas_languages language
+    WHERE language.id = NEW.language_id
+      AND language.recorded_at <= NEW.recorded_at
+  ) THEN RAISE(ABORT, 'jurisdiction version cannot predate its language record') END;
+
+  SELECT CASE WHEN NOT EXISTS (
+    SELECT 1 FROM atlas_jurisdictions jurisdiction
+    WHERE jurisdiction.id = NEW.jurisdiction_id
+      AND jurisdiction.recorded_at <= NEW.recorded_at
+  ) THEN RAISE(ABORT, 'jurisdiction version cannot predate its jurisdiction record') END;
+
   SELECT CASE WHEN NEW.record_kind_code = 'assertion' AND EXISTS (
     SELECT 1 FROM atlas_jurisdiction_versions
     WHERE jurisdiction_id = NEW.jurisdiction_id
@@ -177,7 +226,6 @@ BEGIN
       AND predecessor.jurisdiction_id = NEW.jurisdiction_id
       AND predecessor.language_id = NEW.language_id
       AND predecessor.effective_from = NEW.effective_from
-      AND predecessor.record_kind_code <> 'withdrawal'
       AND predecessor.recorded_at < NEW.recorded_at
       AND NOT EXISTS (
         SELECT 1 FROM atlas_jurisdiction_versions successor

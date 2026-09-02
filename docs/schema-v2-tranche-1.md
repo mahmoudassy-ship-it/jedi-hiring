@@ -14,24 +14,24 @@ Atlas editorial/service attribution identity only—not candidates, client perso
 
 | Column | Definition |
 |---|---|
-| `id` | `INTEGER PRIMARY KEY` |
-| `principal_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, `[a-z0-9._-]`, no whitespace edge/NUL |
+| `id` | positive `INTEGER PRIMARY KEY` |
+| `principal_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, `[a-z0-9._-]`, begins/ends alphanumeric, no whitespace edge/NUL |
 | `principal_kind_code` | `TEXT NOT NULL CHECK ('human','service')`; immutable kind |
 | `created_by_principal_id` | self-FK `INTEGER NOT NULL`; attribution |
 | `created_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-The sole bootstrap exception is an explicit first row with `id=1`, code `bootstrap`, kind `human`, and self-attribution. Every later principal must name a different existing creator. This establishes audit attribution only, not authority. UPDATE/DELETE and colliding INSERT—including `INSERT OR REPLACE`—are rejected. Future profile/display metadata and authentication identifiers belong in separate versioned/authentication structures.
+The sole bootstrap exception is an explicit first row with `id=1`, code `system.bootstrap`, kind `service`, and self-attribution. It is a technical trust root only: it is never a human, reviewer, qualified person, or operational recorder. Database guards prohibit principal 1 from recording languages, jurisdictions, or jurisdiction versions. A separately attributed principal must perform domain recording. Every later principal must name a different existing creator and cannot predate that creator. Creation attribution never implies authentication, authorization, qualification, or review eligibility. UPDATE/DELETE and colliding INSERT—including `INSERT OR REPLACE`—are rejected. Future lifecycle, profile/display metadata, and authentication identifiers belong in later structures.
 
 ### `atlas_languages`
 
 | Column | Definition |
 |---|---|
-| `id` | `INTEGER PRIMARY KEY` |
-| `language_code` | canonical BCP 47 tag `TEXT NOT NULL UNIQUE`, 2–35 bytes |
+| `id` | positive `INTEGER PRIMARY KEY` |
+| `language_code` | canonical BCP 47 tag `TEXT NOT NULL UNIQUE COLLATE NOCASE`, 2–35 bytes |
 | `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
 | `recorded_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-The database defensively rejects NUL, whitespace edges, non-ASCII shape, leading/trailing/repeated hyphens, and malformed primary shape. The committed `Intl.getCanonicalLocales` validator enforces full canonical form before insertion (for example, `en-US`, not `en-us`). Display labels are deferred. UPDATE/DELETE/REPLACE collisions are rejected.
+The database defensively rejects NUL, whitespace edges, non-ASCII shape, leading/trailing/repeated hyphens, malformed primary shape, and case-insensitive duplicates. Every future writer must call the committed `assertCanonicalBcp47`, which enforces canonical form and the same 35-byte ceiling before insertion (for example, `en-US`, not `en-us`). Display labels are deferred. The recorder must be a non-bootstrap principal created no later than `recorded_at`. UPDATE/DELETE/REPLACE collisions are rejected.
 
 ### `atlas_jurisdictions`
 
@@ -39,13 +39,13 @@ Stable legal/territorial identity only; no containment, membership, succession, 
 
 | Column | Definition |
 |---|---|
-| `id` | `INTEGER PRIMARY KEY` |
-| `jurisdiction_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, no whitespace edge/NUL |
+| `id` | positive `INTEGER PRIMARY KEY` |
+| `jurisdiction_code` | nonempty canonical lowercase `TEXT NOT NULL UNIQUE`, 1–80 bytes, begins/ends alphanumeric, no whitespace edge/NUL |
 | `jurisdiction_kind_code` | `TEXT NOT NULL CHECK international/supranational/state/territory/regional/devolved/local` |
 | `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
 | `recorded_at` | canonical UTC timestamp `TEXT NOT NULL` |
 
-Kinds mean: `international` is a treaty/intergovernmental legal track without its own supranational legal order; `supranational` is a legal order above participating states; `state` is a sovereign national jurisdiction; `territory` is a legally distinct territory; `regional`, `devolved`, and `local` are successively narrower substate kinds without asserting containment. Codes and kinds cannot be repurposed. UPDATE/DELETE/REPLACE collisions are rejected.
+Kinds mean: `international` is a treaty/intergovernmental legal track without its own supranational legal order; `supranational` is a legal order above participating states; `state` is a sovereign national jurisdiction; `territory` is a legally distinct territory; `regional`, `devolved`, and `local` are successively narrower substate kinds without asserting containment. Codes and kinds cannot be repurposed. The recorder must be a non-bootstrap principal created no later than `recorded_at`. UPDATE/DELETE/REPLACE collisions are rejected.
 
 ### `atlas_jurisdiction_versions`
 
@@ -53,7 +53,7 @@ Immutable jurisdiction name/description assertions with separate effective and r
 
 | Column | Definition |
 |---|---|
-| `id` | `INTEGER PRIMARY KEY` |
+| `id` | positive `INTEGER PRIMARY KEY` |
 | `jurisdiction_id` | `INTEGER NOT NULL FK atlas_jurisdictions` |
 | `language_id` | `INTEGER NOT NULL FK atlas_languages` |
 | `effective_from` | canonical date; natural effective point component |
@@ -65,7 +65,7 @@ Immutable jurisdiction name/description assertions with separate effective and r
 | `recorded_by_principal_id` | `INTEGER NOT NULL FK atlas_principals` |
 | `recorded_at` | canonical UTC timestamp, later than corrected predecessor |
 
-Natural effective point: `(jurisdiction_id, language_id, effective_from)`. Each point has exactly one root assertion. A correction or withdrawal must target the current leaf at the same point; one predecessor has at most one successor. Withdrawals are terminal. Different effective dates are substantive historical changes. Correcting an effective date requires withdrawing the erroneous point and inserting a new root. UPDATE/DELETE/REPLACE identity collisions are rejected. Content hashes are deferred until a canonical content serialization is defined.
+Natural effective point: `(jurisdiction_id, language_id, effective_from)`. Each point has exactly one root assertion. A correction or withdrawal must target the current leaf at the same point; one predecessor has at most one successor. A mistaken withdrawal may itself be corrected by a later nonblank correction, preserving withdrawal and reinstatement in the immutable chain. Different effective dates are substantive historical changes. Correcting an effective date requires withdrawing the erroneous point and inserting a new root. `recorded_at` cannot predate the recorder, language, or jurisdiction records; historical `effective_from` may. Names and reasons reject ASCII control-whitespace-only content. UPDATE/DELETE/REPLACE identity collisions are rejected. Content hashes are deferred until a canonical content serialization is defined.
 
 ## Bitemporal projection
 
@@ -83,7 +83,7 @@ Named indexes (3):
 - `atlas_jurisdiction_versions_bitemporal_idx`
 - `atlas_jurisdiction_versions_correction_idx`
 
-Named triggers (15): bootstrap and subsequent-principal attribution guards; four INSERT collision guards; jurisdiction-version correction validation; and UPDATE/DELETE rejection for every table. Collision guards prevent `INSERT OR REPLACE` from deleting/recreating rows even with recursive triggers disabled.
+Named triggers (17): bootstrap and subsequent-principal attribution guards; language and jurisdiction attribution/causality guards; four INSERT collision guards; jurisdiction-version correction/causality validation; and UPDATE/DELETE rejection for every table. Collision guards prevent `INSERT OR REPLACE` from deleting/recreating rows even with recursive triggers disabled.
 
 ## Deferred work
 
