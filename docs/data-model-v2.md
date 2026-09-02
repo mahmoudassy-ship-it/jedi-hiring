@@ -1,6 +1,6 @@
 # Legal Atlas data model v2 — reconciled implementation specification
 
-Status: all six architectural requirements and the four implementation choices are approved. Tranche 0 (migration integrity and the frozen-v1 upgrade harness) is implemented. The catalog below remains a logical catalog requiring exact table-by-table physical completion and approval before Tranche 1. No `atlas_*` domain migration is authorized yet.
+Status: all six architectural requirements and the four implementation choices are approved. Tranche 0 is implemented. The exact proposed Tranche 1 physical specification is documented in [Tranche 1 foundation schema](schema-v2-tranche-1.md) and remains pending migration approval. No `atlas_*` domain migration is authorized yet.
 
 The database is a reusable legal knowledge base, not a company compliance database. It stores source-backed propositions, contextual archetypes, control/evidence expectations, and editorial projections. Organization systems, candidates, named personnel, vendors, and evidence artifacts belong in a later bounded context.
 
@@ -17,7 +17,9 @@ The approved gated-review and continuous-freshness architecture is specified in 
 | Operations | What control/evidence/owner/escalation? | controls, evidence expectations |
 | Provenance | What supports and verifies it? | reviews, sources, translations, publication, verification |
 
-## Logical schema catalog (exact physical completion required before Tranche 1)
+## Logical cross-tranche schema catalog
+
+This remains the cross-tranche logical catalog. For Tranche 1, the exact physical catalog and proposed executable DDL supersede the abbreviated foundation descriptions below.
 
 SQLite uses `INTEGER` IDs/booleans (booleans constrained to 0/1), `TEXT` codes/enums/dates (`YYYY-MM-DD`) and JSON expressions, and `BLOB` hashes. Foreign keys are enabled. Published historical records are versioned or deprecated, not deleted. Derived values are labelled as derived.
 
@@ -129,9 +131,11 @@ Filters support explicit `ANY`/`ALL` per dimension; dimensions combine with AND.
 4. Semantic context: stage/lens/actor/ground assignments, ground sets, applicability trees.
 5. Operational context: data, technology, deployment, control, evidence archetypes.
 6. Governance/national comparison: review/verification targets, publication decisions, coverage, comparisons.
-7. Crosswalk and separate auditable backfill.
-8. API v2 and legacy parity.
-9. Legacy retirement only after separate approval; it is not part of Phase 2 authorization.
+7. Freshness evidence and candidate-review workflow.
+8. Crosswalk and separate auditable backfill.
+9. API v2 and legacy parity.
+10. Operational scheduler, durable storage, alerts, and missed-run heartbeat — separately approved.
+11. Legacy retirement — separately approved.
 
 ## Acceptance criteria
 
@@ -139,4 +143,4 @@ Require migration checksums/edit detection; fresh install and upgrade from froze
 
 ## Approval boundary
 
-The naming/enums, tranche boundaries, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The exact physical `atlas_*` table catalog for Tranche 1 must still be completed and approved before domain migrations begin.
+The naming/enums, tranche boundaries, fail-closed publication policy, query-time status derivation, and review/freshness architecture are approved. The exact physical `atlas_*` catalog for Tranche 1 is complete as a proposal and must be approved before any domain migration begins.
