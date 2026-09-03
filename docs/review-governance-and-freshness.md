@@ -1,27 +1,69 @@
 # Review governance and freshness
 
-Status: approved sixth architectural requirement. This document specifies future domain behavior; Tranche 0 does not implement monitoring or review-domain tables.
+Status: approved sixth architectural requirement. Separately numbered implementation Decision 6 approves the boundary between Tranche 2A source-evidence quarantine and Tranche 2B source-backed authority drafting, Decision 7 approves the hybrid pilot evidence-custody/import contract, and Decision 8 approves six logical Tranche 2A evidence boundaries; the architectural-requirement and implementation-decision numbering series are distinct. This document specifies future domain behavior; none of Decisions 6–8 implements monitoring or review-domain tables.
 
-The earlier foundation-level review-policy proposal is superseded. Principal lifecycle/status, review roles, grants, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, source-related records are quarantined research only. Any policy/content hash in that slice must define and test canonical UTF-8 serialization, field order, null representation, normalization, and recomputation.
+The earlier foundation-level review-policy proposal is superseded. Principal lifecycle/status, review roles, grants, qualifications, policies, actual reviews, publication decisions, and their evaluator will be implemented together as a review-governance vertical slice so their invariants can be tested end to end. Until then, Tranche 2A observations, artifacts, parser runs and candidates remain quarantined evidence, while Tranche 2B authority records may only be human-attributed, evidence-linked unpublished drafts. Neither class is reviewed, verified, approved or public before governance gates exist and are satisfied. Any policy/content hash in that slice must define and test canonical UTF-8 serialization, field order, null representation, normalization, and recomputation.
 
-Tranche 1A principal 1 (`system.bootstrap`, service) is only the technical creation trust root. It cannot record languages, jurisdictions, or jurisdiction versions and can never satisfy a human, reviewer, qualification, adoption, or publication requirement. Creation attribution is evidence of who or what recorded a row; it is not authentication, authorization, qualification, or review eligibility.
+Tranche 1A principal 1 (`system.bootstrap`, service) is only the technical creation trust root. It cannot record languages, jurisdictions, or jurisdiction versions and can never satisfy a human, reviewer, qualification, adoption, or publication requirement. The pending Tranche 2A proposal chooses a one-time first-bundle ceremony to create this root and the separately attributable operational principals under trusted runtime binding; the transport choice is not unresolved. Creation attribution is evidence of who or what recorded a row; it is not authentication, authorization, qualification, or review eligibility.
 
 ## Trust boundary and record states
 
-Automated extraction may write only to quarantined ingestion candidates and immutable source observations. It cannot create or modify authoritative proposition versions or publication decisions. A researcher may promote verified material into a new unpublished draft. `draft`, `reviewed`, `published`, `stale`, and `withdrawn` are distinct, auditable states; editing published or reviewed content always creates a new unpublished immutable version.
+Automated extraction may write only through a segregated Tranche 2A ingestion surface. It cannot create or modify authority drafts, proposition versions, reviews or publication decisions. A human drafter may create a new evidence-linked unpublished authority draft from quarantined evidence; this never moves, mutates, relabels or elevates the evidence and is not verification. `draft`, `reviewed`, `published`, `stale`, and `withdrawn` require distinct, auditable semantics; editing published or reviewed content always creates a new unpublished immutable version. The exact relationship between content state and derived freshness or eligibility remains an explicit later decision.
 
 The pipeline is:
 
 ```text
-source observation -> quarantined candidate -> researcher draft -> gated reviews -> publication decision
+retrieval location -> retrieval event -> artifact identity -> artifact custody -> processing run -> unverified candidate -> evidence-linked authority draft -> gated reviews -> publication decision
 ```
 
-These are four separate state machines:
+These are at least five separate processes; the labels below are logical descriptions, not approved Tranche 2A physical enum names:
 
-1. **Observation outcome:** `attempted -> retrieved | not_modified | network_failed | http_failed | parse_failed`. It records retrieval facts only.
-2. **Change candidate:** `detected -> deduplicated -> awaiting_triage -> no_material_impact | parser_only | false_positive | confirmed_material | uncertain_escalated -> closed`. Only a human triage decision moves beyond `awaiting_triage`.
-3. **Legal content:** `quarantined -> unpublished_draft -> reviewed -> published -> stale | withdrawn`. A confirmed impact creates a new unpublished version; history is never overwritten.
-4. **Publication/freshness eligibility:** computed for one immutable version and one `as_of` time from publication decision, mandatory gates, review freshness, holds, and withdrawals. It is not stored as a universal status.
+1. **Retrieval outcome:** `attempted -> retrieved | not_modified | network_failed | http_failed`. It records acquisition facts only.
+2. **Processing-run outcome:** a separate parser, OCR, normalization or attributed human-transcription attempt against one retained artifact results in output or a processing failure. Retrieval remains successful when processing fails, and a later run may retry the same artifact.
+3. **Change candidate:** `detected -> deduplicated -> awaiting_triage -> no_material_impact | parser_only | false_positive | confirmed_material | uncertain_escalated -> closed`. Only a human triage decision moves beyond `awaiting_triage`; the final vocabulary is unresolved below.
+4. **Legal content:** begins with an evidence-linked `unpublished_draft`, not a quarantined retrieval candidate, and may later move through review and publication decisions. A confirmed impact creates a new unpublished version; history is never overwritten. Whether `stale` is a content state, a derived freshness/eligibility condition, or both remains unresolved below.
+5. **Publication/freshness eligibility:** computed for one immutable version and one `as_of` time from publication decision, mandatory gates, review freshness, holds, and withdrawals. It is not stored as a universal status.
+
+An observation without durably retrievable, integrity-verified exact bytes is `observed_not_retained` in logical terms. It remains useful retrieval evidence, but cannot be the sole evidentiary basis of a Tranche 2B authority draft.
+
+## Approved Tranche 2A trust boundary
+
+- Distinct retrieval events are never collapsed, even if content-addressed storage deduplicates identical bytes.
+- A retained artifact requires durably retrievable exact bytes plus the hash algorithm and byte-layer definition, byte length, capture time, requested and resolved locations, relevant response metadata and collector version. For manifest v1, `retrieved_body` is the exact GET response-body octets after HTTP transfer framing and before content-coding decompression; observed Content-Encoding is recorded and decoding is a separate processing run. A hash alone is not a reproducible artifact.
+- Parser runs and derived outputs link to the exact artifact and separately identify parser/configuration versions and derived hashes.
+- Substantive research enters through deterministic, schema-versioned, idempotent manifests or import bundles rather than schema migrations. The generated SQLite database is not durable under this repository's current workflow; this does not imply that SQLite is inherently incapable of being an authoritative store.
+- Creating a 2B draft references precise supporting or conflicting evidence. The link provides traceability, not proof, sufficiency or verification.
+- SQLite principal fields provide attribution, not authorization. Before automation operates, it requires a separate staging store or fixed-function trusted importer with no write access to 2B, review or publication surfaces.
+- Retrieved documents and extracted text are hostile inputs, including possible prompt-injection content. Fetching and parsing require HTTPS/SSRF and redirect protection, size/time/decompression limits, isolated resource-bounded parsing, disabled active content and external entities, and secret/header redaction.
+- Logical evidence history is append-only or correction-safe. Controlled quarantine, access restriction or legally required artifact removal records an auditable tombstone rather than silently erasing custody history.
+- Tranche 2A cannot establish authoritative issuer or jurisdiction, officiality, document identity, currency, consolidation, binding force, legal status/effect, verification, review or publication, and cannot feed public APIs, exports, search or the frontend.
+
+## Approved Decision 7 custody and import contract
+
+The pilot preserves two distinct durable things: a version-controlled manifest describing what was captured and the exact bytes to which it refers. Immutable, schema-versioned Git manifests form the canonical pilot intake ledger. Each retained artifact is identified by SHA-256 over a precisely named stored byte layer, and its identity is independent of the backend that holds it.
+
+For the initial three-to-five-document pilot, Git may hold exact artifact bytes only after an explicit determination that they are small, non-sensitive, permitted for repository redistribution and suitable for effectively permanent retention in clones and Git history. Restricted, revocable, uncertain-rights or larger non-personal artifacts require an approved durable content-addressed store. Manifest v1 rejects every personal-data-bearing artifact before custody is considered; restricted custody cannot override that rule. A URL, ETag, archive link or hash without durably retrievable, integrity-verified bytes is `observed_not_retained`; it cannot be the sole evidentiary basis of a Tranche 2B authority draft. Git supplies reviewable version history but is not a tamper-proof audit log.
+
+Each evidence bundle must be able to declare its format version and stable identity; attributed submitter; requested and resolved locations and redirect history; retrieval time and outcome; GET representation profile, exact conditional validator/basis, supported negotiation values, Content-Encoding and Vary; an allowlist of non-secret response metadata; collector identity/version and capture method; artifact byte layer, SHA-256, byte length, detected media type, custody class and backend-independent reference; separate parser/configuration runs and derived-output hashes; unverified candidates; and correction, supersession or tombstone links. Manifests must contain no credentials, cookies, authorization headers, signed download URLs or personal data. Commit authorship does not substitute for Atlas attribution.
+
+Manifest serialization and hashing must be canonical and versioned, with independent golden strings/digests rather than expected values generated by the implementation under test. Raw artifact hashing covers the exact stored byte sequence without text or filename normalization; normalized text, content-decoded bodies and extraction outputs are separate derived artifacts with acyclic lineage grounded in a retained retrieval. Structural import must be network-free, deterministic, transactional, idempotent, fail closed on conflicting identities, unavailable required artifacts or hash/length mismatch, and reproduce the same canonical row-level digests from the same migrations, bundles and available artifacts. Complete preflight precedes the transaction. The declared manifest path is bound to the actual reviewed-root-relative input, and every persisted field and relationship is compared after import and before returning no-op. Technical bundle acceptance is never legal verification or publication.
+
+Logical observations remain append-only, but approved custody actions may restrict or remove bytes. The Tranche 2A custody tombstone records artifact/copy identity, reason, attribution and time; it is not itself an authorization. Before real byte removal, a later operational/governance record must preserve the removal authority, affected dependencies and execution result without retaining prohibited content. Dependent authority drafts then become unsupported or held until replacement evidence exists. Backend selection must provide the backup, restore, access-control and integrity properties appropriate to its custody class. A pilot using repository-held artifacts requires a fresh-clone, network-free rebuild test. Production monitoring additionally requires the durable operational controls reserved for its later tranche.
+
+## Approved Decision 8 logical evidence boundaries
+
+Tranche 2A separates six logical records without requiring exactly six physical tables. The chain describes a successful evidence path; failed or not-retained attempts stop earlier. The pending exact nine-table design, manifest contract and enforcement allocation are documented in [Tranche 2A source-evidence quarantine](schema-v2-tranche-2a.md); they remain unimplemented until separately approved:
+
+1. **Retrieval location:** a public, credential-free HTTPS address that may be requested. It asserts no officiality, issuer, jurisdiction or legal-document identity.
+2. **Retrieval event:** one immutable GET acquisition attempt with requested and resolved locations, ordered redirect evidence, time, collector version, closed representation/negotiation profile, allowlisted response metadata, exact conditional validator/basis and terminal outcome. Distinct attempts are never deduplicated. A `not_modified` result creates no new artifact and identifies a representation-compatible prior basis.
+3. **Artifact identity:** one exact stored byte sequence identified by its defined byte layer, SHA-256 and byte length. Retrieval metadata such as ETag, Last-Modified and declared media type is not part of byte identity. Both raw and derived bytes use this identity mechanism, while derivation lineage distinguishes them.
+4. **Artifact custody:** append-only or correction-safe history of available, restricted, relocated, quarantined or tombstoned copies at secret-free backend references. Occurrence time and receipt-sequence knowledge order remain separate, so later-discovered historical events do not rewrite an earlier acceptance boundary. Current retrievability is derived. Relocation changes backend or custody class; tombstoning never rewrites artifact identity or retrieval history, and deduplication never broadens access.
+5. **Processing run:** one immutable content-decoding, parser, OCR, normalization or expressly identified human-transcription attempt against one retained artifact, with processor/configuration identity and a separate outcome. It may produce zero or more derived artifact identities. Every run chain is acyclic and ultimately grounded in a retained retrieval; a run cannot consume an artifact it produces. Failure never changes the retrieval outcome.
+6. **Unverified candidate occurrence:** one immutable occurrence of typed extracted metadata claims linked to its processing run, relevant output and precise locator or span. Manifest v1 permits only byte and text spans. Preserve observed and normalized suggestions separately. Confidence is processing metadata, not legal confidence. Conflicting or repeated candidates remain distinct; correction or withdrawal creates linked later history rather than mutation.
+
+The versioned manifest is the transport and provenance envelope, not a seventh legal-evidence concept. Every imported record retains deterministic bundle provenance. The pending physical proposal uses one technical receipt for sequence, idempotency and provenance; it is not legal evidence and does not change the approved logical boundaries. It chooses a one-time sequence-1 `principal_bootstrap` envelope bound to trusted runtime identities; no separate bootstrap-transport decision remains open. Direct unaudited manual edits are prohibited: manual transcription must be an attributed processing method, while human legal drafting remains in Tranche 2B.
+
+The Decision 8 `unverified candidate` is a hostile extracted metadata-claim occurrence—for example, a suggested title, issuer, language, jurisdiction, date, identifier, document type, officiality or purported legal-status claim. Every such value remains unverified. Authoritative issuer/jurisdiction, officiality, legal identity/status/effect and publication are unreachable in Tranche 2A; allowing a candidate to suggest those strings does not model them as legal facts. The occurrence is distinct from the later freshness-monitoring `change candidate`, which concerns a possible change affecting previously modeled legal content.
 
 ## Version-specific review gates
 
@@ -36,7 +78,7 @@ At minimum, author, substantive legal reviewer, and publisher are different huma
 The later governance slice must enforce all of the following:
 
 - no self-grant, self-verification, or self-publication;
-- author/promoter differs from official-source verifier;
+- authority-draft author differs from official-source verifier;
 - author differs from substantive legal reviewer and publisher;
 - substantive legal reviewer differs from publisher;
 - qualification scope is immutable and sealed with its assertion;
@@ -48,7 +90,7 @@ The later governance slice must enforce all of the following:
 
 ## Fail-closed public eligibility
 
-A proposition version is public only when an effective decision explicitly says `publish_validated` or `publish_with_warning`; a current qualifying review covers that exact version; authoritative provisions have official immutable source-version support; atomicity, source mapping, required translation review, and required local validation are resolved; and no later blocking review, withdrawal, or confirmed material-change event applies.
+A proposition version is public only when an effective decision explicitly says `publish_validated` or `publish_with_warning`; a current qualifying review covers that exact version; authoritative provisions have a future reviewed official-source determination covering the exact evidence-linked authority representation; atomicity, source mapping, required translation review, and required local validation are resolved; and no later blocking review, withdrawal, or confirmed material-change event applies.
 
 Missing, rejected, stale, expired, superseded, or recused mandatory reviews block publication. `publish_with_warning` requires machine-readable warning codes and human-readable text and cannot bypass authoritative-source, atomicity, substantive-review, local-validation, translation-review, or freshness gates. Editing or confirmed material source change restarts affected gates. Emergency withdrawal removes eligibility immediately without deleting history. Ineligible list records are omitted and public detail routes return 404.
 
@@ -59,7 +101,7 @@ Two monitor classes are required:
 - Exact-source monitors check known documents, metadata, consolidated versions, representations, and languages.
 - Discovery monitors look for amendments, omnibus instruments, corrigenda, repeals, implementing measures, cases, and guidance, including changes that leave the original document URL unchanged.
 
-Append-only monitoring records capture monitor policy and source coverage; every run and request outcome; requested/final URL, HTTP status, ETag, Last-Modified, media type and retrieval time; raw-content and normalized-text hashes; parser/normalizer version; immutable observation or archived-artifact reference; detected-change candidate; concrete affected-instrument, provision, proposition-version, national-comparison and training-projection junctions; triage decision; escalation; notification attempt; and closure. Concrete target junctions are required instead of unenforceable polymorphic IDs.
+Append-only monitoring records capture monitor policy and source coverage; every run and retrieval outcome; requested/final URL, HTTP status, ETag, Last-Modified, media type and retrieval time; exact retained-artifact identity; separate linked parser/normalizer runs and derived hashes; detected-change candidate; concrete affected-instrument, provision, proposition-version, national-comparison and training-projection junctions; triage decision; escalation; notification attempt; and closure. Concrete target junctions are required instead of unenforceable polymorphic IDs.
 
 ## Change handling without automated legal conclusions
 
@@ -67,15 +109,15 @@ A detected change creates or reuses a deduplicated review candidate, preserves b
 
 A human reviewer classifies the candidate as `no_material_impact`, `formatting_or_parser_change`, `correction_or_corrigendum`, `amendment_or_repeal`, `new_implementing_or_interpretive_authority`, `false_positive`, or `uncertain_requires_escalation`. Confirmed impact creates new unpublished source/legal/proposition versions and restarts affected gates.
 
-Network failures and parser failures are observations, not legal changes. They update monitoring health and may create staleness/escalation but do not alter recorded law.
+Retrieval failures are retrieval outcomes; parser failures are separate parser-run outcomes against retained artifacts. Neither is a legal change. They update monitoring health and may create staleness or escalation but do not alter recorded law.
 
-Raw-byte or layout-only differences create a candidate but do not automatically block publication. Normalized-text equality, parser version, and human triage determine whether a hold is warranted.
+Raw-byte and layout-only differences are always preserved as evidence differences. Whether every such difference creates a legal-review candidate is deferred to a later candidate-creation policy. Normalized-text equality, parser version, risk policy and human triage will determine escalation and whether a hold is warranted.
 
 ## Deterministic hold matrix
 
 | Condition | Existing version | Required signal | Who may clear it |
 |---|---|---|---|
-| Monitor request/parser failure before due date | Remains public | Monitoring-health degradation; no legal change | Successful later run; operator may close infrastructure incident |
+| Retrieval failure or linked parser-run failure before due date | Remains public | Monitoring-health degradation; no legal change | Successful later run; operator may close infrastructure incident |
 | Monitor run overdue | Remains public with freshness warning until risk-policy grace expires; then withheld | `monitor_overdue` with last attempt/success | Successful run plus automated health recomputation; human required if hold was escalated |
 | Human legal review overdue/expired | Withheld; warning cannot bypass | `human_review_stale` | New qualified independent reviewer approval |
 | Detected change awaiting triage | Risk policy decides warning or temporary hold; high-risk/source-loss cases withheld | `change_pending_review` | Qualified human triager records a supported classification |
@@ -102,7 +144,16 @@ The defensible product claim is: “Monitored against identified official source
 
 Intervals are configurable by volatility, authority type, jurisdiction and risk. Pilot defaults are daily discovery-feed checks, weekly exact-source metadata checks, monthly forced full retrieval, and human recertification every 90–365 days.
 
-The pilot may use a candidate-only GitHub Action with scheduled and manual triggers. It may store workflow diagnostics and open a deduplicated issue or draft PR, but cannot change canonical legal data. Because the generated SQLite database is ignored, workflow artifacts are not durable production history. A hosted durable store plus an independent missed-run heartbeat is required before monitoring may be described as operational.
+The pilot may use a candidate-only GitHub Action with scheduled and manual triggers. It may store workflow diagnostics and open a deduplicated issue or draft PR, but cannot change canonical legal data. Schema migrations remain schema-only; substantive research must come from structurally validated deterministic import bundles under Decision 7. Because this repository's generated SQLite database is ignored, it is not durable production history. A hosted durable store plus an independent missed-run heartbeat is required before monitoring may be described as operational. Decision 7 approves the storage-independent pilot contract but does not select or operate a production provider.
+
+## Carried unresolved questions
+
+- Reconcile `parser_only` with `formatting_or_parser_change` when the change-candidate vocabulary is approved.
+- Decide whether `stale` is a legal-content state, a derived freshness/eligibility condition, or both without conflating publication history and current public eligibility.
+- Define the policy that turns a recorded byte or layout difference into a legal-review candidate or publication hold.
+- Approve or revise the pending nine-table Tranche 2A proposal, exact state/correction vocabularies, canonical bundle schema, technical receipt, and deterministic dependency/replay contract.
+- Approve repository eligibility thresholds and declaration procedure, production importer, concrete custody implementation, retention/tombstone procedure, backup/restore tests and durable operational audit before accepting real artifacts.
+- Define a deletion-aware restore protocol before legally destroyed bytes can be absent from a fresh rebuild; a hash and tombstone alone do not recreate an artifact.
 
 ## Future acceptance tests
 
@@ -116,6 +167,20 @@ The pilot may use a candidate-only GitHub Action with scheduled and manual trigg
 - Automated checks cannot create legal events or publication decisions.
 - Historical versions remain retrievable.
 - Every public version exposes sources, applicable-as-of date, human verification date, and freshness state.
+- A pristine clone verifies and rebuilds repository-held pilot evidence without network access.
+- Reimport is a no-op only after every persisted field and relationship is resolved back to stable manifest codes and compared; any drift, missing bytes, digest/length mismatch, stable-identity conflict or partial import fails atomically.
+- Identical bytes may deduplicate storage without collapsing retrieval events, and backend relocation does not change artifact identity.
+- Forbidden secrets, obvious credential configuration keys, transient signed locations and all personal-data-bearing artifacts cannot enter v1 manifests; repository-ineligible artifacts are rejected.
+- Any external artifact backend passes integrity, access-control, backup/restore and tombstone tests before use.
+- Retrieval locations cannot contain credentials or transient signed access material and do not imply authority identity.
+- Successful retrieval followed by processing failure preserves the successful retrieval and exact artifact; a retry is a new processing run.
+- Current artifact availability is derived from custody history, and copy removal never rewrites byte identity or acquisition history.
+- Every candidate occurrence resolves to exact processing and evidence lineage; repeated or conflicting occurrences retain separate provenance.
+- Correction/withdrawal chains are append-only, cycle-free and deterministic, and never alter captured bytes.
+- Processing lineage is acyclic and retrieval-grounded; same-run self-origin and multi-run cycles fail even when their timestamps are equal.
+- Custody projection accepts an event-time bound and a receipt-sequence knowledge bound; later-discovered historical restrictions do not retroactively rewrite earlier run acceptance.
+- GET representation evidence preserves pre-content-decoding body bytes, negotiation/Vary metadata and the exact validator/basis for every 304.
+- All semantic checks complete before the importer begins a transaction, while the database independently rejects invalid writes.
 
 ## Future implementation tranches
 

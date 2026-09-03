@@ -2,7 +2,7 @@
 
 Status: implemented as production migration `004_tranche_1a_foundations.sql`. Both earlier physical proposals (45 tables and 7 tables) are rejected and superseded in Git history. The retained [proposed SQL](schema/tranche-1-foundations.proposed.sql) is a byte-identical audit artifact; automated tests reject drift. The migration contains exactly four empty `STRICT` tables and is validated by [the committed harness](schema/validate-tranche-1a.mjs).
 
-Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by the next authority/source tranche. Until that tranche provides quarantine and the later review-governance slice provides gates, no `atlas_*` row may be inserted operationally, reviewed, published, exported, or exposed by an API. The existing frontend remains explicitly v1-backed.
+Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by Tranche 2A source-evidence quarantine and Tranche 2B source-backed authority drafting. The [Tranche 2A physical design](schema-v2-tranche-2a.md) remains a proposal: until its migration and fixed-function ingestion path are separately approved and implemented, no `atlas_*` row may be inserted operationally. The pending nine-table/27-index/27-trigger proposal chooses an explicit, one-time sequence-1 bundle bootstrap to create `system.bootstrap` plus separately attributable human submitter, service collector and service importer principals under trusted runtime binding. It does not use hidden seed data, and caller-supplied IDs remain insufficient. After implementation, only writes expressly allowed by the approved quarantine/import contract may occur; manifest v1 rejects all personal-data-bearing artifacts, and neither restricted custody nor an unverified candidate can create authoritative issuer/jurisdiction, officiality, legal status, review or publication. The existing frontend remains explicitly v1-backed.
 
 ## Physical schema
 
@@ -88,10 +88,10 @@ Named triggers (17): bootstrap and subsequent-principal attribution guards; lang
 ## Deferred work
 
 - Principal lifecycle/status/replacement: review-governance tranche.
-- Jurisdiction retirement, succession, split/merge, containment and membership: source-backed authority tranche.
-- External identifiers: authority tranche with controlled scheme registry, entity-type scope, provenance, correction/withdrawal and deterministic resolution. ELI, EUR-Lex and CELEX identify instruments/sources, never jurisdictions.
+- Jurisdiction retirement, succession, split/merge, containment and membership: Tranche 2B source-backed authority drafting.
+- External identifiers: Tranche 2B with controlled scheme registry, entity-type scope, provenance, correction/withdrawal and deterministic resolution. ELI, EUR-Lex and CELEX identify instruments or authority representations, never jurisdictions.
 - Semantic taxonomies: proposition/semantic tranche with reviewed seeds and legacy crosswalk.
 - Coverage scopes: sourced applicability/national-context tranche.
 - Roles, qualifications, policies, reviews, publication and evaluator: review-governance vertical slice.
 
-No structural or legal row is seeded by Tranche 1A. The production database, repository, API, export, and legacy frontend perform no Atlas writes or reads; the frontend remains backed exclusively by v1.
+No structural or legal row is seeded by Tranche 1A. The production database, repository, API, export, and legacy frontend perform no Atlas writes or reads; the frontend remains backed exclusively by v1. The first-bundle ceremony is part of the still-unapproved Tranche 2A importer contract and has not populated these tables.
