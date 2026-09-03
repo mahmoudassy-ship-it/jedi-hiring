@@ -57,6 +57,7 @@ CREATE TABLE atlas_retrieval_events (
   id INTEGER PRIMARY KEY CHECK (id > 0),
   retrieval_event_code TEXT NOT NULL,
   requested_location_id INTEGER NOT NULL REFERENCES atlas_retrieval_locations(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  last_attempted_location_id INTEGER NOT NULL REFERENCES atlas_retrieval_locations(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   resolved_location_id INTEGER REFERENCES atlas_retrieval_locations(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   conditional_basis_retrieval_event_id INTEGER REFERENCES atlas_retrieval_events(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   conditional_validator_kind_code TEXT CHECK (conditional_validator_kind_code IN ('etag','last_modified')),
@@ -94,23 +95,40 @@ CREATE TABLE atlas_retrieval_events (
   CHECK (length(CAST(recorded_at AS BLOB))=24 AND recorded_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z' AND julianday(recorded_at) IS NOT NULL AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(recorded_at))=recorded_at AND recorded_at>=completed_at),
   CHECK (length(CAST(collector_software_code AS BLOB)) BETWEEN 1 AND 80 AND instr(collector_software_code,char(0))=0 AND collector_software_code=trim(collector_software_code)),
   CHECK (length(CAST(collector_version AS BLOB)) BETWEEN 1 AND 80 AND instr(collector_version,char(0))=0 AND collector_version=trim(collector_version)),
-  CHECK (request_accept IS NULL OR (length(CAST(request_accept AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept,char(0))=0 AND request_accept=trim(request_accept))),
-  CHECK (request_accept_language IS NULL OR (length(CAST(request_accept_language AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept_language,char(0))=0 AND request_accept_language=trim(request_accept_language))),
-  CHECK (request_accept_encoding IS NULL OR (length(CAST(request_accept_encoding AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept_encoding,char(0))=0 AND request_accept_encoding=trim(request_accept_encoding))),
-  CHECK ((conditional_basis_retrieval_event_id IS NULL AND conditional_validator_kind_code IS NULL AND conditional_validator_value IS NULL) OR (conditional_basis_retrieval_event_id IS NOT NULL AND conditional_validator_kind_code IS NOT NULL AND conditional_validator_value IS NOT NULL AND length(CAST(conditional_validator_value AS BLOB)) BETWEEN 1 AND 512 AND instr(conditional_validator_value,char(0))=0)),
-  CHECK (response_etag IS NULL OR (length(CAST(response_etag AS BLOB))<=512 AND instr(response_etag,char(0))=0)),
-  CHECK (response_last_modified IS NULL OR (length(CAST(response_last_modified AS BLOB))<=128 AND instr(response_last_modified,char(0))=0)),
-  CHECK (response_content_type IS NULL OR (length(CAST(response_content_type AS BLOB))<=255 AND instr(response_content_type,char(0))=0)),
-  CHECK (response_content_encoding IS NULL OR (length(CAST(response_content_encoding AS BLOB)) BETWEEN 1 AND 255 AND instr(response_content_encoding,char(0))=0 AND response_content_encoding=trim(response_content_encoding))),
-  CHECK (response_vary IS NULL OR (length(CAST(response_vary AS BLOB)) BETWEEN 1 AND 512 AND instr(response_vary,char(0))=0 AND response_vary=trim(response_vary) AND response_vary=lower(response_vary) AND (response_vary='*' OR instr(response_vary,'*')=0))),
-  CHECK (detected_media_type IS NULL OR (length(CAST(detected_media_type AS BLOB)) BETWEEN 1 AND 255 AND instr(detected_media_type,char(0))=0 AND detected_media_type=trim(detected_media_type))),
+  CHECK (request_accept IS NULL OR (length(CAST(request_accept AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept,char(0))=0 AND request_accept NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND request_accept=trim(request_accept))),
+  CHECK (request_accept_language IS NULL OR (length(CAST(request_accept_language AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept_language,char(0))=0 AND request_accept_language NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND request_accept_language=trim(request_accept_language))),
+  CHECK (request_accept_encoding IS NULL OR (length(CAST(request_accept_encoding AS BLOB)) BETWEEN 1 AND 512 AND instr(request_accept_encoding,char(0))=0 AND request_accept_encoding NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND request_accept_encoding=trim(request_accept_encoding))),
+  CHECK (
+    (conditional_basis_retrieval_event_id IS NULL AND conditional_validator_kind_code IS NULL AND conditional_validator_value IS NULL)
+    OR
+    (conditional_basis_retrieval_event_id IS NOT NULL AND conditional_validator_kind_code IS NOT NULL AND conditional_validator_value IS NOT NULL
+      AND length(CAST(conditional_validator_value AS BLOB)) BETWEEN 1 AND 512
+      AND instr(conditional_validator_value,char(0))=0
+      AND conditional_validator_value NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*')
+      AND (
+        (conditional_validator_kind_code='etag' AND (
+          (length(CAST(conditional_validator_value AS BLOB))>=2 AND substr(conditional_validator_value,1,1)='"' AND substr(conditional_validator_value,-1,1)='"' AND instr(substr(conditional_validator_value,2,length(conditional_validator_value)-2),'"')=0 AND substr(conditional_validator_value,2,length(conditional_validator_value)-2) NOT GLOB '*[^!#-~]*')
+          OR
+          (length(CAST(conditional_validator_value AS BLOB))>=4 AND substr(conditional_validator_value,1,3)='W/"' AND substr(conditional_validator_value,-1,1)='"' AND instr(substr(conditional_validator_value,4,length(conditional_validator_value)-4),'"')=0 AND substr(conditional_validator_value,4,length(conditional_validator_value)-4) NOT GLOB '*[^!#-~]*')
+        ))
+        OR
+        (conditional_validator_kind_code='last_modified' AND length(CAST(conditional_validator_value AS BLOB))=29 AND conditional_validator_value GLOB '[A-Z][a-z][a-z], [0-9][0-9] [A-Z][a-z][a-z] [0-9][0-9][0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] GMT' AND substr(conditional_validator_value,1,3) IN ('Mon','Tue','Wed','Thu','Fri','Sat','Sun') AND CAST(substr(conditional_validator_value,6,2) AS INTEGER) BETWEEN 1 AND 31 AND substr(conditional_validator_value,9,3) IN ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') AND CAST(substr(conditional_validator_value,18,2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(conditional_validator_value,21,2) AS INTEGER) BETWEEN 0 AND 59 AND CAST(substr(conditional_validator_value,24,2) AS INTEGER) BETWEEN 0 AND 59)
+      )
+    )
+  ),
+  CHECK (response_etag IS NULL OR (length(CAST(response_etag AS BLOB)) BETWEEN 2 AND 512 AND instr(response_etag,char(0))=0 AND response_etag NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND ((substr(response_etag,1,1)='"' AND substr(response_etag,-1,1)='"' AND instr(substr(response_etag,2,length(response_etag)-2),'"')=0 AND substr(response_etag,2,length(response_etag)-2) NOT GLOB '*[^!#-~]*') OR (length(CAST(response_etag AS BLOB))>=4 AND substr(response_etag,1,3)='W/"' AND substr(response_etag,-1,1)='"' AND instr(substr(response_etag,4,length(response_etag)-4),'"')=0 AND substr(response_etag,4,length(response_etag)-4) NOT GLOB '*[^!#-~]*')))),
+  CHECK (response_last_modified IS NULL OR (length(CAST(response_last_modified AS BLOB))=29 AND instr(response_last_modified,char(0))=0 AND response_last_modified NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_last_modified GLOB '[A-Z][a-z][a-z], [0-9][0-9] [A-Z][a-z][a-z] [0-9][0-9][0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] GMT' AND substr(response_last_modified,1,3) IN ('Mon','Tue','Wed','Thu','Fri','Sat','Sun') AND CAST(substr(response_last_modified,6,2) AS INTEGER) BETWEEN 1 AND 31 AND substr(response_last_modified,9,3) IN ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec') AND CAST(substr(response_last_modified,18,2) AS INTEGER) BETWEEN 0 AND 23 AND CAST(substr(response_last_modified,21,2) AS INTEGER) BETWEEN 0 AND 59 AND CAST(substr(response_last_modified,24,2) AS INTEGER) BETWEEN 0 AND 59)),
+  CHECK (response_content_type IS NULL OR (length(CAST(response_content_type AS BLOB)) BETWEEN 1 AND 255 AND instr(response_content_type,char(0))=0 AND response_content_type NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_content_type=trim(response_content_type))),
+  CHECK (response_content_encoding IS NULL OR (length(CAST(response_content_encoding AS BLOB)) BETWEEN 1 AND 255 AND instr(response_content_encoding,char(0))=0 AND response_content_encoding NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_content_encoding=trim(response_content_encoding) AND response_content_encoding=lower(response_content_encoding) AND response_content_encoding NOT GLOB '*[^a-z0-9!#$%&''*+.^_`|~, -]*' AND response_content_encoding NOT LIKE '%,,%' AND response_content_encoding NOT LIKE '%,  %')),
+  CHECK (response_vary IS NULL OR (length(CAST(response_vary AS BLOB)) BETWEEN 1 AND 512 AND instr(response_vary,char(0))=0 AND response_vary NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_vary=trim(response_vary) AND response_vary=lower(response_vary) AND (response_vary='*' OR instr(response_vary,'*')=0))),
+  CHECK (detected_media_type IS NULL OR (length(CAST(detected_media_type AS BLOB)) BETWEEN 1 AND 255 AND instr(detected_media_type,char(0))=0 AND detected_media_type NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND detected_media_type=trim(detected_media_type))),
   CHECK ((observed_sha256 IS NULL AND observed_byte_length IS NULL) OR (outcome_code='observed_not_retained' AND length(CAST(observed_sha256 AS BLOB))=64 AND instr(observed_sha256,char(0))=0 AND observed_sha256=lower(observed_sha256) AND observed_sha256 NOT GLOB '*[^0-9a-f]*' AND observed_byte_length IS NOT NULL)),
   CHECK (
-    (outcome_code='retrieved_retained' AND resolved_location_id IS NOT NULL AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code BETWEEN 200 AND 299 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)
-    OR (outcome_code='observed_not_retained' AND resolved_location_id IS NOT NULL AND artifact_id IS NULL AND captured_at IS NOT NULL AND http_status_code BETWEEN 200 AND 299 AND detected_media_type IS NOT NULL)
-    OR (outcome_code='not_modified' AND resolved_location_id IS NOT NULL AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code=304 AND conditional_basis_retrieval_event_id IS NOT NULL AND observed_sha256 IS NULL AND detected_media_type IS NULL)
+    (outcome_code='retrieved_retained' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code=200 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)
+    OR (outcome_code='observed_not_retained' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NOT NULL AND http_status_code=200 AND detected_media_type IS NOT NULL)
+    OR (outcome_code='not_modified' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code=304 AND conditional_basis_retrieval_event_id IS NOT NULL AND observed_sha256 IS NULL AND detected_media_type IS NULL)
     OR (outcome_code='network_failed' AND resolved_location_id IS NULL AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code IS NULL AND observed_sha256 IS NULL AND response_etag IS NULL AND response_last_modified IS NULL AND response_content_type IS NULL AND response_content_length IS NULL AND response_content_encoding IS NULL AND response_vary IS NULL AND detected_media_type IS NULL)
-    OR (outcome_code='http_failed' AND resolved_location_id IS NOT NULL AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code BETWEEN 300 AND 599 AND http_status_code<>304 AND observed_sha256 IS NULL AND detected_media_type IS NULL)
+    OR (outcome_code='http_failed' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code BETWEEN 300 AND 599 AND http_status_code<>304 AND observed_sha256 IS NULL AND detected_media_type IS NULL)
   )
 ) STRICT;
 
@@ -121,7 +139,7 @@ CREATE TABLE atlas_retrieval_redirects (
   hop_ordinal INTEGER NOT NULL CHECK (hop_ordinal > 0),
   from_location_id INTEGER NOT NULL REFERENCES atlas_retrieval_locations(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   to_location_id INTEGER NOT NULL REFERENCES atlas_retrieval_locations(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  http_status_code INTEGER NOT NULL CHECK (http_status_code BETWEEN 300 AND 399 AND http_status_code<>304),
+  http_status_code INTEGER NOT NULL CHECK (http_status_code IN (301,302,303,307,308)),
   evidence_bundle_receipt_id INTEGER NOT NULL REFERENCES atlas_evidence_bundle_receipts(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   recorded_by_principal_id INTEGER NOT NULL REFERENCES atlas_principals(id) ON UPDATE RESTRICT ON DELETE RESTRICT,
   recorded_at TEXT NOT NULL,
@@ -255,7 +273,7 @@ CREATE UNIQUE INDEX atlas_retrieval_locations_url_uidx ON atlas_retrieval_locati
 CREATE UNIQUE INDEX atlas_artifacts_code_uidx ON atlas_artifacts(artifact_code);
 CREATE UNIQUE INDEX atlas_artifacts_identity_uidx ON atlas_artifacts(byte_layer_code,hash_algorithm_code,sha256,byte_length);
 CREATE UNIQUE INDEX atlas_retrieval_events_code_uidx ON atlas_retrieval_events(retrieval_event_code);
-CREATE INDEX atlas_retrieval_events_location_time_idx ON atlas_retrieval_events(requested_location_id,completed_at,id);
+CREATE INDEX atlas_retrieval_events_location_time_idx ON atlas_retrieval_events(requested_location_id,last_attempted_location_id,resolved_location_id,completed_at,id);
 CREATE UNIQUE INDEX atlas_retrieval_redirects_code_uidx ON atlas_retrieval_redirects(redirect_code);
 CREATE UNIQUE INDEX atlas_retrieval_redirects_event_ordinal_uidx ON atlas_retrieval_redirects(retrieval_event_id,hop_ordinal);
 CREATE UNIQUE INDEX atlas_artifact_custody_events_code_uidx ON atlas_artifact_custody_events(custody_event_code);
@@ -294,18 +312,18 @@ END;
 CREATE TRIGGER atlas_retrieval_events_validate_insert BEFORE INSERT ON atlas_retrieval_events BEGIN
   SELECT CASE WHEN EXISTS(SELECT 1 FROM atlas_retrieval_events WHERE id=NEW.id OR retrieval_event_code=NEW.retrieval_event_code) THEN RAISE(ABORT,'retrieval event collision') END;
   SELECT CASE WHEN NEW.recorded_by_principal_id=1 OR NEW.collector_principal_id=1 OR NOT EXISTS(SELECT 1 FROM atlas_evidence_bundle_receipts r JOIN atlas_principals submitter ON submitter.id=NEW.recorded_by_principal_id JOIN atlas_principals collector ON collector.id=NEW.collector_principal_id WHERE r.id=NEW.evidence_bundle_receipt_id AND r.submitted_by_principal_id=NEW.recorded_by_principal_id AND r.imported_by_principal_id<>NEW.collector_principal_id AND submitter.created_at<=NEW.recorded_at AND collector.principal_kind_code='service' AND collector.created_at<=NEW.started_at AND NEW.recorded_at<=r.bundle_created_at) THEN RAISE(ABORT,'invalid retrieval event attribution or chronology') END;
-  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.requested_location_id AND l.recorded_at<=NEW.started_at) OR (NEW.resolved_location_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.resolved_location_id AND l.recorded_at<=NEW.completed_at)) THEN RAISE(ABORT,'retrieval event predates a location') END;
+  SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.requested_location_id AND l.recorded_at<=NEW.started_at) OR NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.last_attempted_location_id AND l.recorded_at<=NEW.completed_at) OR (NEW.resolved_location_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.resolved_location_id AND l.recorded_at<=NEW.completed_at)) THEN RAISE(ABORT,'retrieval event predates a location') END;
   SELECT CASE WHEN NEW.artifact_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM atlas_artifacts a WHERE a.id=NEW.artifact_id AND a.byte_layer_code='retrieved_body' AND a.recorded_at<=NEW.recorded_at) THEN RAISE(ABORT,'retrieval must reference a retrieved-body artifact') END;
   SELECT CASE WHEN NEW.conditional_basis_retrieval_event_id IS NOT NULL AND NOT EXISTS(
     SELECT 1 FROM atlas_retrieval_events b
     WHERE b.id=NEW.conditional_basis_retrieval_event_id
       AND b.requested_location_id=NEW.requested_location_id
-      AND b.resolved_location_id=NEW.resolved_location_id
-      AND b.outcome_code='retrieved_retained' AND b.artifact_id IS NOT NULL AND b.completed_at<NEW.started_at
+      AND b.resolved_location_id=NEW.last_attempted_location_id
+      AND b.outcome_code='retrieved_retained' AND b.http_status_code=200 AND b.artifact_id IS NOT NULL AND b.completed_at<NEW.started_at
       AND b.request_method_code=NEW.request_method_code AND b.request_profile_code=NEW.request_profile_code
       AND b.request_accept IS NEW.request_accept AND b.request_accept_language IS NEW.request_accept_language AND b.request_accept_encoding IS NEW.request_accept_encoding
       AND (b.response_vary IS NULL OR b.response_vary IN ('accept','accept-encoding','accept-language','accept, accept-encoding','accept, accept-language','accept-encoding, accept-language','accept, accept-encoding, accept-language'))
-      AND (NEW.outcome_code<>'not_modified' OR NEW.response_vary IS NULL OR NEW.response_vary IS b.response_vary)
+      AND (NEW.outcome_code<>'not_modified' OR (NEW.resolved_location_id=b.resolved_location_id AND (NEW.response_vary IS NULL OR NEW.response_vary IS b.response_vary)))
       AND ((NEW.conditional_validator_kind_code='etag' AND b.response_etag=NEW.conditional_validator_value) OR (NEW.conditional_validator_kind_code='last_modified' AND b.response_last_modified=NEW.conditional_validator_value))
   ) THEN RAISE(ABORT,'invalid conditional-request basis or representation profile') END;
 END;
@@ -329,6 +347,7 @@ CREATE TRIGGER atlas_processing_runs_validate_insert BEFORE INSERT ON atlas_proc
   SELECT CASE WHEN EXISTS(SELECT 1 FROM atlas_processing_runs WHERE id=NEW.id OR processing_run_code=NEW.processing_run_code OR (evidence_bundle_receipt_id=NEW.evidence_bundle_receipt_id AND run_ordinal=NEW.run_ordinal)) THEN RAISE(ABORT,'processing run collision') END;
   SELECT CASE WHEN NEW.run_ordinal<>(SELECT COALESCE(MAX(run_ordinal),-1)+1 FROM atlas_processing_runs WHERE evidence_bundle_receipt_id=NEW.evidence_bundle_receipt_id) THEN RAISE(ABORT,'processing run ordinal must be contiguous') END;
   SELECT CASE WHEN NEW.recorded_by_principal_id=1 OR NEW.processor_principal_id=1 OR NOT EXISTS(SELECT 1 FROM atlas_evidence_bundle_receipts r JOIN atlas_principals submitter ON submitter.id=NEW.recorded_by_principal_id JOIN atlas_principals processor ON processor.id=NEW.processor_principal_id JOIN atlas_artifacts a ON a.id=NEW.input_artifact_id WHERE r.id=NEW.evidence_bundle_receipt_id AND r.submitted_by_principal_id=NEW.recorded_by_principal_id AND r.imported_by_principal_id<>NEW.processor_principal_id AND submitter.created_at<=NEW.recorded_at AND processor.created_at<=NEW.started_at AND ((NEW.method_code='manual_transcription' AND processor.principal_kind_code='human') OR (NEW.method_code<>'manual_transcription' AND processor.principal_kind_code='service')) AND a.recorded_at<=NEW.started_at AND NEW.recorded_at<=r.bundle_created_at) THEN RAISE(ABORT,'invalid processing attribution or chronology') END;
+  SELECT CASE WHEN NEW.method_code='content_decoding' AND NOT EXISTS(SELECT 1 FROM atlas_artifacts a WHERE a.id=NEW.input_artifact_id AND a.byte_layer_code='retrieved_body') THEN RAISE(ABORT,'content decoding requires a retrieved-body input') END;
   SELECT CASE WHEN NOT EXISTS(
     SELECT 1 FROM atlas_artifact_custody_events c
     JOIN atlas_evidence_bundle_receipts cr ON cr.id=c.evidence_bundle_receipt_id
@@ -350,6 +369,15 @@ END;
 
 CREATE TRIGGER atlas_processing_outputs_validate_insert BEFORE INSERT ON atlas_processing_outputs BEGIN
   SELECT CASE WHEN EXISTS(SELECT 1 FROM atlas_processing_outputs WHERE id=NEW.id OR processing_output_code=NEW.processing_output_code OR (processing_run_id=NEW.processing_run_id AND output_ordinal=NEW.output_ordinal)) THEN RAISE(ABORT,'processing output collision') END;
+  SELECT CASE WHEN NOT EXISTS(
+    SELECT 1 FROM atlas_processing_runs p WHERE p.id=NEW.processing_run_id AND (
+      (p.method_code='content_decoding' AND NEW.output_kind_code='decoded_body')
+      OR (p.method_code='parser' AND NEW.output_kind_code IN ('extracted_text','structured_data','diagnostic'))
+      OR (p.method_code='ocr' AND NEW.output_kind_code IN ('ocr_text','diagnostic'))
+      OR (p.method_code='normalization' AND NEW.output_kind_code IN ('normalized_text','diagnostic'))
+      OR (p.method_code='manual_transcription' AND NEW.output_kind_code IN ('manual_transcript','diagnostic'))
+    )
+  ) THEN RAISE(ABORT,'processing method/output kind mismatch') END;
   SELECT CASE WHEN EXISTS(
     WITH RECURSIVE reachable(artifact_id) AS (
       SELECT NEW.artifact_id
@@ -361,7 +389,27 @@ CREATE TRIGGER atlas_processing_outputs_validate_insert BEFORE INSERT ON atlas_p
     )
     SELECT 1 FROM reachable q JOIN atlas_processing_runs p ON p.id=NEW.processing_run_id WHERE q.artifact_id=p.input_artifact_id
   ) THEN RAISE(ABORT,'processing lineage cycle') END;
-  SELECT CASE WHEN NEW.recorded_by_principal_id=1 OR NOT EXISTS(SELECT 1 FROM atlas_processing_runs p JOIN atlas_artifacts a ON a.id=NEW.artifact_id JOIN atlas_evidence_bundle_receipts r ON r.id=NEW.evidence_bundle_receipt_id WHERE p.id=NEW.processing_run_id AND p.outcome_code='succeeded' AND p.input_artifact_id<>NEW.artifact_id AND p.evidence_bundle_receipt_id=NEW.evidence_bundle_receipt_id AND p.recorded_by_principal_id=NEW.recorded_by_principal_id AND p.recorded_at=NEW.recorded_at AND p.started_at<=NEW.produced_at AND NEW.produced_at<=p.completed_at AND (a.evidence_bundle_receipt_id<>NEW.evidence_bundle_receipt_id OR NEW.produced_at<=a.recorded_at) AND a.recorded_at<=NEW.recorded_at AND a.byte_layer_code='derived_output' AND NEW.recorded_at<=r.bundle_created_at) THEN RAISE(ABORT,'invalid processing output lineage or chronology') END;
+  SELECT CASE WHEN NEW.recorded_by_principal_id=1 OR NOT EXISTS(
+    SELECT 1 FROM atlas_processing_runs p
+    JOIN atlas_artifacts a ON a.id=NEW.artifact_id
+    JOIN atlas_evidence_bundle_receipts r ON r.id=NEW.evidence_bundle_receipt_id
+    JOIN atlas_evidence_bundle_receipts artifact_receipt ON artifact_receipt.id=a.evidence_bundle_receipt_id
+    WHERE p.id=NEW.processing_run_id AND p.outcome_code='succeeded' AND p.input_artifact_id<>NEW.artifact_id
+      AND p.evidence_bundle_receipt_id=NEW.evidence_bundle_receipt_id AND p.recorded_by_principal_id=NEW.recorded_by_principal_id
+      AND p.recorded_at=NEW.recorded_at AND p.started_at<=NEW.produced_at AND NEW.produced_at<=p.completed_at
+      AND a.recorded_at<=NEW.recorded_at AND a.byte_layer_code='derived_output' AND NEW.recorded_at<=r.bundle_created_at
+      AND (
+        artifact_receipt.bundle_sequence<r.bundle_sequence
+        OR NEW.produced_at<=a.recorded_at
+        OR EXISTS(
+          SELECT 1 FROM atlas_processing_outputs earlier_output
+          JOIN atlas_processing_runs earlier_run ON earlier_run.id=earlier_output.processing_run_id
+          JOIN atlas_evidence_bundle_receipts earlier_receipt ON earlier_receipt.id=earlier_run.evidence_bundle_receipt_id
+          WHERE earlier_output.artifact_id=NEW.artifact_id
+            AND (earlier_receipt.bundle_sequence<r.bundle_sequence OR (earlier_receipt.bundle_sequence=r.bundle_sequence AND earlier_run.run_ordinal<p.run_ordinal))
+        )
+      )
+  ) THEN RAISE(ABORT,'invalid processing output lineage or chronology') END;
 END;
 
 CREATE TRIGGER atlas_candidate_occurrences_validate_insert BEFORE INSERT ON atlas_unverified_candidate_occurrences BEGIN

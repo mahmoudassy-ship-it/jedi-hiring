@@ -123,6 +123,24 @@
       "maxLength": 2048,
       "pattern": "^https://[^@\\\\\\u0000-\\u0020\\u007f]+$"
     },
+    "httpFieldValue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "etag": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 512,
+      "pattern": "^(?:W/)?\"[!#-~]*\"$"
+    },
+    "httpDate": {
+      "type": "string",
+      "minLength": 29,
+      "maxLength": 29,
+      "pattern": "^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (?:0[1-9]|[12][0-9]|3[01]) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4} (?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9] GMT$"
+    },
     "bundleDependency": {
       "type": "object",
       "additionalProperties": false,
@@ -203,18 +221,18 @@
         "ordinal": { "type": "integer", "minimum": 1, "maximum": 100 },
         "from_location_code": { "$ref": "#/$defs/recordCode" },
         "to_location_code": { "$ref": "#/$defs/recordCode" },
-        "http_status_code": { "enum": [300, 301, 302, 303, 305, 307, 308] }
+        "http_status_code": { "enum": [301, 302, 303, 307, 308] }
       }
     },
     "responseMetadata": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "etag": { "type": "string", "maxLength": 512 },
-        "last_modified": { "type": "string", "maxLength": 128 },
-        "content_type": { "type": "string", "maxLength": 255 },
+        "etag": { "$ref": "#/$defs/etag" },
+        "last_modified": { "$ref": "#/$defs/httpDate" },
+        "content_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
         "content_length": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
-        "content_encoding": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "content_encoding": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[a-z0-9!#$%&'*+.^_`|~-]+(?:, [a-z0-9!#$%&'*+.^_`|~-]+)*$" },
         "vary": {
           "type": "string",
           "minLength": 1,
@@ -228,22 +246,23 @@
       "additionalProperties": false,
       "required": ["accept", "accept_language", "accept_encoding"],
       "properties": {
-        "accept": { "type": ["string", "null"], "minLength": 1, "maxLength": 512 },
-        "accept_language": { "type": ["string", "null"], "minLength": 1, "maxLength": 512 },
-        "accept_encoding": { "type": ["string", "null"], "minLength": 1, "maxLength": 512 }
+        "accept": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
+        "accept_language": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
+        "accept_encoding": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] }
       }
     },
     "retrievalEvent": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record_code", "requested_location_code", "resolved_location_code", "conditional_basis_retrieval_event_code", "conditional_validator_kind_code", "conditional_validator_value", "artifact_code", "artifact_staged_path", "outcome_code", "request_method_code", "request_profile_code", "request_headers", "started_at", "completed_at", "captured_at", "http_status_code", "response_metadata", "observed_sha256", "observed_byte_length", "detected_media_type", "collector_principal_code", "collector_software_code", "collector_version", "redirects", "recorded_by_principal_code", "recorded_at"],
+      "required": ["record_code", "requested_location_code", "last_attempted_location_code", "resolved_location_code", "conditional_basis_retrieval_event_code", "conditional_validator_kind_code", "conditional_validator_value", "artifact_code", "artifact_staged_path", "outcome_code", "request_method_code", "request_profile_code", "request_headers", "started_at", "completed_at", "captured_at", "http_status_code", "response_metadata", "observed_sha256", "observed_byte_length", "detected_media_type", "collector_principal_code", "collector_software_code", "collector_version", "redirects", "recorded_by_principal_code", "recorded_at"],
       "properties": {
         "record_code": { "$ref": "#/$defs/recordCode" },
         "requested_location_code": { "$ref": "#/$defs/recordCode" },
+        "last_attempted_location_code": { "$ref": "#/$defs/recordCode" },
         "resolved_location_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
         "conditional_basis_retrieval_event_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
         "conditional_validator_kind_code": { "type": ["string", "null"], "enum": ["etag", "last_modified", null] },
-        "conditional_validator_value": { "type": ["string", "null"], "minLength": 1, "maxLength": 512 },
+        "conditional_validator_value": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
         "artifact_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
         "artifact_staged_path": { "anyOf": [{ "$ref": "#/$defs/safeRelativePath" }, { "type": "null" }] },
         "outcome_code": { "enum": ["retrieved_retained", "observed_not_retained", "not_modified", "network_failed", "http_failed"] },
@@ -257,7 +276,7 @@
         "response_metadata": { "$ref": "#/$defs/responseMetadata" },
         "observed_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
         "observed_byte_length": { "type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991 },
-        "detected_media_type": { "type": ["string", "null"], "minLength": 1, "maxLength": 255 },
+        "detected_media_type": { "type": ["string", "null"], "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
         "collector_principal_code": { "$ref": "#/$defs/principalCode" },
         "collector_software_code": { "type": "string", "minLength": 1, "maxLength": 80 },
         "collector_version": { "type": "string", "minLength": 1, "maxLength": 80 },
@@ -329,7 +348,7 @@
           "type": "object",
           "maxProperties": 64,
           "propertyNames": {
-            "pattern": "^(?!.*(?:^|[._-])(?:authorization|cookie|credential|credentials|password|passwd|secret|secrets|token|tokens|apikey|api[._-]key|privatekey|private[._-]key|signingkey|signing[._-]key|accesskey|access[._-]key)(?:$|[._-]))[a-z][a-z0-9._-]{0,79}$"
+            "pattern": "^(?!.*(?:^|[._-]+)(?:authorization|cookie|credential|credentials|password|passwd|secret|secrets|token|tokens|apikey|api[._-]+key|privatekey|private[._-]+key|signingkey|signing[._-]+key|accesskey|access[._-]+key|client[._-]+secret|refresh[._-]+token|bearer[._-]+token|session[._-]+cookie|auth[._-]+token)(?:$|[._-]+))[a-z][a-z0-9._-]{0,79}$"
           },
           "additionalProperties": {
             "anyOf": [
@@ -348,7 +367,30 @@
         "outputs": { "type": "array", "maxItems": 1000, "items": { "$ref": "#/$defs/processingOutput" } },
         "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
         "recorded_at": { "$ref": "#/$defs/timestamp" }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "method_code": { "const": "content_decoding" } },
+            "required": ["method_code"]
+          },
+          "then": {
+            "properties": {
+              "configuration": {
+                "required": ["content_coding"],
+                "properties": {
+                  "content_coding": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "pattern": "^[a-z0-9!#$%&'*+.^_`|~-]+(?:, [a-z0-9!#$%&'*+.^_`|~-]+)*$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "candidateOccurrence": {
       "type": "object",

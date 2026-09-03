@@ -176,6 +176,19 @@ function resolveSchemaReference(root, reference) {
 
 function validateAgainstSchema(root, schema, value, pointer = '$') {
   if (schema.$ref) return validateAgainstSchema(root, resolveSchemaReference(root, schema.$ref), value, pointer)
+  if (schema.allOf) {
+    for (const branch of schema.allOf) validateAgainstSchema(root, branch, value, pointer)
+  }
+  if (schema.if) {
+    let matches = true
+    try {
+      validateAgainstSchema(root, schema.if, value, pointer)
+    } catch {
+      matches = false
+    }
+    if (matches && schema.then) validateAgainstSchema(root, schema.then, value, pointer)
+    if (!matches && schema.else) validateAgainstSchema(root, schema.else, value, pointer)
+  }
   if (schema.anyOf) {
     const matches = schema.anyOf.filter((branch) => {
       try {
@@ -247,7 +260,7 @@ function configurationDigest(configuration) {
   return sha256(Buffer.from(canonical(configuration), 'utf8'))
 }
 
-function assertIndependentCanonicalGoldenVectors() {
+function assertIndependentCanonicalGoldenVectors(schema) {
   const vectors = [
     {
       value: { '\uE000': 'bmp', '😀': 'astral', a: [null, true, 0] },
@@ -287,6 +300,72 @@ function assertIndependentCanonicalGoldenVectors() {
   assert.equal(sha256(Buffer.from(reversedNoncanonical)), '3fb75453225c732a76b7899ea2096dda1455189c89817239732182f73fe5a09f')
   assert.notEqual(sha256(Buffer.from(reversedNoncanonical)), sha256(Buffer.from(ordered)), 'reversed purported canonical output must fail its golden digest')
   assert.equal(canonical({ b: 2, a: 1 }), ordered, 'raw source key order remains irrelevant')
+
+  const completeManifestCanonical = '{"artifacts":[],"bundle_created_at":"2026-02-01T00:00:00.000Z","bundle_declarations":{"contains_credentials":false,"contains_personal_data":false,"hostile_input_acknowledged":true},"bundle_id":"golden-bundle-001","bundle_sequence":1,"candidate_occurrences":[],"custody_events":[],"expected_importer_principal_code":"golden.importer","expected_importer_software_code":"golden-fixed-importer","expected_importer_version":"1.0.0","format":"jedi-atlas-evidence-bundle","format_version":"1.0.0","manifest_path":"fixtures/golden-bundle-001.json","principal_bootstrap":{"principals":[{"created_at":"2026-01-01T00:00:01.000Z","created_by_principal_code":"system.bootstrap","id":2,"principal_code":"golden.researcher","principal_kind_code":"human","runtime_role_code":"manifest_submitter"},{"created_at":"2026-01-01T00:00:02.000Z","created_by_principal_code":"golden.researcher","id":3,"principal_code":"golden.collector","principal_kind_code":"service","runtime_role_code":"collector"},{"created_at":"2026-01-01T00:00:02.000Z","created_by_principal_code":"golden.researcher","id":4,"principal_code":"golden.importer","principal_kind_code":"service","runtime_role_code":"bundle_importer"}],"trust_root":{"created_at":"2026-01-01T00:00:00.000Z","created_by_principal_code":"system.bootstrap","id":1,"principal_code":"system.bootstrap","principal_kind_code":"service"}},"processing_runs":[],"required_bundles":[],"retrieval_events":[],"retrieval_locations":[],"submitter_principal_code":"golden.researcher"}'
+  const completeManifestSha256 = '63a19074159f0ad98347f2ad148db1b048d8f41af3857f407396f4e7932dacb4'
+  const completePayload = JSON.parse(completeManifestCanonical)
+  const completeManifest = { ...completePayload, bundle_digest_sha256: completeManifestSha256 }
+  validateAgainstSchema(schema, schema, completeManifest)
+  assert.equal(canonical(completePayload), completeManifestCanonical, 'complete manifest canonical serialization drift')
+  assert.equal(sha256(Buffer.from(completeManifestCanonical, 'utf8')), completeManifestSha256, 'complete manifest independent SHA-256 drift')
+  assert.equal(bundleDigest(completeManifest), completeManifestSha256, 'complete manifest bundle digest drift')
+}
+
+function assertEveryManifestLeafAffectsDigest(manifest) {
+  const baseline = bundleDigest(manifest)
+  const leaves = []
+  const visit = (value, pathParts) => {
+    if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
+      leaves.push([pathParts, value])
+      return
+    }
+    if (Array.isArray(value)) value.forEach((item, index) => visit(item, [...pathParts, index]))
+    else for (const [key, child] of Object.entries(value)) visit(child, [...pathParts, key])
+  }
+  visit(manifest, [])
+  let covered = 0
+  for (const [pathParts, original] of leaves) {
+    if (pathParts.length === 1 && pathParts[0] === 'bundle_digest_sha256') continue
+    const mutated = structuredClone(manifest)
+    let cursor = mutated
+    for (const part of pathParts.slice(0, -1)) cursor = cursor[part]
+    const leaf = pathParts.at(-1)
+    cursor[leaf] = original === null
+      ? '__null_changed__'
+      : typeof original === 'boolean'
+        ? !original
+        : typeof original === 'number'
+          ? original === Number.MAX_SAFE_INTEGER ? original - 1 : original + 1
+          : `${original}__changed__`
+    assert.notEqual(bundleDigest(mutated), baseline, `digest-insensitive manifest leaf: ${pathParts.join('/')}`)
+    covered += 1
+  }
+  assert.ok(covered > 100, 'complete manifest field-sensitivity traversal was unexpectedly small')
+  const digestOnly = structuredClone(manifest)
+  digestOnly.bundle_digest_sha256 = 'f'.repeat(64)
+  assert.equal(bundleDigest(digestOnly), baseline, 'top-level bundle digest must be the only excluded leaf')
+}
+
+function assertManifestArrayOrderAffectsDigest(manifest) {
+  const baseline = bundleDigest(manifest)
+  let covered = 0
+  const visit = (value, pathParts) => {
+    if (Array.isArray(value)) {
+      if (value.length >= 2 && canonical(value[0]) !== canonical(value[1])) {
+        const mutated = structuredClone(manifest)
+        let cursor = mutated
+        for (const part of pathParts) cursor = cursor[part]
+        ;[cursor[0], cursor[1]] = [cursor[1], cursor[0]]
+        assert.notEqual(bundleDigest(mutated), baseline, `digest-insensitive array order: ${pathParts.join('/')}`)
+        covered += 1
+      }
+      value.forEach((item, index) => visit(item, [...pathParts, index]))
+    } else if (value && typeof value === 'object') {
+      for (const [key, child] of Object.entries(value)) visit(child, [...pathParts, key])
+    }
+  }
+  visit(manifest, [])
+  assert.ok(covered > 5, 'manifest did not exercise enough independently ordered arrays')
 }
 
 const artifactCode = (layer, digest, length) => `artifact.${layer}.sha256.${digest}.${length}`
@@ -315,6 +394,45 @@ function canonicalVary(value) {
     && tokens.every((token) => /^[a-z0-9!#$%&'*+.^_`|~-]+$/.test(token))
     && new Set(tokens).size === tokens.length
     && value === tokens.toSorted().join(', ')
+}
+
+function safeHttpFieldValue(value, maximum = 512) {
+  return typeof value === 'string'
+    && Buffer.byteLength(value) >= 1
+    && Buffer.byteLength(value) <= maximum
+    && value === value.trim()
+    && !/[\u0000-\u001f\u007f]/u.test(value)
+}
+
+function validEtag(value) {
+  return safeHttpFieldValue(value, 512) && /^(?:W\/)?"[!#-~]*"$/u.test(value)
+}
+
+function validHttpDate(value) {
+  if (!safeHttpFieldValue(value, 29)) return false
+  const match = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (0[1-9]|[12][0-9]|3[01]) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) ([0-9]{4}) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]) GMT$/u.exec(value)
+  if (!match) return false
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const date = new Date(Date.UTC(Number(match[4]), months.indexOf(match[3]), Number(match[2]), Number(match[5]), Number(match[6]), Number(match[7])))
+  return date.getUTCFullYear() === Number(match[4])
+    && date.getUTCMonth() === months.indexOf(match[3])
+    && date.getUTCDate() === Number(match[2])
+    && weekdays[date.getUTCDay()] === match[1]
+}
+
+function canonicalContentCoding(value) {
+  return safeHttpFieldValue(value, 255)
+    && value === value.toLowerCase()
+    && value.split(', ').every((token) => /^[a-z0-9!#$%&'*+.^_`|~-]+$/u.test(token))
+}
+
+const processingOutputKinds = {
+  content_decoding: new Set(['decoded_body']),
+  parser: new Set(['extracted_text', 'structured_data', 'diagnostic']),
+  ocr: new Set(['ocr_text', 'diagnostic']),
+  normalization: new Set(['normalized_text', 'diagnostic']),
+  manual_transcription: new Set(['manual_transcript', 'diagnostic']),
 }
 
 function boundedText(value, maximum, { nullable = false, nonblank = true } = {}) {
@@ -355,7 +473,7 @@ function unique(values, label) {
 
 function isForbiddenConfigurationKey(value) {
   const lower = value.toLowerCase()
-  const parts = lower.split(/[._-]+/u)
+  const parts = lower.split(/[._-]+/u).filter(Boolean)
   const singleton = new Set(['authorization', 'cookie', 'credential', 'credentials', 'password', 'passwd', 'secret', 'secrets', 'token', 'tokens'])
   if (parts.some((part) => singleton.has(part))) return true
   const pairs = new Set(['api:key', 'private:key', 'signing:key', 'access:key', 'client:secret', 'refresh:token', 'bearer:token', 'session:cookie', 'auth:token'])
@@ -452,6 +570,7 @@ function validatePrincipalBootstrap(manifest, context, principals) {
     unique(bootstrap.principals.map((principal) => principal.principal_code), 'bootstrap principal code')
     for (const principal of bootstrap.principals) {
       assert.ok(principal.id > 1 && !ids.has(principal.id), 'duplicate or reserved bootstrap principal ID')
+      assert.ok(!available.has(principal.principal_code), 'bootstrap principal collides with the trust root or an earlier principal')
       ids.add(principal.id)
       const creator = available.get(principal.created_by_principal_code)
       assert.ok(creator, `bootstrap creator must precede principal ${principal.principal_code}`)
@@ -560,12 +679,16 @@ function validateManifestSemantics(manifest, context) {
     const requested = locations.get(event.requested_location_code)
     assert.ok(requested, 'unknown requested location')
     assertDependency(manifest, context, requested.bundle_code, usedDependencies)
+    const lastAttempted = locations.get(event.last_attempted_location_code)
+    assert.ok(lastAttempted, 'unknown last attempted location')
+    assertDependency(manifest, context, lastAttempted.bundle_code, usedDependencies)
     const resolved = event.resolved_location_code === null ? null : locations.get(event.resolved_location_code)
     if (event.resolved_location_code !== null) assert.ok(resolved, 'unknown resolved location')
     assertDependency(manifest, context, resolved?.bundle_code, usedDependencies)
     assert.ok(timestamp(event.started_at) && timestamp(event.completed_at) && timestamp(event.recorded_at))
     assert.ok(event.started_at <= event.completed_at && event.completed_at <= event.recorded_at && event.recorded_at <= manifest.bundle_created_at)
     assert.ok(requested.recorded_at <= event.started_at, 'requested location was recorded after attempt start')
+    assert.ok(lastAttempted.recorded_at <= event.completed_at, 'last attempted location was recorded after attempt completion')
     if (resolved) assert.ok(resolved.recorded_at <= event.completed_at, 'resolved location was recorded after attempt completion')
     assert.equal(event.recorded_by_principal_code, manifest.submitter_principal_code)
     assert.ok(submitter.created_at <= event.recorded_at, 'retrieval event predates submitter')
@@ -578,11 +701,12 @@ function validateManifestSemantics(manifest, context) {
     assert.equal(event.request_profile_code, 'http_get_representation_v1')
     assert.deepEqual(Object.keys(event.request_headers).toSorted(), ['accept', 'accept_encoding', 'accept_language'])
     for (const value of Object.values(event.request_headers)) {
-      if (value !== null) assert.ok(boundedTrimmedText(value, 512), 'invalid representation request header')
+      if (value !== null) assert.ok(safeHttpFieldValue(value, 512), 'invalid representation request header')
     }
-    for (const [key, maximum] of [['etag', 512], ['last_modified', 128], ['content_type', 255], ['content_encoding', 255]]) {
-      if (event.response_metadata[key] !== undefined) assert.ok(boundedText(event.response_metadata[key], maximum, { nonblank: false }), `invalid response ${key}`)
-    }
+    if (event.response_metadata.etag !== undefined) assert.ok(validEtag(event.response_metadata.etag), 'invalid response etag')
+    if (event.response_metadata.last_modified !== undefined) assert.ok(validHttpDate(event.response_metadata.last_modified), 'invalid response last_modified')
+    if (event.response_metadata.content_type !== undefined) assert.ok(safeHttpFieldValue(event.response_metadata.content_type, 255), 'invalid response content_type')
+    if (event.response_metadata.content_encoding !== undefined) assert.ok(canonicalContentCoding(event.response_metadata.content_encoding), 'invalid response content_encoding')
     if (event.response_metadata.vary !== undefined) assert.ok(canonicalVary(event.response_metadata.vary), 'noncanonical Vary value')
     const artifact = event.artifact_code === null ? null : artifacts.get(event.artifact_code)
     if (event.artifact_code !== null) assert.ok(artifact, 'unknown event artifact')
@@ -592,13 +716,15 @@ function validateManifestSemantics(manifest, context) {
       || event.conditional_validator_kind_code !== null
       || event.conditional_validator_value !== null
     if (hasConditional) {
-      assert.ok(event.conditional_basis_retrieval_event_code !== null && ['etag', 'last_modified'].includes(event.conditional_validator_kind_code) && boundedText(event.conditional_validator_value, 512), 'incomplete conditional request basis')
+      assert.ok(event.conditional_basis_retrieval_event_code !== null && ['etag', 'last_modified'].includes(event.conditional_validator_kind_code) && safeHttpFieldValue(event.conditional_validator_value, 512), 'incomplete conditional request basis')
+      if (event.conditional_validator_kind_code === 'etag') assert.ok(validEtag(event.conditional_validator_value), 'invalid conditional ETag')
+      else assert.ok(validHttpDate(event.conditional_validator_value), 'invalid conditional HTTP-date')
       const basis = retrievalEvents.get(event.conditional_basis_retrieval_event_code)
-      assert.ok(basis?.outcome_code === 'retrieved_retained', 'invalid conditional-request basis')
+      assert.ok(basis?.outcome_code === 'retrieved_retained' && basis.http_status_code === 200, 'invalid conditional-request basis')
       const basisRequestedLocationCode = basis.requested_location_code ?? locationCodeFromId(context, basis.requested_location_id)
       const basisResolvedLocationCode = basis.resolved_location_code ?? locationCodeFromId(context, basis.resolved_location_id)
       assert.equal(basisRequestedLocationCode, event.requested_location_code)
-      assert.equal(basisResolvedLocationCode, event.resolved_location_code, 'conditional response resolved location differs from basis')
+      assert.equal(basisResolvedLocationCode, event.last_attempted_location_code, 'conditional attempt target differs from basis response location')
       assert.ok(basis.completed_at < event.started_at)
       const basisHeaders = basis.request_headers ?? {
         accept: basis.request_accept,
@@ -615,8 +741,9 @@ function validateManifestSemantics(manifest, context) {
       }
       const supportedVary = new Set([undefined, 'accept', 'accept-encoding', 'accept-language', 'accept, accept-encoding', 'accept, accept-language', 'accept-encoding, accept-language', 'accept, accept-encoding, accept-language'])
       assert.ok(supportedVary.has(basisMetadata.vary), 'unsupported Vary cannot support a reusable 304 basis')
-      if (event.outcome_code === 'not_modified' && event.response_metadata.vary !== undefined) {
-        assert.equal(event.response_metadata.vary, basisMetadata.vary, '304 Vary differs from basis')
+      if (event.outcome_code === 'not_modified') {
+        assert.equal(event.resolved_location_code, basisResolvedLocationCode, 'conditional response resolved location differs from basis')
+        if (event.response_metadata.vary !== undefined) assert.equal(event.response_metadata.vary, basisMetadata.vary, '304 Vary differs from basis')
       }
       assert.equal(
         event.conditional_validator_value,
@@ -630,22 +757,22 @@ function validateManifestSemantics(manifest, context) {
       assert.equal(event.conditional_validator_value, null)
     }
     if (event.outcome_code === 'retrieved_retained') {
-      assert.ok(resolved && artifact?.byte_layer_code === 'retrieved_body')
+      assert.ok(resolved && event.resolved_location_code === event.last_attempted_location_code && artifact?.byte_layer_code === 'retrieved_body')
       assert.ok(safePath(event.artifact_staged_path) && event.artifact_staged_path === custodyReference(artifact), 'retained retrieval staged path is not content addressed')
       assert.ok(timestamp(event.captured_at) && event.captured_at >= event.started_at && event.captured_at <= event.completed_at)
-      assert.ok(event.http_status_code >= 200 && event.http_status_code <= 299)
+      assert.equal(event.http_status_code, 200, 'manifest v1 full retained representation requires HTTP 200')
       assert.equal(event.observed_sha256, null)
       assert.equal(event.observed_byte_length, null)
-      assert.ok(boundedTrimmedText(event.detected_media_type, 255))
+      assert.ok(safeHttpFieldValue(event.detected_media_type, 255))
     } else if (event.outcome_code === 'observed_not_retained') {
-      assert.ok(resolved && event.artifact_code === null && event.artifact_staged_path === null && timestamp(event.captured_at))
+      assert.ok(resolved && event.resolved_location_code === event.last_attempted_location_code && event.artifact_code === null && event.artifact_staged_path === null && timestamp(event.captured_at))
       assert.ok(event.captured_at >= event.started_at && event.captured_at <= event.completed_at)
-      assert.ok(event.http_status_code >= 200 && event.http_status_code <= 299)
-      assert.ok(boundedTrimmedText(event.detected_media_type, 255))
+      assert.equal(event.http_status_code, 200, 'manifest v1 observed full representation requires HTTP 200')
+      assert.ok(safeHttpFieldValue(event.detected_media_type, 255))
       assert.ok((event.observed_sha256 === null && event.observed_byte_length === null)
         || (/^[0-9a-f]{64}$/.test(event.observed_sha256) && Number.isSafeInteger(event.observed_byte_length) && event.observed_byte_length >= 0))
     } else if (event.outcome_code === 'not_modified') {
-      assert.ok(resolved && event.artifact_code === null && event.artifact_staged_path === null && event.captured_at === null && event.http_status_code === 304)
+      assert.ok(resolved && event.resolved_location_code === event.last_attempted_location_code && event.artifact_code === null && event.artifact_staged_path === null && event.captured_at === null && event.http_status_code === 304)
       assert.equal(event.detected_media_type, null)
       assert.ok(hasConditional, '304 requires exact conditional-request basis and validator')
     } else if (event.outcome_code === 'network_failed') {
@@ -653,9 +780,14 @@ function validateManifestSemantics(manifest, context) {
       assert.equal(event.detected_media_type, null)
       assert.deepEqual(event.response_metadata, {})
     } else if (event.outcome_code === 'http_failed') {
-      assert.ok(resolved && event.artifact_code === null && event.artifact_staged_path === null && event.captured_at === null && event.http_status_code >= 300 && event.http_status_code <= 599 && event.http_status_code !== 304)
+      assert.ok(resolved && event.resolved_location_code === event.last_attempted_location_code && event.artifact_code === null && event.artifact_staged_path === null && event.captured_at === null && event.http_status_code >= 300 && event.http_status_code <= 599 && event.http_status_code !== 304)
       assert.equal(event.detected_media_type, null)
     } else assert.fail('invalid retrieval outcome')
+    if (event.outcome_code !== 'observed_not_retained') {
+      assert.equal(event.observed_sha256, null, `${event.outcome_code} cannot carry an observed body hash`)
+      assert.equal(event.observed_byte_length, null, `${event.outcome_code} cannot carry an observed body length`)
+    }
+    assert.notEqual(event.http_status_code, 206, 'manifest v1 rejects partial content')
     let from = event.requested_location_code
     event.redirects.forEach((redirect, index) => {
       assert.equal(redirect.ordinal, index + 1, 'redirect ordinals must be contiguous')
@@ -665,13 +797,14 @@ function validateManifestSemantics(manifest, context) {
       assert.notEqual(redirect.from_location_code, redirect.to_location_code, 'redirect endpoints must differ')
       const source = locations.get(redirect.from_location_code)
       const target = locations.get(redirect.to_location_code)
-      assert.ok(source && target && source.recorded_at <= event.completed_at && target.recorded_at <= event.completed_at && redirect.http_status_code >= 300 && redirect.http_status_code <= 399 && redirect.http_status_code !== 304)
+      assert.ok(source && target && source.recorded_at <= event.completed_at && target.recorded_at <= event.completed_at && [301, 302, 303, 307, 308].includes(redirect.http_status_code))
       assertDependency(manifest, context, target.bundle_code, usedDependencies)
       from = redirect.to_location_code
       allNewCodes.push(redirect.record_code)
     })
-    if (event.redirects.length) assert.equal(from, event.resolved_location_code, 'redirect chain does not reach resolved location')
-    else if (event.resolved_location_code !== null) assert.equal(event.resolved_location_code, event.requested_location_code, 'resolved location differs without redirect evidence')
+    if (event.redirects.length) assert.equal(from, event.last_attempted_location_code, 'redirect chain does not reach last attempted location')
+    else assert.equal(event.last_attempted_location_code, event.requested_location_code, 'last attempted location differs without redirect evidence')
+    if (event.resolved_location_code !== null) assert.equal(event.resolved_location_code, event.last_attempted_location_code, 'resolved response location differs from last attempted location')
     retrievalEvents.set(event.record_code, { ...event, local: true, bundle_code: manifest.bundle_id, bundle_sequence: manifest.bundle_sequence })
     allNewCodes.push(event.record_code)
   }
@@ -820,12 +953,25 @@ function validateManifestSemantics(manifest, context) {
     assert.equal(run.configuration_sha256, configurationDigest(run.configuration), 'configuration digest mismatch')
     assert.ok(submitter.created_at <= run.recorded_at && artifact.recorded_at <= run.started_at, 'processing run predates attribution or input identity')
     assert.ok(hasAvailableCustodyAt(run.input_artifact_code, run.started_at, manifest.bundle_sequence), 'processing input is not retained and available at its acceptance knowledge boundary')
+    assert.ok(processingOutputKinds[run.method_code], 'unknown processing method')
+    if (run.method_code === 'content_decoding') {
+      assert.equal(artifact.byte_layer_code, 'retrieved_body', 'content decoding requires a retrieved-body input')
+      assert.deepEqual(Object.keys(run.configuration), ['content_coding'], 'content decoding requires exactly the pinned content_coding configuration')
+      assert.ok(canonicalContentCoding(run.configuration.content_coding), 'invalid pinned content coding')
+      const observedCodings = Array.from(retrievalEvents.values())
+        .filter((event) => event.outcome_code === 'retrieved_retained' && (event.artifact_code ?? artifactCodeFromId(context, event.artifact_id)) === run.input_artifact_code)
+        .map((event) => (event.response_metadata ?? { content_encoding: event.response_content_encoding }).content_encoding)
+      assert.ok(observedCodings.includes(run.configuration.content_coding), 'pinned content coding was not observed on a retained input occurrence')
+    }
     if (run.outcome_code === 'failed') {
       assert.ok(boundedText(run.failure_code, 80))
       assert.equal(run.outputs.length, 0)
     } else {
       assert.equal(run.outcome_code, 'succeeded')
       assert.equal(run.failure_code, null)
+      if (run.method_code === 'content_decoding') {
+        assert.equal(run.outputs.length, 1, 'successful content decoding requires exactly one decoded body')
+      }
     }
     unique(run.outputs.map((output) => output.record_code), 'processing output code')
     unique(run.outputs.map((output) => output.ordinal), 'processing output ordinal')
@@ -834,13 +980,18 @@ function validateManifestSemantics(manifest, context) {
       assert.ok(output.record_code.startsWith(prefix) && code(output.record_code) && !processingOutputs.has(output.record_code))
       const outputArtifact = artifacts.get(output.artifact_code)
       assert.equal(outputArtifact?.byte_layer_code, 'derived_output')
+      assert.ok(processingOutputKinds[run.method_code].has(output.output_kind_code), 'processing method/output kind mismatch')
       assert.ok(!reaches(output.artifact_code, run.input_artifact_code), 'processing lineage cycle')
       assertDependency(manifest, context, outputArtifact.bundle_code, usedDependencies)
       assert.ok(timestamp(output.produced_at) && run.started_at <= output.produced_at && output.produced_at <= run.completed_at)
       assert.ok(safePath(output.staged_path) && output.staged_path === custodyReference(outputArtifact), 'staged output path is not content addressed')
       assert.ok(outputArtifact.recorded_at <= run.recorded_at, 'derived artifact identity chronology')
-      if (outputArtifact.local) assert.ok(output.produced_at <= outputArtifact.recorded_at, 'new derived artifact identity predates its origin')
-      assert.ok(boundedTrimmedText(output.detected_media_type, 255))
+      const hasEarlierProduction = Array.from(processingOutputs.values()).some((prior) => {
+        const priorRunCode = prior.run_code ?? processingRunCodeFromId(context, prior.processing_run_id)
+        return priorRunCode !== run.record_code && (prior.artifact_code ?? artifactCodeFromId(context, prior.artifact_id)) === output.artifact_code
+      })
+      if (outputArtifact.local && !hasEarlierProduction) assert.ok(output.produced_at <= outputArtifact.recorded_at, 'new derived artifact identity predates its original production event')
+      assert.ok(safeHttpFieldValue(output.detected_media_type, 255))
       assert.ok(hasCustodyForOccurrence(output.artifact_code, output.produced_at, manifest.bundle_sequence), `processing output has no custody interval at or after production: ${output.record_code}`)
       processingOutputs.set(output.record_code, { ...output, local: true, run_code: run.record_code, artifact_code: output.artifact_code, recorded_at: run.recorded_at, bundle_code: manifest.bundle_id, bundle_sequence: manifest.bundle_sequence })
       addLineage(run.input_artifact_code, output.artifact_code)
@@ -1058,10 +1209,10 @@ function verifyEvidenceBytes(manifest, context, adapter, { noOp = false } = {}) 
   }
 }
 
-function migrationDirectory() {
+function migrationDirectory(proposalSql = fs.readFileSync(proposalPath)) {
   const directory = temporaryDirectory('jedi-2a-migrations-')
   for (const name of migrationNames) fs.copyFileSync(path.join(migrations, name), path.join(directory, name))
-  fs.writeFileSync(path.join(directory, '005_tranche_2a_design.sql'), fs.readFileSync(proposalPath))
+  fs.writeFileSync(path.join(directory, '005_tranche_2a_design.sql'), proposalSql)
   return directory
 }
 
@@ -1155,6 +1306,105 @@ function schemaInventory(database) {
   }
 }
 
+function normalizeSchemaSql(sql) {
+  assert.equal(typeof sql, 'string', 'schema definition SQL is missing')
+  let normalized = ''
+  let quote = null
+  let pendingSpace = false
+  for (let index = 0; index < sql.length; index += 1) {
+    const character = sql[index]
+    if (quote !== null) {
+      normalized += character
+      if (quote === '[') {
+        if (character === ']') quote = null
+      } else if (character === quote) {
+        if (sql[index + 1] === quote) normalized += sql[++index]
+        else quote = null
+      }
+      continue
+    }
+    if (character === "'" || character === '"' || character === '`' || character === '[') {
+      if (pendingSpace && normalized.length) normalized += ' '
+      pendingSpace = false
+      quote = character
+      normalized += character
+      continue
+    }
+    assert.ok(!(character === '-' && sql[index + 1] === '-') && !(character === '/' && sql[index + 1] === '*'), 'schema definitions may not contain SQL comments')
+    if (' \t\n\v\f\r'.includes(character)) {
+      pendingSpace = normalized.length > 0
+      continue
+    }
+    if (pendingSpace && normalized.length) normalized += ' '
+    pendingSpace = false
+    normalized += character
+  }
+  assert.equal(quote, null, 'unterminated schema identifier or string')
+  return normalized.trim().replace(/;$/u, '')
+}
+
+function schemaDefinitionSnapshot(database) {
+  return database.prepare(`SELECT type,name,tbl_name,sql
+    FROM sqlite_schema
+    ORDER BY type,name,tbl_name`).all().map((row) => ({ ...row }))
+}
+
+function schemaDefinitionKey(row) {
+  return `${row.type}\0${row.name}\0${row.tbl_name}`
+}
+
+function assertPriorSchemaPreserved(before, after) {
+  const afterByKey = new Map(after.map((row) => [schemaDefinitionKey(row), row]))
+  for (const expected of before) {
+    const actual = afterByKey.get(schemaDefinitionKey(expected))
+    assert.ok(actual, `pre-existing schema object was deleted: ${expected.type} ${expected.name}`)
+    assert.equal(actual.sql, expected.sql, `pre-existing schema object was modified: ${expected.type} ${expected.name}`)
+  }
+}
+
+const expectedSchemaDefinitionHashes = {
+  'table:atlas_artifact_custody_events': 'ec753dafa52e71b0743dca1eb1688f19280cc543b00822d527385959cca464eb',
+  'table:atlas_artifacts': '4b11118f683aae54acc251a24c61f630b4260656e6b516f286794c7ced75b947',
+  'table:atlas_evidence_bundle_receipts': '159c2871f3cb9269273f03d97e953b3312b042520cab5db3165a4ed6fd726af9',
+  'table:atlas_processing_outputs': '63fce990c34a7cc64bd59c745316cc3437c2f285ba4be0b75b0feb4440e6e503',
+  'table:atlas_processing_runs': '9a9198d22ee102e6d0a918e812a2e14d0de31bd109b870d354f65e28f38ae69f',
+  'table:atlas_retrieval_events': '448fa9e00680497d920eb5d7b44693ceb255df1c0bb44fefa0bbf940488d82ab',
+  'table:atlas_retrieval_locations': 'f16659fb6aeb6af2e066acecad294d00150408e3d37419be99214a5cf921abd7',
+  'table:atlas_retrieval_redirects': '200e94a34112f9e6a859c685053cdf76b424b2d4ebe1db225313c2502a720be2',
+  'table:atlas_unverified_candidate_occurrences': '3497bd04f8602a27038b1d12ed89f42f0c371a0c80a5c35ef4aea0dc90fae894',
+  'trigger:atlas_artifact_custody_events_immutable_delete': 'f0e4729900a72b17c1333532f9cbd5aca7ff6a779491f0cc691cb616ba344ddc',
+  'trigger:atlas_artifact_custody_events_immutable_update': '4ad87fb4ee544614990bb0e68e6bee12a20b3983a4001f62be4d81e9903849a7',
+  'trigger:atlas_artifact_custody_events_validate_insert': 'c097afd6256429de5c9e4e7169166e3cd3910c906c317a54349eaa52da7964fc',
+  'trigger:atlas_artifacts_immutable_delete': '5687672d77722c8e0654dffecd351d23edcf3d59222f1636ecb5399e655ca001',
+  'trigger:atlas_artifacts_immutable_update': '2642411edf4e6cbe9d5a69d3ff2b495f01d7c6cf6c19341ea98fa593d45f51a0',
+  'trigger:atlas_artifacts_validate_insert': 'ee15f7b5f3326ac4f0c364c09b871ab88c07ca7afc72a122ba07c4bac6cced5b',
+  'trigger:atlas_candidate_occurrences_immutable_delete': '62b3a5572382b0a293d434cbf4f87b4f8efe8e28d8e99e808e8b2325844c4ef5',
+  'trigger:atlas_candidate_occurrences_immutable_update': '6f83e78b56c8c8eee7b789c689e2c0677e2ccf2761d067d4b2c114d4d7e6d6b9',
+  'trigger:atlas_candidate_occurrences_validate_insert': '491100caee34b6b6234ae08eed5f73d0f443c50c3f680c0bf1f2222d75d8fc8e',
+  'trigger:atlas_evidence_bundle_receipts_immutable_delete': 'd67d920ff62647a07d495ba8aea810fb0cbbab545b08c5897b70d4718b0a08d4',
+  'trigger:atlas_evidence_bundle_receipts_immutable_update': '38bae632a5b030ef3c370b3400eaea1a200bf92de6e18224caf9a5bcef8e4c20',
+  'trigger:atlas_evidence_bundle_receipts_validate_insert': 'c523c7938329c606f743f46823e216f8e490b1d1fc3181a19591c6dde3d6991a',
+  'trigger:atlas_processing_outputs_immutable_delete': '638e9b056221fb0ac7177a7be1cd6d0910ba922eeba8f497c61b00f294ef5ece',
+  'trigger:atlas_processing_outputs_immutable_update': '40044736ef07ab698e2a853dd467ad82b4f11a2c9a945b935a571974f35c8763',
+  'trigger:atlas_processing_outputs_validate_insert': 'fecdb0d193afd57d565c4cf125334aaec73d4319a48fa87e5c2bd2af8c48e5c5',
+  'trigger:atlas_processing_runs_immutable_delete': 'f97376d996a2ecb7cd9713047468722f4c0bf4cb78ca756adf2773672215a9b4',
+  'trigger:atlas_processing_runs_immutable_update': '33e46a4e96b6e5f5591efb9b581b81051d824dbf8ff3173ac1ceb02ad4aa6eda',
+  'trigger:atlas_processing_runs_validate_insert': '29aedcf94038534c7fd1053d3a92cab80ca5449027f3b16c54c3b8a53a21e54d',
+  'trigger:atlas_retrieval_events_immutable_delete': 'a9a6acd1e822557e517d3851a6b6a37ebf56233094a2e9c493e2a9a58ed6bc11',
+  'trigger:atlas_retrieval_events_immutable_update': 'f70fe5a85f7f523b2a0f867b8f5408b72758d67c1d4d04ce84ef5232b3bf06ba',
+  'trigger:atlas_retrieval_events_validate_insert': '6585ee268d249ef661f0292ac905bab32132c53898578d56cbe99eb869ff38e5',
+  'trigger:atlas_retrieval_locations_immutable_delete': '7b938ac0ce988dc3088aba5b3736c81be6aa5f79efb03381a90eef98babc40ee',
+  'trigger:atlas_retrieval_locations_immutable_update': '4f167ab7f1f42931a11676e24ab2da9a4f7388482fd697915b2f5aa2e8bcebd1',
+  'trigger:atlas_retrieval_locations_validate_insert': '0ecb412c3afefcf96d6bc93d612d173dce912b2867fd2587fddae021ced2b7a3',
+  'trigger:atlas_retrieval_redirects_immutable_delete': '359110fcb70b87d1977038d198fc726f44761968f717ba7a13b6ca608486b102',
+  'trigger:atlas_retrieval_redirects_immutable_update': '39de1782a1f9a88f7661aef646125ca2f59d23a68aa8e016a4485782397cfa57',
+  'trigger:atlas_retrieval_redirects_validate_insert': 'd7ccd67ce4da3167d7ef7dc8ef173837f99b2811f1e416041bc5868e8cdd633d',
+}
+
+function schemaDefinitionDigest(row) {
+  return sha256(`${row.type}\0${row.name}\0${row.tbl_name}\0${normalizeSchemaSql(row.sql)}`)
+}
+
 function inventoryDelta(before, after) {
   return Object.fromEntries(Object.keys(after).map((type) => [type, after[type].filter((name) => !before[type].includes(name))]))
 }
@@ -1167,7 +1417,7 @@ const persistedProjectionColumns = {
   atlas_evidence_bundle_receipts: ['id', 'bundle_sequence', 'bundle_code', 'format_version_code', 'bundle_digest_sha256', 'manifest_path', 'bundle_created_at', 'submitted_by_principal_id', 'imported_by_principal_id', 'importer_software_code', 'importer_version', 'recorded_by_principal_id', 'recorded_at'],
   atlas_retrieval_locations: ['id', 'location_code', 'location_url', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
   atlas_artifacts: ['id', 'artifact_code', 'byte_layer_code', 'hash_algorithm_code', 'sha256', 'byte_length', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
-  atlas_retrieval_events: ['id', 'retrieval_event_code', 'requested_location_id', 'resolved_location_id', 'conditional_basis_retrieval_event_id', 'conditional_validator_kind_code', 'conditional_validator_value', 'artifact_id', 'outcome_code', 'request_method_code', 'request_profile_code', 'request_accept', 'request_accept_language', 'request_accept_encoding', 'started_at', 'completed_at', 'captured_at', 'http_status_code', 'response_etag', 'response_last_modified', 'response_content_type', 'response_content_length', 'response_content_encoding', 'response_vary', 'detected_media_type', 'observed_sha256', 'observed_byte_length', 'collector_principal_id', 'collector_software_code', 'collector_version', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
+  atlas_retrieval_events: ['id', 'retrieval_event_code', 'requested_location_id', 'last_attempted_location_id', 'resolved_location_id', 'conditional_basis_retrieval_event_id', 'conditional_validator_kind_code', 'conditional_validator_value', 'artifact_id', 'outcome_code', 'request_method_code', 'request_profile_code', 'request_accept', 'request_accept_language', 'request_accept_encoding', 'started_at', 'completed_at', 'captured_at', 'http_status_code', 'response_etag', 'response_last_modified', 'response_content_type', 'response_content_length', 'response_content_encoding', 'response_vary', 'detected_media_type', 'observed_sha256', 'observed_byte_length', 'collector_principal_id', 'collector_software_code', 'collector_version', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
   atlas_retrieval_redirects: ['id', 'redirect_code', 'retrieval_event_id', 'hop_ordinal', 'from_location_id', 'to_location_id', 'http_status_code', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
   atlas_artifact_custody_events: ['id', 'custody_event_code', 'artifact_id', 'copy_code', 'event_kind_code', 'predecessor_custody_event_id', 'custody_class_code', 'backend_code', 'backend_reference', 'eligibility_declared_by_principal_id', 'eligibility_declared_at', 'redistribution_eligible_declared', 'no_sensitive_data_declared', 'size_eligible_declared', 'permanent_history_acknowledged', 'reason', 'occurred_at', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
   atlas_processing_runs: ['id', 'processing_run_code', 'run_ordinal', 'input_artifact_id', 'method_code', 'processor_principal_id', 'processor_software_code', 'processor_version', 'configuration_sha256', 'started_at', 'completed_at', 'outcome_code', 'failure_code', 'evidence_bundle_receipt_id', 'recorded_by_principal_id', 'recorded_at'],
@@ -1179,7 +1429,7 @@ const integerColumns = {
   atlas_evidence_bundle_receipts: ['id', 'bundle_sequence', 'submitted_by_principal_id', 'imported_by_principal_id', 'recorded_by_principal_id'],
   atlas_retrieval_locations: ['id', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
   atlas_artifacts: ['id', 'byte_length', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
-  atlas_retrieval_events: ['id', 'requested_location_id', 'resolved_location_id', 'conditional_basis_retrieval_event_id', 'artifact_id', 'http_status_code', 'response_content_length', 'observed_byte_length', 'collector_principal_id', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
+  atlas_retrieval_events: ['id', 'requested_location_id', 'last_attempted_location_id', 'resolved_location_id', 'conditional_basis_retrieval_event_id', 'artifact_id', 'http_status_code', 'response_content_length', 'observed_byte_length', 'collector_principal_id', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
   atlas_retrieval_redirects: ['id', 'retrieval_event_id', 'hop_ordinal', 'from_location_id', 'to_location_id', 'http_status_code', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
   atlas_artifact_custody_events: ['id', 'artifact_id', 'predecessor_custody_event_id', 'eligibility_declared_by_principal_id', 'redistribution_eligible_declared', 'no_sensitive_data_declared', 'size_eligible_declared', 'permanent_history_acknowledged', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
   atlas_processing_runs: ['id', 'run_ordinal', 'input_artifact_id', 'processor_principal_id', 'evidence_bundle_receipt_id', 'recorded_by_principal_id'],
@@ -1200,7 +1450,7 @@ const expectedForeignKeyGroups = {
   atlas_evidence_bundle_receipts: [[['submitted_by_principal_id', 'atlas_principals', 'id']], [['imported_by_principal_id', 'atlas_principals', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
   atlas_retrieval_locations: [[['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
   atlas_artifacts: [[['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
-  atlas_retrieval_events: [[['requested_location_id', 'atlas_retrieval_locations', 'id']], [['resolved_location_id', 'atlas_retrieval_locations', 'id']], [['conditional_basis_retrieval_event_id', 'atlas_retrieval_events', 'id']], [['artifact_id', 'atlas_artifacts', 'id']], [['collector_principal_id', 'atlas_principals', 'id']], [['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
+  atlas_retrieval_events: [[['requested_location_id', 'atlas_retrieval_locations', 'id']], [['last_attempted_location_id', 'atlas_retrieval_locations', 'id']], [['resolved_location_id', 'atlas_retrieval_locations', 'id']], [['conditional_basis_retrieval_event_id', 'atlas_retrieval_events', 'id']], [['artifact_id', 'atlas_artifacts', 'id']], [['collector_principal_id', 'atlas_principals', 'id']], [['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
   atlas_retrieval_redirects: [[['retrieval_event_id', 'atlas_retrieval_events', 'id']], [['from_location_id', 'atlas_retrieval_locations', 'id']], [['to_location_id', 'atlas_retrieval_locations', 'id']], [['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
   atlas_artifact_custody_events: [[['artifact_id', 'atlas_artifacts', 'id']], [['predecessor_custody_event_id', 'atlas_artifact_custody_events', 'id']], [['eligibility_declared_by_principal_id', 'atlas_principals', 'id']], [['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
   atlas_processing_runs: [[['input_artifact_id', 'atlas_artifacts', 'id']], [['processor_principal_id', 'atlas_principals', 'id']], [['evidence_bundle_receipt_id', 'atlas_evidence_bundle_receipts', 'id']], [['recorded_by_principal_id', 'atlas_principals', 'id']]],
@@ -1218,7 +1468,7 @@ const expectedIndexSpecs = {
   atlas_artifacts_code_uidx: [1, 0, ['artifact_code'], null],
   atlas_artifacts_identity_uidx: [1, 0, ['byte_layer_code', 'hash_algorithm_code', 'sha256', 'byte_length'], null],
   atlas_retrieval_events_code_uidx: [1, 0, ['retrieval_event_code'], null],
-  atlas_retrieval_events_location_time_idx: [0, 0, ['requested_location_id', 'completed_at', 'id'], null],
+  atlas_retrieval_events_location_time_idx: [0, 0, ['requested_location_id', 'last_attempted_location_id', 'resolved_location_id', 'completed_at', 'id'], null],
   atlas_retrieval_redirects_code_uidx: [1, 0, ['redirect_code'], null],
   atlas_retrieval_redirects_event_ordinal_uidx: [1, 0, ['retrieval_event_id', 'hop_ordinal'], null],
   atlas_artifact_custody_events_code_uidx: [1, 0, ['custody_event_code'], null],
@@ -1275,6 +1525,43 @@ function assertPhysicalSchema(database) {
     const actualPredicate = /\bWHERE\s+(.+)$/is.exec(sql)?.[1].trim() ?? null
     assert.equal(actualPredicate, predicate, `${name} partial predicate drift`)
   }
+  const expectedDefinitionNames = [
+    ...tables.map((name) => `table:${name}`),
+    ...triggers.map((name) => `trigger:${name}`),
+  ].toSorted()
+  assert.deepEqual(Object.keys(expectedSchemaDefinitionHashes).toSorted(), expectedDefinitionNames, 'pinned schema-definition inventory is incomplete')
+  const definitions = database.prepare(`SELECT type,name,tbl_name,sql FROM sqlite_schema
+    WHERE (type='table' AND name IN (${tables.map(() => '?').join(',')}))
+       OR (type='trigger' AND name IN (${triggers.map(() => '?').join(',')}))
+    ORDER BY type,name`).all(...tables, ...triggers).map((row) => ({ ...row }))
+  assert.deepEqual(definitions.map((row) => `${row.type}:${row.name}`).toSorted(), expectedDefinitionNames, 'table/trigger definition inventory drift')
+  for (const definition of definitions) {
+    assert.equal(
+      schemaDefinitionDigest(definition),
+      expectedSchemaDefinitionHashes[`${definition.type}:${definition.name}`],
+      `${definition.type} ${definition.name} normalized definition drift`,
+    )
+  }
+}
+
+function replaceExactlyOnce(source, needle, replacement, label) {
+  const parts = source.split(needle)
+  assert.equal(parts.length, 2, `${label} mutation target must occur exactly once`)
+  return `${parts[0]}${replacement}${parts[1]}`
+}
+
+function assertSchemaDefinitionMutationDetected(proposal, label, needle, replacement, expectedPattern) {
+  const mutant = replaceExactlyOnce(proposal, needle, replacement, label)
+  const root = temporaryDirectory(`jedi-2a-schema-mutant-${label}-`)
+  const databasePath = path.join(root, 'mutant.sqlite')
+  applyMigrations({ databasePath, migrationsDirectory: migrationDirectory(mutant) })
+  const database = openDatabase(databasePath)
+  try {
+    assert.throws(() => assertPhysicalSchema(database), expectedPattern, `${label} schema mutation escaped physical validation`)
+  } finally {
+    database.close()
+  }
+  return mutant
 }
 
 function assertProjectionComplete(database, manifest) {
@@ -1307,7 +1594,7 @@ function assertProjectionComplete(database, manifest) {
   }
   const foreignKinds = {
     evidence_bundle_receipt_id: 'receipt', submitted_by_principal_id: 'principal', imported_by_principal_id: 'principal', recorded_by_principal_id: 'principal', collector_principal_id: 'principal', processor_principal_id: 'principal', eligibility_declared_by_principal_id: 'principal',
-    requested_location_id: 'location', resolved_location_id: 'location', from_location_id: 'location', to_location_id: 'location',
+    requested_location_id: 'location', last_attempted_location_id: 'location', resolved_location_id: 'location', from_location_id: 'location', to_location_id: 'location',
     artifact_id: 'artifact', input_artifact_id: 'artifact', conditional_basis_retrieval_event_id: 'retrieval', retrieval_event_id: 'retrieval', predecessor_custody_event_id: 'custody', processing_run_id: 'run', processing_output_id: 'output', corrects_candidate_occurrence_id: 'candidate',
   }
   const normalize = (table, row) => {
@@ -1341,7 +1628,8 @@ function assertProjectionComplete(database, manifest) {
     })),
     atlas_retrieval_events: manifest.retrieval_events.map((row) => ({
       id: row.record_code, retrieval_event_code: row.record_code, requested_location_id: row.requested_location_code,
-      resolved_location_id: row.resolved_location_code, conditional_basis_retrieval_event_id: row.conditional_basis_retrieval_event_code,
+      last_attempted_location_id: row.last_attempted_location_code, resolved_location_id: row.resolved_location_code,
+      conditional_basis_retrieval_event_id: row.conditional_basis_retrieval_event_code,
       conditional_validator_kind_code: row.conditional_validator_kind_code, conditional_validator_value: row.conditional_validator_value,
       artifact_id: row.artifact_code, outcome_code: row.outcome_code, request_method_code: row.request_method_code,
       request_profile_code: row.request_profile_code, request_accept: row.request_headers.accept,
@@ -1448,8 +1736,8 @@ function simulateImport({
       const receipt = context.receipts.get(dependency.bundle_id)
       assert.equal(receipt?.bundle_digest_sha256, dependency.bundle_digest_sha256, `missing or changed no-op dependency: ${dependency.bundle_id}`)
     }
-    verifyEvidenceBytes(manifest, context, adapter, { noOp: true })
     assertProjectionComplete(database, manifest)
+    verifyEvidenceBytes(manifest, context, adapter, { noOp: true })
     return 'no_op'
   }
   validateManifestSemantics(manifest, context)
@@ -1511,15 +1799,16 @@ function simulateImport({
     for (const event of manifest.retrieval_events) {
       const metadata = event.response_metadata
       const id = database.prepare(`INSERT INTO atlas_retrieval_events(
-        retrieval_event_code,requested_location_id,resolved_location_id,conditional_basis_retrieval_event_id,
+        retrieval_event_code,requested_location_id,last_attempted_location_id,resolved_location_id,conditional_basis_retrieval_event_id,
         conditional_validator_kind_code,conditional_validator_value,artifact_id,outcome_code,
         request_method_code,request_profile_code,request_accept,request_accept_language,request_accept_encoding,
         started_at,completed_at,captured_at,http_status_code,response_etag,response_last_modified,
         response_content_type,response_content_length,response_content_encoding,response_vary,detected_media_type,observed_sha256,observed_byte_length,
         collector_principal_id,collector_software_code,collector_version,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at
-      )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`).get(
+      )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`).get(
         event.record_code,
         locationIds.get(event.requested_location_code),
+        locationIds.get(event.last_attempted_location_code),
         locationIds.get(event.resolved_location_code) ?? null,
         retrievalEventIds.get(event.conditional_basis_retrieval_event_code) ?? null,
         event.conditional_validator_kind_code,
@@ -1754,6 +2043,79 @@ function materializeManifest(environment, manifest, relativePath = manifest.mani
   return { reviewedManifestRoot: environment.manifestRoot, manifestRelativePath: relativePath }
 }
 
+function invalidReceiptShaInsert(database) {
+  const receipt = database.prepare('SELECT * FROM atlas_evidence_bundle_receipts ORDER BY bundle_sequence DESC LIMIT 1').get()
+  return database.prepare(`INSERT INTO atlas_evidence_bundle_receipts(
+    id,bundle_sequence,bundle_code,format_version_code,bundle_digest_sha256,manifest_path,bundle_created_at,
+    submitted_by_principal_id,imported_by_principal_id,importer_software_code,importer_version,recorded_by_principal_id,recorded_at
+  )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+    database.prepare('SELECT COALESCE(max(id),0)+100 AS id FROM atlas_evidence_bundle_receipts').get().id,
+    receipt.bundle_sequence + 1,
+    'sql.invalid.receipt.hash',
+    '1.0.0',
+    'g'.repeat(64),
+    'invalid/receipt-hash.json',
+    '2026-01-05T00:00:00.000Z',
+    receipt.submitted_by_principal_id,
+    receipt.imported_by_principal_id,
+    receipt.importer_software_code,
+    receipt.importer_version,
+    receipt.submitted_by_principal_id,
+    '2026-01-05T00:00:00.000Z',
+  )
+}
+
+function invalidEqualTimeCandidateSuccessorInsert(database) {
+  const predecessor = database.prepare(`SELECT * FROM atlas_unverified_candidate_occurrences
+    WHERE candidate_chain_code='pilot-bundle-001.chain-a'
+      AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences successor WHERE successor.corrects_candidate_occurrence_id=atlas_unverified_candidate_occurrences.id)`).get()
+  return database.prepare(`INSERT INTO atlas_unverified_candidate_occurrences(
+    id,candidate_record_code,candidate_chain_code,record_kind_code,corrects_candidate_occurrence_id,
+    processing_run_id,processing_output_id,claim_type_code,observed_value,normalized_value,confidence_basis_points,
+    locator_kind_code,locator_value,span_start,span_end,reason,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at
+  )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+    database.prepare('SELECT COALESCE(max(id),0)+100 AS id FROM atlas_unverified_candidate_occurrences').get().id,
+    'sql.invalid.candidate.equal-time',
+    predecessor.candidate_chain_code,
+    'correction',
+    predecessor.id,
+    predecessor.processing_run_id,
+    predecessor.processing_output_id,
+    predecessor.claim_type_code,
+    'equal-time correction',
+    'equal-time correction',
+    5000,
+    predecessor.locator_kind_code,
+    predecessor.locator_value,
+    predecessor.span_start,
+    predecessor.span_end,
+    'synthetic equal-time successor probe',
+    predecessor.evidence_bundle_receipt_id,
+    predecessor.recorded_by_principal_id,
+    predecessor.recorded_at,
+  )
+}
+
+function assertConstraintMutationBehavior({ canonicalProposal, mutantProposal, label, manifestInput, schema, adapter, runtime, probe, canonicalPattern }) {
+  const canonicalRoot = temporaryDirectory(`jedi-2a-boundary-canonical-${label}-`)
+  const mutantRoot = temporaryDirectory(`jedi-2a-boundary-mutant-${label}-`)
+  const canonicalPath = path.join(canonicalRoot, 'canonical.sqlite')
+  const mutantPath = path.join(mutantRoot, 'mutant.sqlite')
+  applyMigrations({ databasePath: canonicalPath, migrationsDirectory: migrationDirectory(canonicalProposal) })
+  applyMigrations({ databasePath: mutantPath, migrationsDirectory: migrationDirectory(mutantProposal) })
+  const canonicalDatabase = openDatabase(canonicalPath)
+  const mutantDatabase = openDatabase(mutantPath)
+  try {
+    assert.equal(simulateImport({ database: canonicalDatabase, ...manifestInput, schema, adapter, ...runtime }), 'imported')
+    assert.equal(simulateImport({ database: mutantDatabase, ...manifestInput, schema, adapter, ...runtime }), 'imported')
+    assert.throws(() => probe(canonicalDatabase), canonicalPattern, `${label} canonical boundary did not reject the invalid row`)
+    assert.doesNotThrow(() => probe(mutantDatabase), `${label} mutant did not expose the intended boundary weakness`)
+  } finally {
+    canonicalDatabase.close()
+    mutantDatabase.close()
+  }
+}
+
 function syntheticFirstBundle(environment) {
   const decodedBody = Buffer.from('synthetic hostile-looking source bytes\n')
   const bytes = {
@@ -1791,6 +2153,7 @@ function syntheticFirstBundle(environment) {
   const retrieval = (suffix, overrides = {}) => ({
     record_code: `${prefix}${suffix}`,
     requested_location_code: resolvedLocation,
+    last_attempted_location_code: resolvedLocation,
     resolved_location_code: null,
     conditional_basis_retrieval_event_code: null,
     conditional_validator_kind_code: null,
@@ -1883,6 +2246,7 @@ function syntheticFirstBundle(environment) {
   manifest.retrieval_events = [
     retrieval('retrieval-1', {
       requested_location_code: requestedLocation,
+      last_attempted_location_code: resolvedLocation,
       resolved_location_code: resolvedLocation,
       artifact_code: raw.record_code,
       artifact_staged_path: custodyReference(raw),
@@ -1891,7 +2255,7 @@ function syntheticFirstBundle(environment) {
       completed_at: '2026-01-01T00:06:00.000Z',
       captured_at: '2026-01-01T00:05:59.000Z',
       http_status_code: 200,
-      response_metadata: { etag: '"synthetic-v1"', content_type: 'application/octet-stream', content_length: bytes.raw.length, content_encoding: 'gzip', vary: 'accept-encoding' },
+      response_metadata: { etag: '"synthetic-v1"', last_modified: 'Wed, 21 Oct 2015 07:28:00 GMT', content_type: 'application/octet-stream', content_length: bytes.raw.length, content_encoding: 'gzip', vary: 'accept-encoding' },
       detected_media_type: 'application/octet-stream',
       redirects: [{ record_code: `${prefix}redirect-1`, ordinal: 1, from_location_code: requestedLocation, to_location_code: resolvedLocation, http_status_code: 302 }],
       recorded_at: '2026-01-01T00:06:01.000Z',
@@ -1938,6 +2302,24 @@ function syntheticFirstBundle(environment) {
       started_at: '2026-01-01T00:13:00.000Z',
       completed_at: '2026-01-01T00:13:01.000Z',
       recorded_at: '2026-01-01T00:13:02.000Z',
+    }),
+    retrieval('retrieval-7', {
+      requested_location_code: requestedLocation,
+      last_attempted_location_code: resolvedLocation,
+      outcome_code: 'network_failed',
+      started_at: '2026-01-01T00:14:00.000Z',
+      completed_at: '2026-01-01T00:14:01.000Z',
+      redirects: [{ record_code: `${prefix}redirect-network-failure`, ordinal: 1, from_location_code: requestedLocation, to_location_code: resolvedLocation, http_status_code: 302 }],
+      recorded_at: '2026-01-01T00:14:02.000Z',
+    }),
+    retrieval('retrieval-8', {
+      conditional_basis_retrieval_event_code: `${prefix}retrieval-2`,
+      conditional_validator_kind_code: 'etag',
+      conditional_validator_value: '"synthetic-v1"',
+      outcome_code: 'network_failed',
+      started_at: '2026-01-01T00:15:10.000Z',
+      completed_at: '2026-01-01T00:15:11.000Z',
+      recorded_at: '2026-01-01T00:15:12.000Z',
     }),
   ]
   const eligibility = (time) => ({
@@ -1992,7 +2374,7 @@ function syntheticFirstBundle(environment) {
       processor_principal_code: 'pilot.collector',
       processor_software_code: 'synthetic-content-decoder',
       processor_version: '1.0.0',
-      configuration: { coding: 'gzip' },
+      configuration: { content_coding: 'gzip' },
       configuration_sha256: '0'.repeat(64),
       started_at: '2026-01-01T00:14:00.000Z',
       completed_at: '2026-01-01T00:15:00.000Z',
@@ -2025,7 +2407,7 @@ function syntheticFirstBundle(environment) {
     },
     {
       record_code: `${prefix}run-failure`,
-      ordinal: 2,
+      ordinal: 3,
       input_artifact_code: decoded.record_code,
       method_code: 'ocr',
       processor_principal_code: 'pilot.collector',
@@ -2042,6 +2424,24 @@ function syntheticFirstBundle(environment) {
       recorded_at: '2026-01-01T00:23:31.000Z',
     },
   ]
+  manifest.processing_runs.splice(2, 0, {
+    record_code: `${prefix}run-repeat-same-bundle`,
+    ordinal: 2,
+    input_artifact_code: decoded.record_code,
+    method_code: 'parser',
+    processor_principal_code: 'pilot.collector',
+    processor_software_code: 'synthetic-parser',
+    processor_version: '1.0.0',
+    configuration: { mode: 'same-bundle-byte-repeat' },
+    configuration_sha256: '0'.repeat(64),
+    started_at: '2026-01-01T00:22:00.000Z',
+    completed_at: '2026-01-01T00:22:30.000Z',
+    outcome_code: 'succeeded',
+    failure_code: null,
+    outputs: [output('output-json-repeated-same-bundle', json, 0, 'structured_data', '2026-01-01T00:22:20.000Z')],
+    recorded_by_principal_code: 'pilot.researcher',
+    recorded_at: '2026-01-01T00:22:31.000Z',
+  })
   const candidate = (suffix, chain, value, { kind = 'assertion', corrects = null, time = '2026-01-01T00:24:00.000Z', outputCode = `${prefix}output-json`, locatorKind = 'byte_span', spanStart = 0, spanEnd = 10 } = {}) => ({
     record_code: `${prefix}${suffix}`,
     chain_code: `${prefix}${chain}`,
@@ -2103,6 +2503,7 @@ function syntheticSecondBundle(first, environment) {
     retrieval_events: [{
       record_code: `${prefix}retrieval-1`,
       requested_location_code: requestedLocation,
+      last_attempted_location_code: requestedLocation,
       resolved_location_code: requestedLocation,
       conditional_basis_retrieval_event_code: `${firstPrefix}retrieval-2`,
       conditional_validator_kind_code: 'etag',
@@ -2239,7 +2640,7 @@ try {
   assert.doesNotMatch(proposal, /^\s*(BEGIN|COMMIT|ROLLBACK)\b/im)
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'))
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema')
-  assertIndependentCanonicalGoldenVectors()
+  assertIndependentCanonicalGoldenVectors(schema)
   for (const name of migrationNames) {
     assert.equal(sha256(fs.readFileSync(path.join(migrations, name))), migrationHashes[name], `${name} changed`)
   }
@@ -2252,6 +2653,11 @@ try {
     [...migrationNames, '005_tranche_2a_design.sql'],
   )
   assert.deepEqual(applyMigrations({ databasePath: freshDatabasePath, migrationsDirectory: designMigrations }).appliedNow, [])
+  let freshDatabase = openDatabase(freshDatabasePath)
+  assertPhysicalSchema(freshDatabase)
+  assert.equal(freshDatabase.prepare('PRAGMA integrity_check').get().integrity_check, 'ok')
+  assert.deepEqual(freshDatabase.prepare('PRAGMA foreign_key_check').all(), [])
+  freshDatabase.close()
 
   const upgradeRoot = temporaryDirectory('jedi-2a-upgrade-')
   const upgradeDatabasePath = path.join(upgradeRoot, 'upgrade.sqlite')
@@ -2259,6 +2665,7 @@ try {
   const legacyBefore = legacyDigests(upgradeDatabasePath)
   let database = openDatabase(upgradeDatabasePath)
   const inventoryBefore = schemaInventory(database)
+  const definitionsBefore = schemaDefinitionSnapshot(database)
   database.close()
   assert.deepEqual(
     applyMigrations({ databasePath: upgradeDatabasePath, migrationsDirectory: designMigrations }).appliedNow,
@@ -2267,18 +2674,142 @@ try {
   assert.deepEqual(legacyDigests(upgradeDatabasePath), legacyBefore)
   database = openDatabase(upgradeDatabasePath)
   const inventoryAfter = schemaInventory(database)
+  const definitionsAfter = schemaDefinitionSnapshot(database)
+  assertPriorSchemaPreserved(definitionsBefore, definitionsAfter)
   const delta = inventoryDelta(inventoryBefore, inventoryAfter)
   assert.deepEqual(delta, { table: tables, index: indexes.toSorted(), trigger: triggers, view: [] })
   assertPhysicalSchema(database)
   assert.equal(database.prepare('PRAGMA integrity_check').get().integrity_check, 'ok')
   assert.deepEqual(database.prepare('PRAGMA foreign_key_check').all(), [])
 
+  const schemaMutationMatrix = [
+    [
+      'receipt-sha-check',
+      "CHECK (length(CAST(bundle_digest_sha256 AS BLOB))=64 AND instr(bundle_digest_sha256,char(0))=0 AND bundle_digest_sha256=lower(bundle_digest_sha256) AND bundle_digest_sha256 NOT GLOB '*[^0-9a-f]*'),",
+      'CHECK (length(CAST(bundle_digest_sha256 AS BLOB))=64),',
+      /table atlas_evidence_bundle_receipts normalized definition drift/,
+    ],
+    [
+      'candidate-successor-chronology',
+      ' AND p.recorded_at<NEW.recorded_at AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s',
+      ' AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s',
+      /trigger atlas_candidate_occurrences_validate_insert normalized definition drift/,
+    ],
+    [
+      'retrieval-outcome-state',
+      "captured_at IS NOT NULL AND http_status_code=200 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)",
+      "captured_at IS NOT NULL AND http_status_code BETWEEN 200 AND 299 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)",
+      /table atlas_retrieval_events normalized definition drift/,
+    ],
+    [
+      'retrieval-location-collision',
+      ' OR location_url=NEW.location_url',
+      '',
+      /trigger atlas_retrieval_locations_validate_insert normalized definition drift/,
+    ],
+    [
+      'processing-cycle-guard',
+      'WHERE q.artifact_id=p.input_artifact_id',
+      'WHERE q.artifact_id=-1',
+      /trigger atlas_processing_outputs_validate_insert normalized definition drift/,
+    ],
+    [
+      'custody-transition-guard',
+      '(NEW.backend_code<>p.backend_code OR NEW.custody_class_code<>p.custody_class_code)',
+      '(1=1)',
+      /trigger atlas_artifact_custody_events_validate_insert normalized definition drift/,
+    ],
+    [
+      'append-only-update-guard',
+      "CREATE TRIGGER atlas_artifacts_immutable_update BEFORE UPDATE ON atlas_artifacts BEGIN SELECT RAISE(ABORT,'artifact identities are immutable'); END;",
+      '',
+      /table\/trigger definition inventory drift/,
+    ],
+    [
+      'retrieval-location-chronology',
+      " OR NOT EXISTS(SELECT 1 FROM atlas_retrieval_locations l WHERE l.id=NEW.last_attempted_location_id AND l.recorded_at<=NEW.completed_at)",
+      '',
+      /trigger atlas_retrieval_events_validate_insert normalized definition drift/,
+    ],
+    [
+      'candidate-lineage-composite-fk',
+      '  FOREIGN KEY (processing_output_id,processing_run_id) REFERENCES atlas_processing_outputs(id,processing_run_id) ON UPDATE RESTRICT ON DELETE RESTRICT,\n',
+      '',
+      /atlas_unverified_candidate_occurrences foreign keys drift/,
+    ],
+  ]
+  const schemaMutants = new Map()
+  for (const mutation of schemaMutationMatrix) {
+    schemaMutants.set(mutation[0], assertSchemaDefinitionMutationDetected(proposal, ...mutation))
+  }
+
+  const legacySchemaMutationRoot = temporaryDirectory('jedi-2a-legacy-schema-mutant-')
+  const legacySchemaMutationPath = path.join(legacySchemaMutationRoot, 'mutant.sqlite')
+  applyMigrations({ databasePath: legacySchemaMutationPath, migrationsDirectory: migrations })
+  const legacySchemaMutationDigests = legacyDigests(legacySchemaMutationPath)
+  let legacySchemaMutationDatabase = openDatabase(legacySchemaMutationPath)
+  const legacySchemaMutationBefore = schemaDefinitionSnapshot(legacySchemaMutationDatabase)
+  legacySchemaMutationDatabase.close()
+  applyMigrations({
+    databasePath: legacySchemaMutationPath,
+    migrationsDirectory: migrationDirectory(`${proposal}\nDROP INDEX requirements_status_idx;\n`),
+  })
+  legacySchemaMutationDatabase = openDatabase(legacySchemaMutationPath)
+  assert.throws(
+    () => assertPriorSchemaPreserved(legacySchemaMutationBefore, schemaDefinitionSnapshot(legacySchemaMutationDatabase)),
+    /pre-existing schema object was deleted: index requirements_status_idx/,
+    'deleted legacy index escaped schema-preservation validation',
+  )
+  assert.deepEqual(legacyDigests(legacySchemaMutationPath), legacySchemaMutationDigests, 'legacy schema mutation unexpectedly changed legacy rows')
+  legacySchemaMutationDatabase.close()
+
   const environment = syntheticEnvironment()
   const first = syntheticFirstBundle(environment)
+  assertEveryManifestLeafAffectsDigest(first)
+  assertManifestArrayOrderAffectsDigest(first)
+  const optionalFieldAbsent = structuredClone(first)
+  delete optionalFieldAbsent.retrieval_events[0].response_metadata.last_modified
+  assert.notEqual(bundleDigest(optionalFieldAbsent), bundleDigest(first), 'optional-field presence must remain digest-covered')
   const firstBytes = encodeManifest(first)
   const firstInput = materializeManifest(environment, first)
   const parsedFirst = parseManifestBytes(firstBytes, schema)
   validateManifestSemantics(parsedFirst, databaseContext(database))
+  const bootstrapTrustRootCollision = mutateManifest(first, (manifest) => {
+    manifest.principal_bootstrap.principals.push({
+      id: 5,
+      principal_code: 'system.bootstrap',
+      principal_kind_code: 'service',
+      runtime_role_code: 'collector',
+      created_by_principal_code: 'system.bootstrap',
+      created_at: '2026-01-01T00:00:03.000Z',
+    })
+  })
+  assert.throws(
+    () => validateManifestSemantics(parseManifestBytes(encodeManifest(bootstrapTrustRootCollision), schema), databaseContext(database)),
+    /collides with the trust root/,
+  )
+  assertConstraintMutationBehavior({
+    canonicalProposal: proposal,
+    mutantProposal: schemaMutants.get('receipt-sha-check'),
+    label: 'receipt-sha-check',
+    manifestInput: firstInput,
+    schema,
+    adapter: environment.adapter,
+    runtime: importerRuntime,
+    probe: invalidReceiptShaInsert,
+    canonicalPattern: /CHECK constraint failed/,
+  })
+  assertConstraintMutationBehavior({
+    canonicalProposal: proposal,
+    mutantProposal: schemaMutants.get('candidate-successor-chronology'),
+    label: 'candidate-successor-chronology',
+    manifestInput: firstInput,
+    schema,
+    adapter: environment.adapter,
+    runtime: importerRuntime,
+    probe: invalidEqualTimeCandidateSuccessorInsert,
+    canonicalPattern: /invalid candidate correction successor/,
+  })
 
   assert.throws(() => parseManifestBytes(Buffer.from('{"format":"a","format":"b"}'), schema), /duplicate key/)
   assert.throws(() => parseManifestBytes(Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), firstBytes]), schema), /BOM/)
@@ -2306,7 +2837,7 @@ try {
   const missingRedirectEvidence = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].redirects = [] })
   assert.throws(
     () => validateManifestSemantics(parseManifestBytes(encodeManifest(missingRedirectEvidence), schema), databaseContext(database)),
-    /resolved location differs without redirect evidence/,
+    /last attempted location differs without redirect evidence/,
   )
   const lateLocation = mutateManifest(first, (manifest) => { manifest.retrieval_locations[0].recorded_at = '2026-01-03T00:00:00.000Z' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(lateLocation), schema), databaseContext(database)))
@@ -2441,7 +2972,11 @@ try {
   })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(custodyCycle), schema), databaseContext(database)), /unknown custody predecessor/)
 
-  for (const forbiddenKey of ['api_key', 'api-key', 'apikey', 'private_key', 'private-key', 'privatekey', 'signing_key', 'access.key', 'client_secret']) {
+  for (const forbiddenKey of [
+    'api_key', 'api-key', 'apikey', 'prefix.api__key.suffix',
+    'private_key', 'private-key', 'privatekey', 'prefix.private..key.suffix',
+    'signing_key', 'prefix.signing--key.suffix', 'access.key', 'client_secret',
+  ]) {
     const forbiddenConfiguration = mutateManifest(first, (manifest) => { runBySuffix(manifest, '.run-success').configuration[forbiddenKey] = 'redacted' })
     assert.throws(() => parseManifestBytes(encodeManifest(forbiddenConfiguration), schema), /pattern mismatch/)
   }
@@ -2458,6 +2993,108 @@ try {
   }
   const postAttempt = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].request_method_code = 'POST' })
   assert.throws(() => parseManifestBytes(encodeManifest(postAttempt), schema), /const mismatch/)
+  for (const [outcome, eventIndex, status] of [
+    ['retained partial response', 0, 206],
+    ['observed partial response', 5, 206],
+    ['retained non-200 success', 0, 204],
+    ['observed non-200 success', 5, 205],
+  ]) {
+    const partialOrIncomplete = mutateManifest(first, (manifest) => { manifest.retrieval_events[eventIndex].http_status_code = status })
+    assert.throws(
+      () => validateManifestSemantics(parseManifestBytes(encodeManifest(partialOrIncomplete), schema), databaseContext(database)),
+      /requires HTTP 200|rejects partial content/,
+      `${outcome} was accepted`,
+    )
+  }
+  for (const status of [300, 305]) {
+    const unsupportedRedirect = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].redirects[0].http_status_code = status })
+    assert.throws(() => parseManifestBytes(encodeManifest(unsupportedRedirect), schema), /enum mismatch/)
+  }
+  const headerMutators = [
+    (manifest, value) => { manifest.retrieval_events[0].request_headers.accept = value },
+    (manifest, value) => { manifest.retrieval_events[0].request_headers.accept_language = value },
+    (manifest, value) => { manifest.retrieval_events[0].request_headers.accept_encoding = value },
+    (manifest, value) => { manifest.retrieval_events[0].response_metadata.etag = value },
+    (manifest, value) => { manifest.retrieval_events[0].response_metadata.last_modified = value },
+    (manifest, value) => { manifest.retrieval_events[0].response_metadata.content_type = value },
+    (manifest, value) => { manifest.retrieval_events[0].response_metadata.content_encoding = value },
+    (manifest, value) => { manifest.retrieval_events[0].response_metadata.vary = value },
+    (manifest, value) => { manifest.retrieval_events[2].conditional_validator_value = value },
+  ]
+  for (const control of ['\r', '\n', '\u0001', '\u007f']) {
+    for (const mutateHeader of headerMutators) {
+      const unsafeHeader = mutateManifest(first, (manifest) => mutateHeader(manifest, `safe${control}unsafe`))
+      assert.throws(() => parseManifestBytes(encodeManifest(unsafeHeader), schema))
+    }
+  }
+  for (const invalidEtag of ['*', 'unquoted', 'w/"lowercase-weak"', '"contains space"']) {
+    const malformedEtag = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].response_metadata.etag = invalidEtag })
+    assert.throws(() => parseManifestBytes(encodeManifest(malformedEtag), schema))
+  }
+  for (const invalidHttpDate of [
+    'Tue, 21 Oct 2015 07:28:00 GMT',
+    'Fri, 30 Feb 2024 07:28:00 GMT',
+    'Wednesday, 21-Oct-15 07:28:00 GMT',
+    'Wed, 21 Oct 2015 07:28:00 UTC',
+  ]) {
+    const malformedDate = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].response_metadata.last_modified = invalidHttpDate })
+    assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(malformedDate), schema), databaseContext(database)))
+  }
+  for (const validEtagValue of ['""', 'W/"synthetic-weak"']) {
+    const validEtagManifest = mutateManifest(first, (manifest) => {
+      manifest.retrieval_events[1].response_metadata.etag = validEtagValue
+      for (const event of manifest.retrieval_events.filter((row) => row.conditional_basis_retrieval_event_code?.endsWith('.retrieval-2'))) {
+        event.conditional_validator_value = validEtagValue
+        if (event.outcome_code === 'not_modified') event.response_metadata.etag = validEtagValue
+      }
+    })
+    validateManifestSemantics(parseManifestBytes(encodeManifest(validEtagManifest), schema), databaseContext(database))
+  }
+  const validLastModifiedConditional = mutateManifest(first, (manifest) => {
+    const lastModified = 'Wed, 21 Oct 2015 07:28:00 GMT'
+    manifest.retrieval_events[1].response_metadata.last_modified = lastModified
+    for (const event of manifest.retrieval_events.filter((row) => row.conditional_basis_retrieval_event_code?.endsWith('.retrieval-2'))) {
+      event.conditional_validator_kind_code = 'last_modified'
+      event.conditional_validator_value = lastModified
+      if (event.outcome_code === 'not_modified') event.response_metadata.last_modified = lastModified
+    }
+  })
+  validateManifestSemantics(parseManifestBytes(encodeManifest(validLastModifiedConditional), schema), databaseContext(database))
+  for (const [method, invalidKind] of [
+    ['parser', 'decoded_body'],
+    ['ocr', 'extracted_text'],
+    ['normalization', 'structured_data'],
+    ['manual_transcription', 'ocr_text'],
+    ['content_decoding', 'extracted_text'],
+  ]) {
+    const invalidMethodOutput = mutateManifest(first, (manifest) => {
+      const run = runBySuffix(manifest, '.run-success')
+      run.method_code = method
+      run.outputs = [run.outputs[0]]
+      run.outputs[0].output_kind_code = invalidKind
+      if (method === 'manual_transcription') run.processor_principal_code = 'pilot.researcher'
+      if (method === 'content_decoding') {
+        run.input_artifact_code = manifest.artifacts.find((artifact) => artifact.byte_layer_code === 'retrieved_body').record_code
+        run.configuration = { content_coding: 'gzip' }
+      }
+    })
+    assert.throws(
+      () => validateManifestSemantics(parseManifestBytes(encodeManifest(invalidMethodOutput), schema), databaseContext(database)),
+      /processing method\/output kind mismatch/,
+    )
+  }
+  const decodingWrongInput = mutateManifest(first, (manifest) => {
+    const run = runBySuffix(manifest, '.run-decode')
+    run.input_artifact_code = run.outputs[0].artifact_code
+  })
+  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(decodingWrongInput), schema), databaseContext(database)), /earlier grounded|retrieved-body input/)
+  for (const configuration of [{}, { content_coding: 'gzip', extra: true }, { content_coding: 'br' }]) {
+    const invalidDecodingConfiguration = mutateManifest(first, (manifest) => { runBySuffix(manifest, '.run-decode').configuration = configuration })
+    assert.throws(
+      () => validateManifestSemantics(parseManifestBytes(encodeManifest(invalidDecodingConfiguration), schema), databaseContext(database)),
+      /missing content_coding|exactly the pinned|not observed/,
+    )
+  }
   const missingConditionalValidator = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].conditional_validator_value = null })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(missingConditionalValidator), schema), databaseContext(database)), /incomplete conditional/)
   const mismatchedConditionalValidator = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].conditional_validator_value = '"other"' })
@@ -2466,6 +3103,7 @@ try {
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(mismatchedRepresentationProfile), schema), databaseContext(database)), /representation profile differs/)
   const mismatchedConditionalResolvedLocation = mutateManifest(first, (manifest) => {
     const event = manifest.retrieval_events[2]
+    event.last_attempted_location_code = manifest.retrieval_locations[0].record_code
     event.resolved_location_code = manifest.retrieval_locations[0].record_code
     event.redirects = [{
       record_code: 'pilot-bundle-001.redirect-conditional-mismatch',
@@ -2475,13 +3113,19 @@ try {
       http_status_code: 302,
     }]
   })
-  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(mismatchedConditionalResolvedLocation), schema), databaseContext(database)), /resolved location differs from basis/)
+  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(mismatchedConditionalResolvedLocation), schema), databaseContext(database)), /conditional attempt target differs from basis/)
   const unsafeVaryBasis = mutateManifest(first, (manifest) => { manifest.retrieval_events[1].response_metadata.vary = '*' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(unsafeVaryBasis), schema), databaseContext(database)), /unsupported Vary/)
   const unsupportedVaryBasis = mutateManifest(first, (manifest) => { manifest.retrieval_events[1].response_metadata.vary = 'user-agent' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(unsupportedVaryBasis), schema), databaseContext(database)), /unsupported Vary/)
   const noncanonicalVary = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].response_metadata.vary = 'accept-language, accept' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(noncanonicalVary), schema), databaseContext(database)), /noncanonical Vary/)
+  const duplicateVary = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].response_metadata.vary = 'accept, accept' })
+  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(duplicateVary), schema), databaseContext(database)), /noncanonical Vary/)
+  for (const value of ['GZIP', 'gzip,br', 'gzip , br']) {
+    const noncanonicalContentEncoding = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].response_metadata.content_encoding = value })
+    assert.throws(() => parseManifestBytes(encodeManifest(noncanonicalContentEncoding), schema), /pattern mismatch/)
+  }
   const changed304Vary = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].response_metadata.vary = 'accept' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(changed304Vary), schema), databaseContext(database)), /304 Vary differs/)
   const unchangedRelocation = mutateManifest(first, (manifest) => {
@@ -2511,18 +3155,8 @@ try {
     const failed = runBySuffix(manifest, '.run-failure')
     const parser = runBySuffix(manifest, '.run-success')
     const decoded = runBySuffix(manifest, '.run-decode').outputs[0]
-    const equalTime = '2026-01-01T00:23:00.000Z'
-    parser.started_at = equalTime
-    parser.completed_at = equalTime
-    parser.recorded_at = equalTime
-    for (const output of parser.outputs) {
-      output.produced_at = equalTime
-      manifest.artifacts.find((artifact) => artifact.record_code === output.artifact_code).recorded_at = equalTime
-      const placement = manifest.custody_events.find((event) => event.artifact_code === output.artifact_code && event.event_kind_code === 'placed')
-      placement.occurred_at = equalTime
-      placement.recorded_at = equalTime
-    }
     failed.input_artifact_code = parser.outputs[1].artifact_code
+    failed.method_code = 'parser'
     failed.outcome_code = 'succeeded'
     failed.failure_code = null
     failed.outputs = [{
@@ -2530,13 +3164,10 @@ try {
       artifact_code: decoded.artifact_code,
       staged_path: decoded.staged_path,
       ordinal: 0,
-      output_kind_code: 'decoded_body',
+      output_kind_code: 'extracted_text',
       detected_media_type: decoded.detected_media_type,
-      produced_at: equalTime,
+      produced_at: '2026-01-01T00:23:15.000Z',
     }]
-    failed.started_at = equalTime
-    failed.completed_at = equalTime
-    failed.recorded_at = equalTime
   })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(selfOrigin), schema), databaseContext(database)), /earlier grounded/)
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(multiRunCycle), schema), databaseContext(database)), /earlier grounded/)
@@ -2554,7 +3185,27 @@ try {
   applyMigrations({ databasePath: preflightDatabasePath, migrationsDirectory: designMigrations })
   const preflightDatabase = openDatabase(preflightDatabasePath)
   const locationAfterAttemptStart = mutateManifest(first, (manifest) => { manifest.retrieval_locations[0].recorded_at = '2026-01-01T00:05:30.000Z' })
+  const preflightRetained206 = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].http_status_code = 206 })
+  const preflightObserved206 = mutateManifest(first, (manifest) => { manifest.retrieval_events[5].http_status_code = 206 })
+  const preflightUnsafeHeader = mutateManifest(first, (manifest) => { manifest.retrieval_events[0].request_headers.accept = 'text/plain\rhidden' })
+  const preflightInvalidMethodOutput = mutateManifest(first, (manifest) => { runBySuffix(manifest, '.run-success').outputs[0].output_kind_code = 'decoded_body' })
+  const preflightUnexpectedObservedFields = []
+  for (const outcome of ['not_modified', 'network_failed', 'http_failed']) {
+    for (const [field, value] of [['observed_sha256', 'f'.repeat(64)], ['observed_byte_length', 1]]) {
+      preflightUnexpectedObservedFields.push([`${outcome}-${field}`, mutateManifest(first, (manifest) => {
+        manifest.retrieval_events.find((event) => event.outcome_code === outcome)[field] = value
+      })])
+    }
+  }
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: locationAfterAttemptStart, environment, schema, runtime: importerRuntime, pattern: /recorded after attempt start/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightRetained206, environment, schema, runtime: importerRuntime, pattern: /requires HTTP 200/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightObserved206, environment, schema, runtime: importerRuntime, pattern: /requires HTTP 200/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightUnsafeHeader, environment, schema, runtime: importerRuntime, pattern: /anyOf branch|pattern mismatch/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightInvalidMethodOutput, environment, schema, runtime: importerRuntime, pattern: /processing method\/output kind mismatch/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: bootstrapTrustRootCollision, environment, schema, runtime: importerRuntime, pattern: /collides with the trust root/ })
+  for (const [label, manifest] of preflightUnexpectedObservedFields) {
+    assertRejectedBeforeBegin({ database: preflightDatabase, manifest, environment, schema, runtime: importerRuntime, pattern: /cannot carry an observed body/, label })
+  }
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: selfOrigin, environment, schema, runtime: importerRuntime, pattern: /earlier grounded/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: multiRunCycle, environment, schema, runtime: importerRuntime, pattern: /earlier grounded/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: ancestorReoutputCycle, environment, schema, runtime: importerRuntime, pattern: /processing lineage cycle/ })
@@ -2566,7 +3217,7 @@ try {
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: duplicateCandidateRoot, environment, schema, runtime: importerRuntime, pattern: /candidate chain already has root/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: importerAsCollector, environment, schema, runtime: importerRuntime, pattern: /collector and technical importer/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: importerAsProcessor, environment, schema, runtime: importerRuntime, pattern: /processor and technical importer/ })
-  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: mismatchedConditionalResolvedLocation, environment, schema, runtime: importerRuntime, pattern: /resolved location differs from basis/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: mismatchedConditionalResolvedLocation, environment, schema, runtime: importerRuntime, pattern: /conditional attempt target differs from basis/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: unsupportedVaryBasis, environment, schema, runtime: importerRuntime, pattern: /unsupported Vary/ })
   const mismatchPath = 'reviewed/manifests/path-mismatch.json'
   writeArtifact(environment.manifestRoot, mismatchPath, firstBytes)
@@ -2689,6 +3340,7 @@ try {
   materializeManifest(environment, first)
 
   const second = syntheticSecondBundle(first, environment)
+  assertEveryManifestLeafAffectsDigest(second)
   const repeatedBootstrap = mutateManifest(second, (manifest) => { manifest.principal_bootstrap = structuredClone(first.principal_bootstrap) })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(repeatedBootstrap), schema), databaseContext(database)), /one-time/)
   const missingDependency = mutateManifest(second, (manifest) => { manifest.required_bundles = [] })
@@ -2730,11 +3382,53 @@ try {
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_artifacts WHERE byte_layer_code='retrieved_body'").get().count, 1)
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code='not_modified'").get().count, 2)
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code='not_modified' AND artifact_id IS NULL AND conditional_basis_retrieval_event_id IS NOT NULL").get().count, 2)
-  assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code IN ('network_failed','http_failed') AND artifact_id IS NULL").get().count, 2)
+  assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code IN ('network_failed','http_failed') AND artifact_id IS NULL").get().count, 4)
+  assert.deepEqual({ ...database.prepare(`SELECT requested.location_code AS requested_code,
+      attempted.location_code AS last_attempted_code,resolved.location_code AS resolved_code,
+      event.outcome_code,count(redirect.id) AS redirect_count
+    FROM atlas_retrieval_events event
+    JOIN atlas_retrieval_locations requested ON requested.id=event.requested_location_id
+    JOIN atlas_retrieval_locations attempted ON attempted.id=event.last_attempted_location_id
+    LEFT JOIN atlas_retrieval_locations resolved ON resolved.id=event.resolved_location_id
+    LEFT JOIN atlas_retrieval_redirects redirect ON redirect.retrieval_event_id=event.id
+    WHERE event.retrieval_event_code='pilot-bundle-001.retrieval-7'
+    GROUP BY event.id`).get() }, {
+    requested_code: first.retrieval_locations[0].record_code,
+    last_attempted_code: first.retrieval_locations[1].record_code,
+    resolved_code: null,
+    outcome_code: 'network_failed',
+    redirect_count: 1,
+  })
+  assert.deepEqual({ ...database.prepare(`SELECT attempted.location_code AS last_attempted_code,
+      event.resolved_location_id,basis.retrieval_event_code AS basis_code,event.conditional_validator_kind_code,
+      event.conditional_validator_value,event.outcome_code,count(redirect.id) AS redirect_count
+    FROM atlas_retrieval_events event
+    JOIN atlas_retrieval_locations attempted ON attempted.id=event.last_attempted_location_id
+    JOIN atlas_retrieval_events basis ON basis.id=event.conditional_basis_retrieval_event_id
+    LEFT JOIN atlas_retrieval_redirects redirect ON redirect.retrieval_event_id=event.id
+    WHERE event.retrieval_event_code='pilot-bundle-001.retrieval-8'
+    GROUP BY event.id`).get() }, {
+    last_attempted_code: first.retrieval_locations[1].record_code,
+    resolved_location_id: null,
+    basis_code: 'pilot-bundle-001.retrieval-2',
+    conditional_validator_kind_code: 'etag',
+    conditional_validator_value: '"synthetic-v1"',
+    outcome_code: 'network_failed',
+    redirect_count: 0,
+  })
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code='observed_not_retained' AND artifact_id IS NULL").get().count, 1)
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_processing_runs WHERE outcome_code='failed'").get().count, 1)
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_processing_outputs WHERE processing_run_id=(SELECT id FROM atlas_processing_runs WHERE processing_run_code LIKE '%.run-success')").get().count, 2)
-  assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_processing_outputs WHERE artifact_id=(SELECT id FROM atlas_artifacts WHERE artifact_code=?)").get(runBySuffix(first, '.run-success').outputs[1].artifact_code).count, 2)
+  assert.deepEqual(database.prepare(`SELECT run.processing_run_code,receipt.bundle_sequence
+    FROM atlas_processing_outputs output
+    JOIN atlas_processing_runs run ON run.id=output.processing_run_id
+    JOIN atlas_evidence_bundle_receipts receipt ON receipt.id=run.evidence_bundle_receipt_id
+    WHERE output.artifact_id=(SELECT id FROM atlas_artifacts WHERE artifact_code=?)
+    ORDER BY receipt.bundle_sequence,run.run_ordinal`).all(runBySuffix(first, '.run-success').outputs[1].artifact_code).map((row) => ({ ...row })), [
+    { processing_run_code: 'pilot-bundle-001.run-success', bundle_sequence: 1 },
+    { processing_run_code: 'pilot-bundle-001.run-repeat-same-bundle', bundle_sequence: 1 },
+    { processing_run_code: 'pilot-bundle-002.run-repeated-output', bundle_sequence: 2 },
+  ])
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_unverified_candidate_occurrences WHERE observed_value IN ('Alpha','Beta')").get().count, 3)
   assert.equal(database.prepare("SELECT record_kind_code FROM atlas_unverified_candidate_occurrences WHERE candidate_record_code LIKE 'pilot-bundle-002.%'").get().record_kind_code, 'correction')
   assert.equal(database.prepare("SELECT event_kind_code FROM atlas_artifact_custody_events WHERE custody_event_code='pilot-bundle-002.raw-restored'").get().event_kind_code, 'restored')
@@ -2779,6 +3473,46 @@ try {
     recorded_at: '2026-01-03T00:02:00.000Z',
   })
   const secondReceiptId = database.prepare("SELECT id FROM atlas_evidence_bundle_receipts WHERE bundle_code='pilot-bundle-002'").get().id
+  assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code IN ('retrieved_retained','observed_not_retained') AND http_status_code=200").get().count, 3)
+  assert.throws(() => invalidReceiptShaInsert(database), /CHECK constraint failed/, 'raw SQL accepted a malformed receipt digest')
+
+  let directSqlSequence = 0
+  const directRetrievalBase = (codeValue) => ({ ...database.prepare('SELECT * FROM atlas_retrieval_events WHERE retrieval_event_code=?').get(codeValue) })
+  const assertDirectRetrievalRejected = (label, row, pattern = /CHECK constraint failed/) => {
+    const before = atlasState(database)
+    const candidate = {
+      ...row,
+      id: database.prepare('SELECT max(id)+1000 AS id FROM atlas_retrieval_events').get().id + (++directSqlSequence),
+      retrieval_event_code: `sql.direct.${label}.${directSqlSequence}`,
+    }
+    assert.throws(() => insertRow(database, 'INSERT', 'atlas_retrieval_events', candidate), pattern, `raw SQL accepted ${label}`)
+    assert.deepEqual(atlasState(database), before, `${label} direct-SQL rejection changed evidence state`)
+  }
+  assertDirectRetrievalRejected('retained-206', { ...directRetrievalBase('pilot-bundle-001.retrieval-2'), http_status_code: 206 })
+  assertDirectRetrievalRejected('observed-206', { ...directRetrievalBase('pilot-bundle-001.retrieval-6'), http_status_code: 206 })
+  assertDirectRetrievalRejected('resolved-target-mismatch', {
+    ...directRetrievalBase('pilot-bundle-001.retrieval-2'),
+    resolved_location_id: database.prepare("SELECT id FROM atlas_retrieval_locations WHERE location_url='https://source.invalid/start'").get().id,
+  })
+  for (const [column, value] of [
+    ['request_accept', 'text/plain\rhidden'],
+    ['request_accept_language', 'en\nhidden'],
+    ['request_accept_encoding', 'gzip' + String.fromCharCode(127)],
+    ['response_etag', 'unquoted'],
+    ['response_last_modified', 'Wed, 99 Oct 2015 07:28:00 GMT'],
+    ['response_content_type', 'text/plain' + String.fromCharCode(1)],
+    ['response_content_encoding', 'gzip\rbr'],
+    ['response_vary', 'accept\nencoding'],
+    ['detected_media_type', 'text/plain' + String.fromCharCode(127)],
+  ]) {
+    assertDirectRetrievalRejected(`unsafe-${column.replaceAll('_', '-')}`, { ...directRetrievalBase('pilot-bundle-001.retrieval-2'), [column]: value })
+  }
+  assertDirectRetrievalRejected('unsafe-conditional-validator', {
+    ...directRetrievalBase('pilot-bundle-001.retrieval-4'),
+    conditional_validator_kind_code: 'etag',
+    conditional_validator_value: '"synthetic-v1"\n',
+  })
+
   assert.throws(
     () => database.prepare('INSERT INTO atlas_retrieval_locations(location_code,location_url,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at)VALUES(?,?,?,?,?)')
       .run('location.bootstrap.invalid', 'https://source.invalid/bootstrap', secondReceiptId, 1, '2026-01-03T01:00:00.000Z'),
@@ -2801,6 +3535,66 @@ try {
     ),
     /invalid processing attribution or chronology/,
   )
+  assert.throws(() => invalidEqualTimeCandidateSuccessorInsert(database), /invalid candidate correction successor/, 'raw SQL accepted an equal-time candidate successor')
+  const currentRawCustody = database.prepare(`SELECT * FROM atlas_artifact_custody_events c
+    WHERE c.copy_code='copy.raw'
+      AND NOT EXISTS(SELECT 1 FROM atlas_artifact_custody_events successor WHERE successor.predecessor_custody_event_id=c.id)`).get()
+  const invalidUnchangedRelocation = {
+    ...currentRawCustody,
+    id: database.prepare('SELECT max(id)+1000 AS id FROM atlas_artifact_custody_events').get().id,
+    custody_event_code: 'sql.invalid.unchanged-relocation',
+    event_kind_code: 'relocated',
+    predecessor_custody_event_id: currentRawCustody.id,
+    reason: 'synthetic unchanged relocation probe',
+    occurred_at: '2026-01-03T12:10:00.000Z',
+    recorded_at: '2026-01-03T12:10:00.000Z',
+  }
+  assert.throws(
+    () => insertRow(database, 'INSERT', 'atlas_artifact_custody_events', invalidUnchangedRelocation),
+    /invalid custody successor/,
+    'raw SQL accepted a relocation that changed neither backend nor custody class',
+  )
+
+  const beforeDirectMethodMatrix = atlasState(database)
+  database.exec('BEGIN IMMEDIATE')
+  try {
+    const outputArtifactId = database.prepare("SELECT artifact_id FROM atlas_processing_outputs WHERE processing_output_code='pilot-bundle-001.output-text'").get().artifact_id
+    const runRows = [
+      database.prepare("SELECT * FROM atlas_processing_runs WHERE processing_run_code='pilot-bundle-001.run-decode'").get(),
+      database.prepare("SELECT * FROM atlas_processing_runs WHERE processing_run_code='pilot-bundle-001.run-success'").get(),
+    ]
+    const createRun = (methodCode, ordinal, processorPrincipalId) => database.prepare(`INSERT INTO atlas_processing_runs(
+      processing_run_code,run_ordinal,input_artifact_id,method_code,processor_principal_id,processor_software_code,processor_version,
+      configuration_sha256,started_at,completed_at,outcome_code,failure_code,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at
+    )VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING *`).get(
+      `sql.matrix.${methodCode}`, ordinal, rawArtifactId, methodCode, processorPrincipalId, 'synthetic-matrix', '1.0.0', sha256('{}'),
+      '2026-01-03T12:20:00.000Z', '2026-01-03T12:20:01.000Z', 'succeeded', null, secondReceiptId, 2, '2026-01-03T12:20:02.000Z',
+    )
+    runRows.push(createRun('ocr', 1, 3), createRun('normalization', 2, 3), createRun('manual_transcription', 3, 2))
+    const invalidKinds = new Map([
+      ['content_decoding', 'extracted_text'],
+      ['parser', 'decoded_body'],
+      ['ocr', 'extracted_text'],
+      ['normalization', 'structured_data'],
+      ['manual_transcription', 'ocr_text'],
+    ])
+    for (const [ordinal, run] of runRows.entries()) {
+      assert.throws(
+        () => database.prepare(`INSERT INTO atlas_processing_outputs(
+          processing_output_code,processing_run_id,artifact_id,output_ordinal,output_kind_code,detected_media_type,
+          produced_at,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at
+        )VALUES(?,?,?,?,?,?,?,?,?,?)`).run(
+          `sql.matrix.invalid-output.${run.method_code}`, run.id, outputArtifactId, 900 + ordinal, invalidKinds.get(run.method_code), 'text/plain',
+          run.started_at, run.evidence_bundle_receipt_id, run.recorded_by_principal_id, run.recorded_at,
+        ),
+        /processing method\/output kind mismatch/,
+        `raw SQL accepted an invalid ${run.method_code} output kind`,
+      )
+    }
+  } finally {
+    database.exec('ROLLBACK')
+  }
+  assert.deepEqual(atlasState(database), beforeDirectMethodMatrix, 'direct processing method/output probes changed evidence state')
   assert.throws(
     () => invalidProcessorKindInsert.run(
       'sql.invalid-parser-human', 1, rawArtifactId, 'parser', 2, 'synthetic', '1.0.0', 'b'.repeat(64),
@@ -2833,7 +3627,7 @@ try {
         processing_output_code,processing_run_id,artifact_id,output_ordinal,output_kind_code,detected_media_type,
         produced_at,evidence_bundle_receipt_id,recorded_by_principal_id,recorded_at
       )VALUES(?,?,?,?,?,?,?,?,?,?)`).run(
-        'sql.ancestor-cycle-output', cycleRunId, decodedArtifactId, 0, 'decoded_body', 'application/octet-stream',
+        'sql.ancestor-cycle-output', cycleRunId, decodedArtifactId, 0, 'extracted_text', 'application/octet-stream',
         cycleTime, secondReceiptId, 2, cycleTime,
       ),
       /processing lineage cycle/,
@@ -2936,7 +3730,14 @@ try {
     ...one('atlas_processing_runs', "outcome_code='failed'"),
     id: nextId('atlas_processing_runs'),
     processing_run_code: `replace.run.${adversarialToken(label)}`,
-    run_ordinal: 3,
+    run_ordinal: database.prepare('SELECT COALESCE(max(run_ordinal),-1)+1 AS ordinal FROM atlas_processing_runs WHERE evidence_bundle_receipt_id=?').get(receipt2.id).ordinal,
+    input_artifact_id: one('atlas_artifacts', "byte_layer_code='retrieved_body'").id,
+    method_code: 'parser',
+    evidence_bundle_receipt_id: receipt2.id,
+    recorded_by_principal_id: receipt2.submitted_by_principal_id,
+    started_at: '2026-01-03T12:00:00.000Z',
+    completed_at: '2026-01-03T12:00:01.000Z',
+    recorded_at: '2026-01-03T12:00:02.000Z',
   })
   const freshOutput = (label) => ({
     ...one('atlas_processing_outputs'),
@@ -3066,6 +3867,8 @@ try {
     no_op_migration_rerun: 'passed',
     migrations_001_004_unchanged: 'passed',
     legacy_digests_preserved: legacyTables.length,
+    legacy_schema_definitions_preserved: 'passed',
+    deleted_legacy_index_mutation_rejected: 'passed',
     actual_json_schema_execution: 'passed',
     raw_utf8_duplicate_key_and_number_profile: 'passed',
     manifest_redirect_attribution_and_chronology: 'passed',
@@ -3082,6 +3885,9 @@ try {
     processing_input_and_locator_bytes_verified: 'passed',
     content_address_and_symlink_confinement: 'passed',
     retrieval_outcome_boundaries: 'passed',
+    redirected_and_conditional_network_failures: 'passed',
+    http_200_304_etag_date_content_coding_vary_profile: 'passed',
+    processing_method_output_configuration_matrix: 'passed',
     event_time_and_receipt_sequence_custody_projection: 'passed',
     candidate_knowledge_time_projection: 'passed',
     correction_cycle_and_wrong_subject_rejection: 'passed',
@@ -3095,8 +3901,12 @@ try {
     tombstoned_historical_copy_not_required_for_no_op: 'passed',
     non_vacuous_all_table_transactional_rollback: 'passed',
     exact_physical_schema_introspection: 'passed',
+    fixed_table_and_trigger_definition_hashes: 'passed',
+    schema_definition_mutants_rejected: schemaMutationMatrix.map(([label]) => label),
+    behavioral_sql_mutants_rejected: ['receipt-sha-check', 'candidate-successor-chronology'],
     strict_types_and_positive_ids: 'passed',
     recursive_triggers_off_all_unique_key_replace_protection: 'passed',
+    no_op_persisted_drift_mutations_rejected: noOpMutations.map(([label]) => label),
     integrity_check: 'ok',
     foreign_key_check: 'clean',
     objects: { tables, indexes: indexes.toSorted(), triggers },
