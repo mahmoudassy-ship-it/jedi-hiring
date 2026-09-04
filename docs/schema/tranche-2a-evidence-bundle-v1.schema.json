@@ -283,7 +283,91 @@
         "redirects": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/redirectHop" } },
         "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
         "recorded_at": { "$ref": "#/$defs/timestamp" }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "observed_sha256": { "type": "null" } }, "required": ["observed_sha256"] },
+          "then": { "properties": { "observed_byte_length": { "type": "null" } } },
+          "else": { "properties": { "observed_byte_length": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 } } }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "retrieved_retained" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_staged_path": { "$ref": "#/$defs/safeRelativePath" },
+              "captured_at": { "$ref": "#/$defs/timestamp" },
+              "http_status_code": { "const": 200 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "observed_not_retained" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "$ref": "#/$defs/timestamp" },
+              "http_status_code": { "const": 200 },
+              "detected_media_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "not_modified" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "conditional_basis_retrieval_event_code": { "$ref": "#/$defs/recordCode" },
+              "conditional_validator_kind_code": { "enum": ["etag", "last_modified"] },
+              "conditional_validator_value": { "$ref": "#/$defs/httpFieldValue" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "const": 304 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "network_failed" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "type": "null" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "type": "null" },
+              "response_metadata": { "type": "object", "maxProperties": 0 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "http_failed" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "type": "integer", "minimum": 300, "maximum": 599 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        }
+      ]
     },
     "repositoryEligibilityDeclaration": {
       "type": "object",
@@ -316,7 +400,20 @@
         "occurred_at": { "$ref": "#/$defs/timestamp" },
         "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
         "recorded_at": { "$ref": "#/$defs/timestamp" }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "custody_class_code": { "const": "repository" },
+              "event_kind_code": { "enum": ["placed", "relocated", "restored"] }
+            },
+            "required": ["custody_class_code", "event_kind_code"]
+          },
+          "then": { "properties": { "repository_eligibility_declaration": { "$ref": "#/$defs/repositoryEligibilityDeclaration" } } },
+          "else": { "properties": { "repository_eligibility_declaration": { "type": "null" } } }
+        }
+      ]
     },
     "processingOutput": {
       "type": "object",

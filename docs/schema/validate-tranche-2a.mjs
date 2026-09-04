@@ -1036,6 +1036,7 @@ function validateManifestSemantics(manifest, context) {
       assert.equal(predecessor.candidate_chain_code ?? predecessor.chain_code, candidate.chain_code)
       assert.equal(predecessor.claim_type_code, candidate.claim_type_code)
       assert.ok(predecessor.recorded_at < candidate.recorded_at)
+      assert.ok((predecessor.bundle_sequence ?? manifest.bundle_sequence) <= manifest.bundle_sequence, 'candidate predecessor belongs to a later knowledge sequence')
       const predecessorCode = predecessor.candidate_record_code ?? predecessor.record_code
       assert.ok(!Array.from(candidates.values()).some((row) => (row.corrects_candidate_record_code ?? candidateCodeFromId(context, row.corrects_candidate_occurrence_id)) === predecessorCode), 'candidate predecessor is not current leaf')
       if (candidate.record_kind_code === 'withdrawal') {
@@ -1236,15 +1237,24 @@ function custodyLeafAt(database, copyCode, eventAsOf, knownThroughSequence) {
     ORDER BY c.occurred_at DESC,r.bundle_sequence DESC,c.id DESC LIMIT 1`).get(copyCode, eventAsOf, knownThroughSequence, eventAsOf, knownThroughSequence)
 }
 
-function candidateLeafAt(database, chainCode, knownAt) {
-  return database.prepare(`SELECT c.record_kind_code,c.observed_value,c.recorded_at
+function rawCandidateChainLeafAt(database, chainCode, recordedAsOf, knownThroughBundleSequence) {
+  return database.prepare(`SELECT c.record_kind_code,c.observed_value,c.recorded_at,r.bundle_sequence
     FROM atlas_unverified_candidate_occurrences c
-    WHERE c.candidate_chain_code=? AND c.recorded_at<=?
+    JOIN atlas_evidence_bundle_receipts r ON r.id=c.evidence_bundle_receipt_id
+    WHERE c.candidate_chain_code=? AND c.recorded_at<=? AND r.bundle_sequence<=?
       AND NOT EXISTS(
         SELECT 1 FROM atlas_unverified_candidate_occurrences successor
-        WHERE successor.corrects_candidate_occurrence_id=c.id AND successor.recorded_at<=?
+        JOIN atlas_evidence_bundle_receipts successor_receipt ON successor_receipt.id=successor.evidence_bundle_receipt_id
+        WHERE successor.corrects_candidate_occurrence_id=c.id
+          AND successor.recorded_at<=? AND successor_receipt.bundle_sequence<=?
       )
-    ORDER BY c.recorded_at DESC,c.id DESC LIMIT 1`).get(chainCode, knownAt, knownAt)
+    ORDER BY c.recorded_at DESC,r.bundle_sequence DESC,c.id DESC LIMIT 1`)
+    .get(chainCode, recordedAsOf, knownThroughBundleSequence, recordedAsOf, knownThroughBundleSequence)
+}
+
+function activeCandidateAt(database, chainCode, recordedAsOf, knownThroughBundleSequence) {
+  const leaf = rawCandidateChainLeafAt(database, chainCode, recordedAsOf, knownThroughBundleSequence)
+  return leaf?.record_kind_code === 'withdrawal' ? undefined : leaf
 }
 
 function legacyDigests(databasePath) {
@@ -1363,12 +1373,39 @@ function assertPriorSchemaPreserved(before, after) {
 }
 
 const expectedSchemaDefinitionHashes = {
-  'table:atlas_artifact_custody_events': 'ec753dafa52e71b0743dca1eb1688f19280cc543b00822d527385959cca464eb',
+  'index:atlas_artifact_custody_events_code_uidx': '58d52db3d821a56c169318beaafca631e53a7a4cab3cc5a5c2676ee1239d4887',
+  'index:atlas_artifact_custody_events_leaf_idx': '2b3706c8e47eec29ff80bf85b5ca00ca6698b3a6370adf91cf77acbea59d6d43',
+  'index:atlas_artifact_custody_events_one_root_uidx': '72e31ab54e3e7e5fbe989eb5240ca392be036aed3be6b761f4bfef55bfa1dcc6',
+  'index:atlas_artifact_custody_events_predecessor_uidx': '80ed3df9d307cb5118ec585b3514fe14c6b86d0c5c679214b4f8b5ce7faee0fb',
+  'index:atlas_artifacts_code_uidx': '195223c242ad87ff676b6b31a2f8f500a8af6c3b7dfd369fc09e9832265216f5',
+  'index:atlas_artifacts_identity_uidx': '4ddcdfe9361ea4625b794ae41eba15de4ef1e27bb7f9cb1c8b515017f494c1ec',
+  'index:atlas_candidate_occurrences_leaf_idx': '30df41c2c1faa545760a1eb227eff9fcdb53995a9cf25bdcd850ed7315e339d0',
+  'index:atlas_candidate_occurrences_one_root_uidx': '4988b80fc45a8bed4e210dd98b1d63ab42cd8cd7fcf54d483ae96e0bfe122168',
+  'index:atlas_candidate_occurrences_predecessor_uidx': '64a12c8dc12fc568ef5185daa31cb25d753594badec90eb082bf89fb677d20cf',
+  'index:atlas_candidate_occurrences_record_code_uidx': '955586d3517eb8797941883a60615e800c9df2977559bd5af93a38183b8220bf',
+  'index:atlas_candidate_occurrences_run_output_idx': '83c80bafdcf205c112c2dbe141fbf89a0ca8c369070de3dc8751548e33c39fdc',
+  'index:atlas_evidence_bundle_receipts_code_uidx': 'd8173909c740f2e192881f242ae40d677ede533de6aad491414df434c9670c07',
+  'index:atlas_evidence_bundle_receipts_digest_uidx': 'c5af96cd008137f687cd585a3cd3ee6aa8dde0d54225f21ea0e5b3e060aad8f5',
+  'index:atlas_evidence_bundle_receipts_path_uidx': '89a2be88cc4ee08479d3ba5fccd098d007aef14a96c2c8d8b6cf9def7a36a42a',
+  'index:atlas_evidence_bundle_receipts_sequence_uidx': '808e7db23c48cb87e35bee8ea307eb521e722d1be7c7309f913f382022ea1345',
+  'index:atlas_processing_outputs_code_uidx': '40f668be7edf86d0d82a92734af585b6186b006554315acaf5a9d85a9e16f74b',
+  'index:atlas_processing_outputs_id_run_uidx': 'c592c6346195d2fb8b495a2b2af5234083797d3c0d67422fff6977b13a98821f',
+  'index:atlas_processing_outputs_run_ordinal_uidx': '348e9cfdb98c741fde1e2a008e5d2303887f9bdbae1dda32531b60602e330c62',
+  'index:atlas_processing_runs_code_uidx': '7e9f56661c2619c02442fa7e1eaa2857211b749ffbeb7d5c8bad9024f32c2d21',
+  'index:atlas_processing_runs_input_time_idx': 'ca3adcf8f9d2b95742dc478bfb9a658e320adea507e139547b559b474ed52576',
+  'index:atlas_processing_runs_receipt_ordinal_uidx': '4c9197bcd34609d92848028241d528a254dea07078e1e77ba3e4c7c40757efd1',
+  'index:atlas_retrieval_events_code_uidx': '9d610f07258643834d00845cf19c2a9f73863f0e78afd1be7294839967c8146d',
+  'index:atlas_retrieval_events_location_time_idx': 'ba3ddd7d96748b28a665e6e5408d17eac67cf9cae7dbf622ab16b0b01955630e',
+  'index:atlas_retrieval_locations_code_uidx': 'fd2a1a1a2a3edd7facc580c1faf78ed77c5190d1bff166a7859066ab52f82419',
+  'index:atlas_retrieval_locations_url_uidx': 'b84e79780062a8ca4ea755c1487dde94fc3bf3bf532b048529f54c3f144dfa70',
+  'index:atlas_retrieval_redirects_code_uidx': '288cffbaf1395e89d6c29ff9d9d0044d34dcea4128be22d13e7940a7a52dd13c',
+  'index:atlas_retrieval_redirects_event_ordinal_uidx': '575eb0884335db883db63eeaeb968755cc29f29a98a9a40cf7a84c6e6b6757fa',
+  'table:atlas_artifact_custody_events': 'da9035027b0c0c57fa86ba2a1544f0ed7408d9ad9e02a92979f02075a654618d',
   'table:atlas_artifacts': '4b11118f683aae54acc251a24c61f630b4260656e6b516f286794c7ced75b947',
   'table:atlas_evidence_bundle_receipts': '159c2871f3cb9269273f03d97e953b3312b042520cab5db3165a4ed6fd726af9',
   'table:atlas_processing_outputs': '63fce990c34a7cc64bd59c745316cc3437c2f285ba4be0b75b0feb4440e6e503',
   'table:atlas_processing_runs': '9a9198d22ee102e6d0a918e812a2e14d0de31bd109b870d354f65e28f38ae69f',
-  'table:atlas_retrieval_events': '448fa9e00680497d920eb5d7b44693ceb255df1c0bb44fefa0bbf940488d82ab',
+  'table:atlas_retrieval_events': '7575d55f8d8d3ba1973aabe7b203245833781bec0a4c695f4fb4d9e81f73f668',
   'table:atlas_retrieval_locations': 'f16659fb6aeb6af2e066acecad294d00150408e3d37419be99214a5cf921abd7',
   'table:atlas_retrieval_redirects': '200e94a34112f9e6a859c685053cdf76b424b2d4ebe1db225313c2502a720be2',
   'table:atlas_unverified_candidate_occurrences': '3497bd04f8602a27038b1d12ed89f42f0c371a0c80a5c35ef4aea0dc90fae894',
@@ -1380,7 +1417,7 @@ const expectedSchemaDefinitionHashes = {
   'trigger:atlas_artifacts_validate_insert': 'ee15f7b5f3326ac4f0c364c09b871ab88c07ca7afc72a122ba07c4bac6cced5b',
   'trigger:atlas_candidate_occurrences_immutable_delete': '62b3a5572382b0a293d434cbf4f87b4f8efe8e28d8e99e808e8b2325844c4ef5',
   'trigger:atlas_candidate_occurrences_immutable_update': '6f83e78b56c8c8eee7b789c689e2c0677e2ccf2761d067d4b2c114d4d7e6d6b9',
-  'trigger:atlas_candidate_occurrences_validate_insert': '491100caee34b6b6234ae08eed5f73d0f443c50c3f680c0bf1f2222d75d8fc8e',
+  'trigger:atlas_candidate_occurrences_validate_insert': 'e289baad9a077835166a75754725836e81993c08d06dc9cab2bd26ff9d1e2f40',
   'trigger:atlas_evidence_bundle_receipts_immutable_delete': 'd67d920ff62647a07d495ba8aea810fb0cbbab545b08c5897b70d4718b0a08d4',
   'trigger:atlas_evidence_bundle_receipts_immutable_update': '38bae632a5b030ef3c370b3400eaea1a200bf92de6e18224caf9a5bcef8e4c20',
   'trigger:atlas_evidence_bundle_receipts_validate_insert': 'c523c7938329c606f743f46823e216f8e490b1d1fc3181a19591c6dde3d6991a',
@@ -1519,21 +1556,28 @@ function assertPhysicalSchema(database) {
   for (const [name, [uniqueValue, partial, columns, predicate]] of Object.entries(expectedIndexSpecs)) {
     const index = allIndexes.get(name)
     assert.deepEqual({ unique: index.unique, origin: index.origin, partial: index.partial }, { unique: uniqueValue, origin: 'c', partial }, `${name} flags drift`)
-    const actualColumns = database.prepare(`PRAGMA index_xinfo(${name})`).all().filter((row) => row.key === 1).map((row) => row.name)
-    assert.deepEqual(actualColumns, columns, `${name} indexed columns drift`)
+    const tableColumns = new Map(database.prepare(`PRAGMA table_xinfo(${index.table})`).all().map((row) => [row.name, row.cid]))
+    const expectedXinfo = [
+      ...columns.map((column, seqno) => ({ seqno, cid: tableColumns.get(column), name: column, desc: 0, coll: 'BINARY', key: 1 })),
+      { seqno: columns.length, cid: -1, name: null, desc: 0, coll: 'BINARY', key: 0 },
+    ]
+    const actualXinfo = database.prepare(`PRAGMA index_xinfo(${name})`).all().map((row) => ({ ...row }))
+    assert.deepEqual(actualXinfo, expectedXinfo, `${name} full index key definition drift`)
     const sql = database.prepare("SELECT sql FROM sqlite_schema WHERE type='index' AND name=?").get(name).sql
     const actualPredicate = /\bWHERE\s+(.+)$/is.exec(sql)?.[1].trim() ?? null
     assert.equal(actualPredicate, predicate, `${name} partial predicate drift`)
   }
   const expectedDefinitionNames = [
     ...tables.map((name) => `table:${name}`),
+    ...indexes.map((name) => `index:${name}`),
     ...triggers.map((name) => `trigger:${name}`),
   ].toSorted()
   assert.deepEqual(Object.keys(expectedSchemaDefinitionHashes).toSorted(), expectedDefinitionNames, 'pinned schema-definition inventory is incomplete')
   const definitions = database.prepare(`SELECT type,name,tbl_name,sql FROM sqlite_schema
     WHERE (type='table' AND name IN (${tables.map(() => '?').join(',')}))
+       OR (type='index' AND name IN (${indexes.map(() => '?').join(',')}))
        OR (type='trigger' AND name IN (${triggers.map(() => '?').join(',')}))
-    ORDER BY type,name`).all(...tables, ...triggers).map((row) => ({ ...row }))
+    ORDER BY type,name`).all(...tables, ...indexes, ...triggers).map((row) => ({ ...row }))
   assert.deepEqual(definitions.map((row) => `${row.type}:${row.name}`).toSorted(), expectedDefinitionNames, 'table/trigger definition inventory drift')
   for (const definition of definitions) {
     assert.equal(
@@ -2608,7 +2652,7 @@ function syntheticSecondBundle(first, environment) {
       span_end: 10,
       reason: 'synthetic correction after mistaken withdrawal',
       recorded_by_principal_code: 'pilot.researcher',
-      recorded_at: '2026-01-03T00:02:00.000Z',
+      recorded_at: '2026-01-01T00:27:00.000Z',
     }],
   }
   return finalizeManifest(manifest)
@@ -2691,14 +2735,20 @@ try {
     ],
     [
       'candidate-successor-chronology',
-      ' AND p.recorded_at<NEW.recorded_at AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s',
-      ' AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s',
+      '      AND p.claim_type_code=NEW.claim_type_code AND p.recorded_at<NEW.recorded_at\n',
+      '      AND p.claim_type_code=NEW.claim_type_code\n',
+      /trigger atlas_candidate_occurrences_validate_insert normalized definition drift/,
+    ],
+    [
+      'candidate-successor-knowledge-sequence',
+      '      AND predecessor_receipt.bundle_sequence<=successor_receipt.bundle_sequence\n',
+      '',
       /trigger atlas_candidate_occurrences_validate_insert normalized definition drift/,
     ],
     [
       'retrieval-outcome-state',
-      "captured_at IS NOT NULL AND http_status_code=200 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)",
-      "captured_at IS NOT NULL AND http_status_code BETWEEN 200 AND 299 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)",
+      "      AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code IS 200\n",
+      "      AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code BETWEEN 200 AND 299\n",
       /table atlas_retrieval_events normalized definition drift/,
     ],
     [
@@ -2736,6 +2786,18 @@ try {
       '  FOREIGN KEY (processing_output_id,processing_run_id) REFERENCES atlas_processing_outputs(id,processing_run_id) ON UPDATE RESTRICT ON DELETE RESTRICT,\n',
       '',
       /atlas_unverified_candidate_occurrences foreign keys drift/,
+    ],
+    [
+      'retrieval-location-index-collation',
+      'CREATE UNIQUE INDEX atlas_retrieval_locations_url_uidx ON atlas_retrieval_locations(location_url);',
+      'CREATE UNIQUE INDEX atlas_retrieval_locations_url_uidx ON atlas_retrieval_locations(location_url COLLATE NOCASE);',
+      /atlas_retrieval_locations_url_uidx (?:full index key definition|normalized definition) drift/,
+    ],
+    [
+      'retrieval-location-index-direction',
+      'CREATE UNIQUE INDEX atlas_retrieval_locations_url_uidx ON atlas_retrieval_locations(location_url);',
+      'CREATE UNIQUE INDEX atlas_retrieval_locations_url_uidx ON atlas_retrieval_locations(location_url DESC);',
+      /atlas_retrieval_locations_url_uidx (?:full index key definition|normalized definition) drift/,
     ],
   ]
   const schemaMutants = new Map()
@@ -2987,6 +3049,18 @@ try {
   validateManifestSemantics(parseManifestBytes(encodeManifest(benignConfiguration), schema), databaseContext(database))
   const personalDataDeclaration = mutateManifest(first, (manifest) => { manifest.bundle_declarations.contains_personal_data = true })
   assert.throws(() => parseManifestBytes(encodeManifest(personalDataDeclaration), schema), /const mismatch/)
+  const schemaStateMutations = [
+    mutateManifest(first, (manifest) => { manifest.retrieval_events[0].resolved_location_code = null }),
+    mutateManifest(first, (manifest) => { manifest.retrieval_events[0].http_status_code = null }),
+    mutateManifest(first, (manifest) => {
+      manifest.retrieval_events[5].observed_sha256 = null
+      manifest.retrieval_events[5].observed_byte_length = 99
+    }),
+    mutateManifest(first, (manifest) => { manifest.custody_events[0].repository_eligibility_declaration.redistribution_eligible_declared = null }),
+  ]
+  for (const invalidStateManifest of schemaStateMutations) {
+    assert.throws(() => parseManifestBytes(encodeManifest(invalidStateManifest), schema), /type mismatch|const mismatch/, 'JSON Schema accepted a nullable closed-state escape')
+  }
   for (const locator of ['page_region', 'json_pointer', 'xpath']) {
     const unsupportedLocator = mutateManifest(first, (manifest) => { manifest.candidate_occurrences[0].locator_kind_code = locator })
     assert.throws(() => parseManifestBytes(encodeManifest(unsupportedLocator), schema), /enum mismatch/)
@@ -3002,7 +3076,7 @@ try {
     const partialOrIncomplete = mutateManifest(first, (manifest) => { manifest.retrieval_events[eventIndex].http_status_code = status })
     assert.throws(
       () => validateManifestSemantics(parseManifestBytes(encodeManifest(partialOrIncomplete), schema), databaseContext(database)),
-      /requires HTTP 200|rejects partial content/,
+      /const mismatch|requires HTTP 200|rejects partial content/,
       `${outcome} was accepted`,
     )
   }
@@ -3096,7 +3170,7 @@ try {
     )
   }
   const missingConditionalValidator = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].conditional_validator_value = null })
-  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(missingConditionalValidator), schema), databaseContext(database)), /incomplete conditional/)
+  assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(missingConditionalValidator), schema), databaseContext(database)), /type mismatch|incomplete conditional/)
   const mismatchedConditionalValidator = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].conditional_validator_value = '"other"' })
   assert.throws(() => validateManifestSemantics(parseManifestBytes(encodeManifest(mismatchedConditionalValidator), schema), databaseContext(database)), /does not match basis/)
   const mismatchedRepresentationProfile = mutateManifest(first, (manifest) => { manifest.retrieval_events[2].request_headers.accept = 'text/plain' })
@@ -3198,13 +3272,13 @@ try {
     }
   }
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: locationAfterAttemptStart, environment, schema, runtime: importerRuntime, pattern: /recorded after attempt start/ })
-  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightRetained206, environment, schema, runtime: importerRuntime, pattern: /requires HTTP 200/ })
-  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightObserved206, environment, schema, runtime: importerRuntime, pattern: /requires HTTP 200/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightRetained206, environment, schema, runtime: importerRuntime, pattern: /const mismatch|requires HTTP 200/ })
+  assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightObserved206, environment, schema, runtime: importerRuntime, pattern: /const mismatch|requires HTTP 200/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightUnsafeHeader, environment, schema, runtime: importerRuntime, pattern: /anyOf branch|pattern mismatch/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: preflightInvalidMethodOutput, environment, schema, runtime: importerRuntime, pattern: /processing method\/output kind mismatch/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: bootstrapTrustRootCollision, environment, schema, runtime: importerRuntime, pattern: /collides with the trust root/ })
   for (const [label, manifest] of preflightUnexpectedObservedFields) {
-    assertRejectedBeforeBegin({ database: preflightDatabase, manifest, environment, schema, runtime: importerRuntime, pattern: /cannot carry an observed body/, label })
+    assertRejectedBeforeBegin({ database: preflightDatabase, manifest, environment, schema, runtime: importerRuntime, pattern: /type mismatch|cannot carry an observed body/, label })
   }
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: selfOrigin, environment, schema, runtime: importerRuntime, pattern: /earlier grounded/ })
   assertRejectedBeforeBegin({ database: preflightDatabase, manifest: multiRunCycle, environment, schema, runtime: importerRuntime, pattern: /earlier grounded/ })
@@ -3457,20 +3531,42 @@ try {
     WHERE run.processing_run_code='pilot-bundle-001.run-success'`).get().bundle_sequence
   assert.equal(acceptedRunKnowledgeSequence, 1)
   assert.equal(custodyLeafAt(database, 'copy.decoded', '2026-01-01T00:20:00.000Z', acceptedRunKnowledgeSequence).event_kind_code, 'placed')
-  assert.deepEqual({ ...candidateLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-01T00:25:30.000Z') }, {
+  assert.deepEqual({ ...rawCandidateChainLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-01T00:25:30.000Z', 1) }, {
     record_kind_code: 'correction',
     observed_value: 'Alpha corrected',
     recorded_at: '2026-01-01T00:25:00.000Z',
+    bundle_sequence: 1,
   })
-  assert.deepEqual({ ...candidateLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-02T00:00:00.000Z') }, {
+  assert.deepEqual({ ...activeCandidateAt(database, 'pilot-bundle-001.chain-a', '2026-01-01T00:25:30.000Z', 1) }, {
+    record_kind_code: 'correction',
+    observed_value: 'Alpha corrected',
+    recorded_at: '2026-01-01T00:25:00.000Z',
+    bundle_sequence: 1,
+  })
+  assert.deepEqual({ ...rawCandidateChainLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-02T00:00:00.000Z', 1) }, {
     record_kind_code: 'withdrawal',
     observed_value: null,
     recorded_at: '2026-01-01T00:26:00.000Z',
+    bundle_sequence: 1,
   })
-  assert.deepEqual({ ...candidateLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-04T00:00:00.000Z') }, {
+  assert.equal(activeCandidateAt(database, 'pilot-bundle-001.chain-a', '2026-01-02T00:00:00.000Z', 1), undefined)
+  assert.deepEqual({ ...rawCandidateChainLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-04T00:00:00.000Z', 1) }, {
+    record_kind_code: 'withdrawal',
+    observed_value: null,
+    recorded_at: '2026-01-01T00:26:00.000Z',
+    bundle_sequence: 1,
+  })
+  assert.deepEqual({ ...rawCandidateChainLeafAt(database, 'pilot-bundle-001.chain-a', '2026-01-02T00:00:00.000Z', 2) }, {
     record_kind_code: 'correction',
     observed_value: 'Alpha reinstated',
-    recorded_at: '2026-01-03T00:02:00.000Z',
+    recorded_at: '2026-01-01T00:27:00.000Z',
+    bundle_sequence: 2,
+  })
+  assert.deepEqual({ ...activeCandidateAt(database, 'pilot-bundle-001.chain-a', '2026-01-02T00:00:00.000Z', 2) }, {
+    record_kind_code: 'correction',
+    observed_value: 'Alpha reinstated',
+    recorded_at: '2026-01-01T00:27:00.000Z',
+    bundle_sequence: 2,
   })
   const secondReceiptId = database.prepare("SELECT id FROM atlas_evidence_bundle_receipts WHERE bundle_code='pilot-bundle-002'").get().id
   assert.equal(database.prepare("SELECT count(*) AS count FROM atlas_retrieval_events WHERE outcome_code IN ('retrieved_retained','observed_not_retained') AND http_status_code=200").get().count, 3)
@@ -3478,7 +3574,7 @@ try {
 
   let directSqlSequence = 0
   const directRetrievalBase = (codeValue) => ({ ...database.prepare('SELECT * FROM atlas_retrieval_events WHERE retrieval_event_code=?').get(codeValue) })
-  const assertDirectRetrievalRejected = (label, row, pattern = /CHECK constraint failed/) => {
+  const assertDirectRetrievalRejected = (label, row, pattern = /CHECK constraint failed|invalid conditional-request basis or representation profile/) => {
     const before = atlasState(database)
     const candidate = {
       ...row,
@@ -3487,6 +3583,83 @@ try {
     }
     assert.throws(() => insertRow(database, 'INSERT', 'atlas_retrieval_events', candidate), pattern, `raw SQL accepted ${label}`)
     assert.deepEqual(atlasState(database), before, `${label} direct-SQL rejection changed evidence state`)
+  }
+  const assertDirectRetrievalAcceptedThenRolledBack = (label, row) => {
+    const before = atlasState(database)
+    const candidate = {
+      ...row,
+      id: database.prepare('SELECT max(id)+2000 AS id FROM atlas_retrieval_events').get().id + (++directSqlSequence),
+      retrieval_event_code: `sql.direct.accepted.${label}.${directSqlSequence}`,
+    }
+    database.exec('SAVEPOINT direct_retrieval_positive')
+    try {
+      insertRow(database, 'INSERT', 'atlas_retrieval_events', candidate)
+      assert.equal(database.prepare('SELECT count(*) AS count FROM atlas_retrieval_events WHERE id=?').get(candidate.id).count, 1)
+    } finally {
+      database.exec('ROLLBACK TO direct_retrieval_positive; RELEASE direct_retrieval_positive')
+    }
+    assert.deepEqual(atlasState(database), before, `${label} direct-SQL positive probe changed evidence state`)
+  }
+  const retainedRetrieval = directRetrievalBase('pilot-bundle-001.retrieval-2')
+  const observedRetrieval = directRetrievalBase('pilot-bundle-001.retrieval-6')
+  const notModifiedRetrieval = directRetrievalBase('pilot-bundle-001.retrieval-3')
+  const networkFailedRetrieval = directRetrievalBase('pilot-bundle-001.retrieval-4')
+  const httpFailedRetrieval = directRetrievalBase('pilot-bundle-001.retrieval-5')
+  const rawArtifactIdForRetrievalMatrix = retainedRetrieval.artifact_id
+
+  for (const [label, row, column] of [
+    ['retained-null-resolved-location', retainedRetrieval, 'resolved_location_id'],
+    ['retained-null-artifact', retainedRetrieval, 'artifact_id'],
+    ['retained-null-captured-at', retainedRetrieval, 'captured_at'],
+    ['retained-null-http-status', retainedRetrieval, 'http_status_code'],
+    ['retained-null-detected-media-type', retainedRetrieval, 'detected_media_type'],
+    ['observed-null-resolved-location', observedRetrieval, 'resolved_location_id'],
+    ['observed-null-captured-at', observedRetrieval, 'captured_at'],
+    ['observed-null-http-status', observedRetrieval, 'http_status_code'],
+    ['observed-null-detected-media-type', observedRetrieval, 'detected_media_type'],
+    ['not-modified-null-resolved-location', notModifiedRetrieval, 'resolved_location_id'],
+    ['not-modified-null-basis', notModifiedRetrieval, 'conditional_basis_retrieval_event_id'],
+    ['not-modified-null-validator-kind', notModifiedRetrieval, 'conditional_validator_kind_code'],
+    ['not-modified-null-validator-value', notModifiedRetrieval, 'conditional_validator_value'],
+    ['not-modified-null-http-status', notModifiedRetrieval, 'http_status_code'],
+    ['http-failed-null-resolved-location', httpFailedRetrieval, 'resolved_location_id'],
+    ['http-failed-null-http-status', httpFailedRetrieval, 'http_status_code'],
+  ]) assertDirectRetrievalRejected(label, { ...row, [column]: null })
+
+  for (const [label, row, field, value] of [
+    ['observed-nonnull-artifact', observedRetrieval, 'artifact_id', rawArtifactIdForRetrievalMatrix],
+    ['not-modified-nonnull-artifact', notModifiedRetrieval, 'artifact_id', rawArtifactIdForRetrievalMatrix],
+    ['not-modified-nonnull-captured-at', notModifiedRetrieval, 'captured_at', notModifiedRetrieval.started_at],
+    ['not-modified-nonnull-detected-media-type', notModifiedRetrieval, 'detected_media_type', 'text/plain'],
+    ['network-failed-nonnull-resolved-location', networkFailedRetrieval, 'resolved_location_id', networkFailedRetrieval.last_attempted_location_id],
+    ['network-failed-nonnull-artifact', networkFailedRetrieval, 'artifact_id', rawArtifactIdForRetrievalMatrix],
+    ['network-failed-nonnull-captured-at', networkFailedRetrieval, 'captured_at', networkFailedRetrieval.started_at],
+    ['network-failed-nonnull-http-status', networkFailedRetrieval, 'http_status_code', 503],
+    ['network-failed-nonnull-response-etag', networkFailedRetrieval, 'response_etag', '"unexpected"'],
+    ['network-failed-nonnull-response-last-modified', networkFailedRetrieval, 'response_last_modified', 'Wed, 21 Oct 2015 07:28:00 GMT'],
+    ['network-failed-nonnull-response-content-type', networkFailedRetrieval, 'response_content_type', 'text/plain'],
+    ['network-failed-nonnull-response-content-length', networkFailedRetrieval, 'response_content_length', 0],
+    ['network-failed-nonnull-response-content-encoding', networkFailedRetrieval, 'response_content_encoding', 'gzip'],
+    ['network-failed-nonnull-response-vary', networkFailedRetrieval, 'response_vary', 'accept'],
+    ['network-failed-nonnull-detected-media-type', networkFailedRetrieval, 'detected_media_type', 'text/plain'],
+    ['http-failed-nonnull-artifact', httpFailedRetrieval, 'artifact_id', rawArtifactIdForRetrievalMatrix],
+    ['http-failed-nonnull-captured-at', httpFailedRetrieval, 'captured_at', httpFailedRetrieval.started_at],
+    ['http-failed-nonnull-detected-media-type', httpFailedRetrieval, 'detected_media_type', 'text/plain'],
+  ]) assertDirectRetrievalRejected(label, { ...row, [field]: value })
+
+  assertDirectRetrievalRejected('observed-null-hash-nonnull-length', { ...observedRetrieval, observed_sha256: null, observed_byte_length: 99 })
+  assertDirectRetrievalRejected('observed-nonnull-hash-null-length', { ...observedRetrieval, observed_sha256: 'f'.repeat(64), observed_byte_length: null })
+  assertDirectRetrievalAcceptedThenRolledBack('observed-null-hash-null-length', { ...observedRetrieval, observed_sha256: null, observed_byte_length: null })
+  assertDirectRetrievalAcceptedThenRolledBack('observed-paired-hash-length', { ...observedRetrieval, observed_sha256: 'f'.repeat(64), observed_byte_length: 99 })
+  for (const [outcome, row] of [
+    ['retrieved-retained', retainedRetrieval],
+    ['not-modified', notModifiedRetrieval],
+    ['network-failed', networkFailedRetrieval],
+    ['http-failed', httpFailedRetrieval],
+  ]) {
+    assertDirectRetrievalRejected(`${outcome}-nonnull-observed-pair`, { ...row, observed_sha256: 'f'.repeat(64), observed_byte_length: 99 })
+    assertDirectRetrievalRejected(`${outcome}-null-hash-nonnull-length`, { ...row, observed_sha256: null, observed_byte_length: 99 })
+    assertDirectRetrievalRejected(`${outcome}-nonnull-hash-null-length`, { ...row, observed_sha256: 'f'.repeat(64), observed_byte_length: null })
   }
   assertDirectRetrievalRejected('retained-206', { ...directRetrievalBase('pilot-bundle-001.retrieval-2'), http_status_code: 206 })
   assertDirectRetrievalRejected('observed-206', { ...directRetrievalBase('pilot-bundle-001.retrieval-6'), http_status_code: 206 })
@@ -3554,6 +3727,191 @@ try {
     /invalid custody successor/,
     'raw SQL accepted a relocation that changed neither backend nor custody class',
   )
+
+  const tombstoneCustodyBase = {
+    ...currentRawCustody,
+    id: database.prepare('SELECT max(id)+2500 AS id FROM atlas_artifact_custody_events').get().id,
+    custody_event_code: 'sql.direct.custody.valid-tombstone',
+    event_kind_code: 'tombstoned',
+    predecessor_custody_event_id: currentRawCustody.id,
+    backend_code: null,
+    backend_reference: null,
+    eligibility_declared_by_principal_id: null,
+    eligibility_declared_at: null,
+    redistribution_eligible_declared: null,
+    no_sensitive_data_declared: null,
+    size_eligible_declared: null,
+    permanent_history_acknowledged: null,
+    reason: 'synthetic direct-SQL tombstone probe',
+    occurred_at: '2026-01-03T12:11:00.000Z',
+    evidence_bundle_receipt_id: secondReceiptId,
+    recorded_by_principal_id: 2,
+    recorded_at: '2026-01-03T12:11:00.000Z',
+  }
+  const beforeDirectTombstone = atlasState(database)
+  database.exec('SAVEPOINT valid_direct_tombstone')
+  try {
+    insertRow(database, 'INSERT', 'atlas_artifact_custody_events', tombstoneCustodyBase)
+  } finally {
+    database.exec('ROLLBACK TO valid_direct_tombstone; RELEASE valid_direct_tombstone')
+  }
+  assert.deepEqual(atlasState(database), beforeDirectTombstone, 'valid direct-SQL tombstone control changed evidence state')
+  for (const [field, value] of [
+    ['backend_code', currentRawCustody.backend_code],
+    ['backend_reference', currentRawCustody.backend_reference],
+  ]) {
+    const before = atlasState(database)
+    assert.throws(
+      () => insertRow(database, 'INSERT', 'atlas_artifact_custody_events', {
+        ...tombstoneCustodyBase,
+        id: tombstoneCustodyBase.id + (field === 'backend_code' ? 1 : 2),
+        custody_event_code: `sql.direct.custody.tombstone-nonnull-${field.replaceAll('_', '-')}`,
+        [field]: value,
+      }),
+      /CHECK constraint failed/,
+      `raw SQL accepted tombstoned custody with non-null ${field}`,
+    )
+    assert.deepEqual(atlasState(database), before, `tombstone ${field} direct-SQL probe changed evidence state`)
+  }
+
+  let directCustodySequence = 0
+  const repositoryCustodyBase = { ...database.prepare("SELECT * FROM atlas_artifact_custody_events WHERE event_kind_code='placed' AND custody_class_code='repository' ORDER BY id LIMIT 1").get() }
+  const freshDirectCustodyRoot = (label, source = repositoryCustodyBase) => ({
+    ...source,
+    id: database.prepare('SELECT max(id)+3000 AS id FROM atlas_artifact_custody_events').get().id + (++directCustodySequence),
+    custody_event_code: `sql.direct.custody.${label}.${directCustodySequence}`,
+    copy_code: `copy.sql.${label}.${directCustodySequence}`,
+  })
+  const assertDirectCustodyRejected = (label, row, pattern = /CHECK constraint failed/) => {
+    const before = atlasState(database)
+    assert.throws(() => insertRow(database, 'INSERT', 'atlas_artifact_custody_events', freshDirectCustodyRoot(label, row)), pattern, `raw SQL accepted custody state ${label}`)
+    assert.deepEqual(atlasState(database), before, `${label} direct custody probe changed evidence state`)
+  }
+  for (const declarationField of [
+    'redistribution_eligible_declared',
+    'no_sensitive_data_declared',
+    'size_eligible_declared',
+    'permanent_history_acknowledged',
+  ]) {
+    assertDirectCustodyRejected(`repository-null-${declarationField}`, { ...repositoryCustodyBase, [declarationField]: null })
+    assertDirectCustodyRejected(`repository-zero-${declarationField}`, { ...repositoryCustodyBase, [declarationField]: 0 })
+  }
+  assertDirectCustodyRejected('repository-null-declarer', { ...repositoryCustodyBase, eligibility_declared_by_principal_id: null })
+  assertDirectCustodyRejected('repository-null-declared-at', { ...repositoryCustodyBase, eligibility_declared_at: null }, /CHECK constraint failed|repository eligibility requires/)
+  assertDirectCustodyRejected('non-tombstone-null-backend', { ...repositoryCustodyBase, backend_code: null })
+  assertDirectCustodyRejected('non-tombstone-null-reference', { ...repositoryCustodyBase, backend_reference: null })
+  assertDirectCustodyRejected('placed-nonnull-predecessor', { ...repositoryCustodyBase, predecessor_custody_event_id: currentRawCustody.id }, /CHECK constraint failed|invalid custody successor/)
+  const restrictedCustodyBase = {
+    ...repositoryCustodyBase,
+    custody_class_code: 'restricted_store',
+    eligibility_declared_by_principal_id: null,
+    eligibility_declared_at: null,
+    redistribution_eligible_declared: null,
+    no_sensitive_data_declared: null,
+    size_eligible_declared: null,
+    permanent_history_acknowledged: null,
+  }
+  for (const [field, value] of [
+    ['eligibility_declared_by_principal_id', repositoryCustodyBase.eligibility_declared_by_principal_id],
+    ['eligibility_declared_at', repositoryCustodyBase.eligibility_declared_at],
+    ['redistribution_eligible_declared', 1],
+    ['no_sensitive_data_declared', 1],
+    ['size_eligible_declared', 1],
+    ['permanent_history_acknowledged', 1],
+  ]) assertDirectCustodyRejected(`restricted-nonnull-${field}`, { ...restrictedCustodyBase, [field]: value }, /CHECK constraint failed|repository eligibility requires/)
+  assertDirectCustodyRejected('nonplaced-null-predecessor', { ...restrictedCustodyBase, event_kind_code: 'restricted' })
+
+  const directRunBase = {
+    ...database.prepare("SELECT * FROM atlas_processing_runs WHERE outcome_code='failed' ORDER BY id LIMIT 1").get(),
+    id: database.prepare('SELECT max(id)+3000 AS id FROM atlas_processing_runs').get().id,
+    processing_run_code: 'sql.direct.processing.outcome',
+    run_ordinal: database.prepare('SELECT COALESCE(max(run_ordinal),-1)+1 AS ordinal FROM atlas_processing_runs WHERE evidence_bundle_receipt_id=?').get(secondReceiptId).ordinal,
+    input_artifact_id: rawArtifactId,
+    method_code: 'parser',
+    processor_principal_id: 3,
+    started_at: '2026-01-03T12:15:00.000Z',
+    completed_at: '2026-01-03T12:15:01.000Z',
+    evidence_bundle_receipt_id: secondReceiptId,
+    recorded_by_principal_id: 2,
+    recorded_at: '2026-01-03T12:15:02.000Z',
+  }
+  for (const [label, outcomeCode, failureCode] of [
+    ['failed-null-failure-code', 'failed', null],
+    ['succeeded-nonnull-failure-code', 'succeeded', 'unexpected_failure'],
+  ]) {
+    const before = atlasState(database)
+    assert.throws(() => insertRow(database, 'INSERT', 'atlas_processing_runs', {
+      ...directRunBase,
+      processing_run_code: `sql.direct.processing.${label}`,
+      outcome_code: outcomeCode,
+      failure_code: failureCode,
+    }), /CHECK constraint failed/, `raw SQL accepted processing outcome state ${label}`)
+    assert.deepEqual(atlasState(database), before, `${label} direct processing probe changed evidence state`)
+  }
+
+  let directCandidateSequence = 0
+  const candidateRootBase = { ...database.prepare("SELECT * FROM atlas_unverified_candidate_occurrences WHERE record_kind_code='assertion' ORDER BY id LIMIT 1").get() }
+  const currentCandidateLeaf = { ...database.prepare(`SELECT candidate.* FROM atlas_unverified_candidate_occurrences candidate
+    WHERE candidate.candidate_chain_code='pilot-bundle-001.chain-a'
+      AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences successor WHERE successor.corrects_candidate_occurrence_id=candidate.id)`).get() }
+  const freshCandidate = (label, source = candidateRootBase) => ({
+    ...source,
+    id: database.prepare('SELECT max(id)+3000 AS id FROM atlas_unverified_candidate_occurrences').get().id + (++directCandidateSequence),
+    candidate_record_code: `sql.direct.candidate.${label}.${directCandidateSequence}`,
+    candidate_chain_code: source.corrects_candidate_occurrence_id === null ? `sql.direct.chain.${label}.${directCandidateSequence}` : source.candidate_chain_code,
+  })
+  const assertDirectCandidateRejected = (label, row, pattern = /CHECK constraint failed/) => {
+    const before = atlasState(database)
+    assert.throws(() => insertRow(database, 'INSERT', 'atlas_unverified_candidate_occurrences', freshCandidate(label, row)), pattern, `raw SQL accepted candidate state ${label}`)
+    assert.deepEqual(atlasState(database), before, `${label} direct candidate probe changed evidence state`)
+  }
+  assertDirectCandidateRejected('assertion-null-value', { ...candidateRootBase, observed_value: null })
+  assertDirectCandidateRejected('assertion-null-span-start', { ...candidateRootBase, span_start: null })
+  assertDirectCandidateRejected('assertion-null-span-end', { ...candidateRootBase, span_end: null })
+  const candidateCorrectionBase = {
+    ...currentCandidateLeaf,
+    candidate_chain_code: currentCandidateLeaf.candidate_chain_code,
+    record_kind_code: 'correction',
+    corrects_candidate_occurrence_id: currentCandidateLeaf.id,
+    observed_value: 'synthetic later correction',
+    normalized_value: 'synthetic later correction',
+    confidence_basis_points: 5000,
+    evidence_bundle_receipt_id: secondReceiptId,
+    recorded_at: '2026-01-01T00:28:00.000Z',
+  }
+  assertDirectCandidateRejected('correction-null-value', { ...candidateCorrectionBase, observed_value: null })
+  const candidateWithdrawalBase = {
+    ...candidateCorrectionBase,
+    record_kind_code: 'withdrawal',
+    observed_value: null,
+    normalized_value: null,
+    confidence_basis_points: null,
+  }
+  for (const [field, value] of [
+    ['observed_value', 'unexpected'],
+    ['normalized_value', 'unexpected'],
+    ['confidence_basis_points', 1],
+  ]) assertDirectCandidateRejected(`withdrawal-nonnull-${field}`, { ...candidateWithdrawalBase, [field]: value })
+  assertDirectCandidateRejected('assertion-nonnull-predecessor', {
+    ...candidateRootBase,
+    candidate_chain_code: currentCandidateLeaf.candidate_chain_code,
+    corrects_candidate_occurrence_id: currentCandidateLeaf.id,
+    evidence_bundle_receipt_id: secondReceiptId,
+    recorded_at: '2026-01-01T00:28:00.000Z',
+  })
+  assertDirectCandidateRejected('correction-null-predecessor', {
+    ...candidateCorrectionBase,
+    corrects_candidate_occurrence_id: null,
+  })
+  assertDirectCandidateRejected('withdrawal-null-predecessor', {
+    ...candidateWithdrawalBase,
+    corrects_candidate_occurrence_id: null,
+  })
+  const firstReceiptId = database.prepare("SELECT id FROM atlas_evidence_bundle_receipts WHERE bundle_sequence=1").get().id
+  assertDirectCandidateRejected('successor-earlier-knowledge-sequence', {
+    ...candidateCorrectionBase,
+    evidence_bundle_receipt_id: firstReceiptId,
+  }, /invalid candidate correction successor/)
 
   const beforeDirectMethodMatrix = atlasState(database)
   database.exec('BEGIN IMMEDIATE')
@@ -3889,7 +4247,12 @@ try {
     http_200_304_etag_date_content_coding_vary_profile: 'passed',
     processing_method_output_configuration_matrix: 'passed',
     event_time_and_receipt_sequence_custody_projection: 'passed',
-    candidate_knowledge_time_projection: 'passed',
+    complete_retrieval_outcome_null_matrix: 'passed',
+    observed_hash_length_pairing_matrix: 'passed',
+    repository_declaration_null_matrix: 'passed',
+    other_nullable_state_branch_matrix: 'passed',
+    sequence_bounded_candidate_history: 'passed',
+    raw_vs_active_candidate_withdrawal_projection: 'passed',
     correction_cycle_and_wrong_subject_rejection: 'passed',
     custody_access_state_transitions: 'passed',
     processing_principal_kind_rules: 'passed',
@@ -3901,7 +4264,8 @@ try {
     tombstoned_historical_copy_not_required_for_no_op: 'passed',
     non_vacuous_all_table_transactional_rollback: 'passed',
     exact_physical_schema_introspection: 'passed',
-    fixed_table_and_trigger_definition_hashes: 'passed',
+    fixed_table_index_and_trigger_definition_hashes: 'passed',
+    exact_index_collation_direction_and_key_participation: 'passed',
     schema_definition_mutants_rejected: schemaMutationMatrix.map(([label]) => label),
     behavioral_sql_mutants_rejected: ['receipt-sha-check', 'candidate-successor-chronology'],
     strict_types_and_positive_ids: 'passed',

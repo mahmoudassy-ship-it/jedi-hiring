@@ -122,14 +122,45 @@ CREATE TABLE atlas_retrieval_events (
   CHECK (response_content_encoding IS NULL OR (length(CAST(response_content_encoding AS BLOB)) BETWEEN 1 AND 255 AND instr(response_content_encoding,char(0))=0 AND response_content_encoding NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_content_encoding=trim(response_content_encoding) AND response_content_encoding=lower(response_content_encoding) AND response_content_encoding NOT GLOB '*[^a-z0-9!#$%&''*+.^_`|~, -]*' AND response_content_encoding NOT LIKE '%,,%' AND response_content_encoding NOT LIKE '%,  %')),
   CHECK (response_vary IS NULL OR (length(CAST(response_vary AS BLOB)) BETWEEN 1 AND 512 AND instr(response_vary,char(0))=0 AND response_vary NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND response_vary=trim(response_vary) AND response_vary=lower(response_vary) AND (response_vary='*' OR instr(response_vary,'*')=0))),
   CHECK (detected_media_type IS NULL OR (length(CAST(detected_media_type AS BLOB)) BETWEEN 1 AND 255 AND instr(detected_media_type,char(0))=0 AND detected_media_type NOT GLOB ('*['||char(1)||'-'||char(31)||char(127)||']*') AND detected_media_type=trim(detected_media_type))),
-  CHECK ((observed_sha256 IS NULL AND observed_byte_length IS NULL) OR (outcome_code='observed_not_retained' AND length(CAST(observed_sha256 AS BLOB))=64 AND instr(observed_sha256,char(0))=0 AND observed_sha256=lower(observed_sha256) AND observed_sha256 NOT GLOB '*[^0-9a-f]*' AND observed_byte_length IS NOT NULL)),
-  CHECK (
-    (outcome_code='retrieved_retained' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code=200 AND observed_sha256 IS NULL AND detected_media_type IS NOT NULL)
-    OR (outcome_code='observed_not_retained' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NOT NULL AND http_status_code=200 AND detected_media_type IS NOT NULL)
-    OR (outcome_code='not_modified' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code=304 AND conditional_basis_retrieval_event_id IS NOT NULL AND observed_sha256 IS NULL AND detected_media_type IS NULL)
-    OR (outcome_code='network_failed' AND resolved_location_id IS NULL AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code IS NULL AND observed_sha256 IS NULL AND response_etag IS NULL AND response_last_modified IS NULL AND response_content_type IS NULL AND response_content_length IS NULL AND response_content_encoding IS NULL AND response_vary IS NULL AND detected_media_type IS NULL)
-    OR (outcome_code='http_failed' AND resolved_location_id=last_attempted_location_id AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code BETWEEN 300 AND 599 AND http_status_code<>304 AND observed_sha256 IS NULL AND detected_media_type IS NULL)
-  )
+  CHECK (CASE
+    WHEN observed_sha256 IS NULL AND observed_byte_length IS NULL THEN 1
+    WHEN outcome_code='observed_not_retained' AND observed_sha256 IS NOT NULL AND observed_byte_length IS NOT NULL
+      AND length(CAST(observed_sha256 AS BLOB))=64 AND instr(observed_sha256,char(0))=0
+      AND observed_sha256=lower(observed_sha256) AND observed_sha256 NOT GLOB '*[^0-9a-f]*' THEN 1
+    ELSE 0
+  END = 1),
+  CHECK (CASE outcome_code
+    WHEN 'retrieved_retained' THEN CASE WHEN
+      resolved_location_id IS NOT NULL AND resolved_location_id=last_attempted_location_id
+      AND artifact_id IS NOT NULL AND captured_at IS NOT NULL AND http_status_code IS 200
+      AND observed_sha256 IS NULL AND observed_byte_length IS NULL AND detected_media_type IS NOT NULL
+      THEN 1 ELSE 0 END
+    WHEN 'observed_not_retained' THEN CASE WHEN
+      resolved_location_id IS NOT NULL AND resolved_location_id=last_attempted_location_id
+      AND artifact_id IS NULL AND captured_at IS NOT NULL AND http_status_code IS 200
+      AND detected_media_type IS NOT NULL
+      THEN 1 ELSE 0 END
+    WHEN 'not_modified' THEN CASE WHEN
+      resolved_location_id IS NOT NULL AND resolved_location_id=last_attempted_location_id
+      AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code IS 304
+      AND conditional_basis_retrieval_event_id IS NOT NULL
+      AND observed_sha256 IS NULL AND observed_byte_length IS NULL AND detected_media_type IS NULL
+      THEN 1 ELSE 0 END
+    WHEN 'network_failed' THEN CASE WHEN
+      resolved_location_id IS NULL AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code IS NULL
+      AND observed_sha256 IS NULL AND observed_byte_length IS NULL
+      AND response_etag IS NULL AND response_last_modified IS NULL AND response_content_type IS NULL
+      AND response_content_length IS NULL AND response_content_encoding IS NULL AND response_vary IS NULL
+      AND detected_media_type IS NULL
+      THEN 1 ELSE 0 END
+    WHEN 'http_failed' THEN CASE WHEN
+      resolved_location_id IS NOT NULL AND resolved_location_id=last_attempted_location_id
+      AND artifact_id IS NULL AND captured_at IS NULL AND http_status_code IS NOT NULL
+      AND http_status_code BETWEEN 300 AND 599 AND http_status_code<>304
+      AND observed_sha256 IS NULL AND observed_byte_length IS NULL AND detected_media_type IS NULL
+      THEN 1 ELSE 0 END
+    ELSE 0
+  END = 1)
 ) STRICT;
 
 CREATE TABLE atlas_retrieval_redirects (
@@ -178,10 +209,19 @@ CREATE TABLE atlas_artifact_custody_events (
   CHECK (backend_code IS NULL OR (length(CAST(backend_code AS BLOB)) BETWEEN 1 AND 40 AND instr(backend_code,char(0))=0 AND backend_code=lower(backend_code) AND backend_code NOT GLOB '*[^a-z0-9._-]*' AND substr(backend_code,1,1) GLOB '[a-z0-9]' AND substr(backend_code,-1,1) GLOB '[a-z0-9]')),
   CHECK (backend_reference IS NULL OR (length(CAST(backend_reference AS BLOB)) BETWEEN 1 AND 512 AND instr(backend_reference,char(0))=0 AND backend_reference=trim(backend_reference) AND substr(backend_reference,1,1)<>'/' AND instr(backend_reference,'\\')=0 AND backend_reference NOT GLOB '*[^A-Za-z0-9._/-]*' AND backend_reference NOT LIKE './%' AND backend_reference NOT LIKE '%/./%' AND backend_reference NOT LIKE '%/.' AND backend_reference NOT LIKE '%//%' AND backend_reference<>'..' AND backend_reference NOT LIKE '../%' AND backend_reference NOT LIKE '%/../%' AND backend_reference NOT LIKE '%/..' AND instr(backend_reference,'?')=0)),
   CHECK (eligibility_declared_at IS NULL OR (length(CAST(eligibility_declared_at AS BLOB))=24 AND eligibility_declared_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z' AND julianday(eligibility_declared_at) IS NOT NULL AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(eligibility_declared_at))=eligibility_declared_at)),
-  CHECK (
-    (event_kind_code<>'tombstoned' AND custody_class_code='repository' AND eligibility_declared_by_principal_id IS NOT NULL AND eligibility_declared_at IS NOT NULL AND redistribution_eligible_declared=1 AND no_sensitive_data_declared=1 AND size_eligible_declared=1 AND permanent_history_acknowledged=1)
-    OR ((event_kind_code='tombstoned' OR custody_class_code='restricted_store') AND eligibility_declared_by_principal_id IS NULL AND eligibility_declared_at IS NULL AND redistribution_eligible_declared IS NULL AND no_sensitive_data_declared IS NULL AND size_eligible_declared IS NULL AND permanent_history_acknowledged IS NULL)
-  ),
+  CHECK (CASE
+    WHEN event_kind_code<>'tombstoned' AND custody_class_code='repository' THEN CASE WHEN
+      eligibility_declared_by_principal_id IS NOT NULL AND eligibility_declared_at IS NOT NULL
+      AND redistribution_eligible_declared IS 1 AND no_sensitive_data_declared IS 1
+      AND size_eligible_declared IS 1 AND permanent_history_acknowledged IS 1
+      THEN 1 ELSE 0 END
+    WHEN event_kind_code='tombstoned' OR custody_class_code='restricted_store' THEN CASE WHEN
+      eligibility_declared_by_principal_id IS NULL AND eligibility_declared_at IS NULL
+      AND redistribution_eligible_declared IS NULL AND no_sensitive_data_declared IS NULL
+      AND size_eligible_declared IS NULL AND permanent_history_acknowledged IS NULL
+      THEN 1 ELSE 0 END
+    ELSE 0
+  END = 1),
   CHECK (length(CAST(occurred_at AS BLOB))=24 AND occurred_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z' AND julianday(occurred_at) IS NOT NULL AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(occurred_at))=occurred_at),
   CHECK (length(CAST(recorded_at AS BLOB))=24 AND recorded_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z' AND julianday(recorded_at) IS NOT NULL AND strftime('%Y-%m-%dT%H:%M:%fZ',julianday(recorded_at))=recorded_at AND recorded_at>=occurred_at)
 ) STRICT;
@@ -416,7 +456,15 @@ CREATE TRIGGER atlas_candidate_occurrences_validate_insert BEFORE INSERT ON atla
   SELECT CASE WHEN EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences WHERE id=NEW.id OR candidate_record_code=NEW.candidate_record_code OR (NEW.corrects_candidate_occurrence_id IS NULL AND corrects_candidate_occurrence_id IS NULL AND candidate_chain_code=NEW.candidate_chain_code) OR (NEW.corrects_candidate_occurrence_id IS NOT NULL AND corrects_candidate_occurrence_id=NEW.corrects_candidate_occurrence_id)) THEN RAISE(ABORT,'candidate occurrence collision') END;
   SELECT CASE WHEN NEW.recorded_by_principal_id=1 OR NOT EXISTS(SELECT 1 FROM atlas_processing_outputs o JOIN atlas_processing_runs p ON p.id=o.processing_run_id JOIN atlas_evidence_bundle_receipts r ON r.id=NEW.evidence_bundle_receipt_id JOIN atlas_principals submitter ON submitter.id=NEW.recorded_by_principal_id WHERE o.id=NEW.processing_output_id AND o.processing_run_id=NEW.processing_run_id AND o.output_kind_code<>'diagnostic' AND p.outcome_code='succeeded' AND o.recorded_at<=NEW.recorded_at AND r.submitted_by_principal_id=NEW.recorded_by_principal_id AND submitter.created_at<=NEW.recorded_at AND NEW.recorded_at<=r.bundle_created_at) THEN RAISE(ABORT,'invalid candidate evidence lineage or attribution') END;
   SELECT CASE WHEN NEW.corrects_candidate_occurrence_id IS NULL AND EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences WHERE candidate_chain_code=NEW.candidate_chain_code AND corrects_candidate_occurrence_id IS NULL) THEN RAISE(ABORT,'candidate chain already has a root') END;
-  SELECT CASE WHEN NEW.corrects_candidate_occurrence_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences p WHERE p.id=NEW.corrects_candidate_occurrence_id AND p.candidate_chain_code=NEW.candidate_chain_code AND p.claim_type_code=NEW.claim_type_code AND p.recorded_at<NEW.recorded_at AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s WHERE s.corrects_candidate_occurrence_id=p.id)) THEN RAISE(ABORT,'invalid candidate correction successor') END;
+  SELECT CASE WHEN NEW.corrects_candidate_occurrence_id IS NOT NULL AND NOT EXISTS(
+    SELECT 1 FROM atlas_unverified_candidate_occurrences p
+    JOIN atlas_evidence_bundle_receipts predecessor_receipt ON predecessor_receipt.id=p.evidence_bundle_receipt_id
+    JOIN atlas_evidence_bundle_receipts successor_receipt ON successor_receipt.id=NEW.evidence_bundle_receipt_id
+    WHERE p.id=NEW.corrects_candidate_occurrence_id AND p.candidate_chain_code=NEW.candidate_chain_code
+      AND p.claim_type_code=NEW.claim_type_code AND p.recorded_at<NEW.recorded_at
+      AND predecessor_receipt.bundle_sequence<=successor_receipt.bundle_sequence
+      AND NOT EXISTS(SELECT 1 FROM atlas_unverified_candidate_occurrences s WHERE s.corrects_candidate_occurrence_id=p.id)
+  ) THEN RAISE(ABORT,'invalid candidate correction successor') END;
 END;
 
 CREATE TRIGGER atlas_evidence_bundle_receipts_immutable_update BEFORE UPDATE ON atlas_evidence_bundle_receipts BEGIN SELECT RAISE(ABORT,'bundle receipts are immutable'); END;
