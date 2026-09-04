@@ -12,6 +12,9 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const project = path.resolve(here, '../..')
 const migrations = path.join(project, 'data/migrations')
 const proposalPath = path.join(here, 'tranche-2a-source-quarantine.proposed.sql')
+const productionMigrationName = '005_tranche_2a_source_quarantine.sql'
+const productionMigrationPath = path.join(migrations, productionMigrationName)
+const productionMigrationSha256 = '1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b'
 const schemaPath = path.join(here, 'tranche-2a-evidence-bundle-v1.schema.json')
 const migrationNames = [
   '001_schema.sql',
@@ -1213,7 +1216,13 @@ function verifyEvidenceBytes(manifest, context, adapter, { noOp = false } = {}) 
 function migrationDirectory(proposalSql = fs.readFileSync(proposalPath)) {
   const directory = temporaryDirectory('jedi-2a-migrations-')
   for (const name of migrationNames) fs.copyFileSync(path.join(migrations, name), path.join(directory, name))
-  fs.writeFileSync(path.join(directory, '005_tranche_2a_design.sql'), proposalSql)
+  fs.writeFileSync(path.join(directory, productionMigrationName), proposalSql)
+  return directory
+}
+
+function baselineMigrationDirectory() {
+  const directory = temporaryDirectory('jedi-2a-baseline-migrations-')
+  for (const name of migrationNames) fs.copyFileSync(path.join(migrations, name), path.join(directory, name))
   return directory
 }
 
@@ -2680,7 +2689,11 @@ const importerRuntime = {
 }
 
 try {
-  const proposal = fs.readFileSync(proposalPath, 'utf8')
+  const proposalBytes = fs.readFileSync(proposalPath)
+  const productionMigrationBytes = fs.readFileSync(productionMigrationPath)
+  assert.deepEqual(productionMigrationBytes, proposalBytes, 'production migration 005 drifted from the approved DDL')
+  assert.equal(sha256(productionMigrationBytes), productionMigrationSha256, 'production migration 005 changed from its approved checksum')
+  const proposal = proposalBytes.toString('utf8')
   assert.doesNotMatch(proposal, /^\s*(BEGIN|COMMIT|ROLLBACK)\b/im)
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'))
   assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema')
@@ -2694,7 +2707,7 @@ try {
   const freshDatabasePath = path.join(freshRoot, 'fresh.sqlite')
   assert.deepEqual(
     applyMigrations({ databasePath: freshDatabasePath, migrationsDirectory: designMigrations }).appliedNow,
-    [...migrationNames, '005_tranche_2a_design.sql'],
+    [...migrationNames, productionMigrationName],
   )
   assert.deepEqual(applyMigrations({ databasePath: freshDatabasePath, migrationsDirectory: designMigrations }).appliedNow, [])
   let freshDatabase = openDatabase(freshDatabasePath)
@@ -2705,7 +2718,7 @@ try {
 
   const upgradeRoot = temporaryDirectory('jedi-2a-upgrade-')
   const upgradeDatabasePath = path.join(upgradeRoot, 'upgrade.sqlite')
-  applyMigrations({ databasePath: upgradeDatabasePath, migrationsDirectory: migrations })
+  applyMigrations({ databasePath: upgradeDatabasePath, migrationsDirectory: baselineMigrationDirectory() })
   const legacyBefore = legacyDigests(upgradeDatabasePath)
   let database = openDatabase(upgradeDatabasePath)
   const inventoryBefore = schemaInventory(database)
@@ -2713,7 +2726,7 @@ try {
   database.close()
   assert.deepEqual(
     applyMigrations({ databasePath: upgradeDatabasePath, migrationsDirectory: designMigrations }).appliedNow,
-    ['005_tranche_2a_design.sql'],
+    [productionMigrationName],
   )
   assert.deepEqual(legacyDigests(upgradeDatabasePath), legacyBefore)
   database = openDatabase(upgradeDatabasePath)
@@ -2807,7 +2820,7 @@ try {
 
   const legacySchemaMutationRoot = temporaryDirectory('jedi-2a-legacy-schema-mutant-')
   const legacySchemaMutationPath = path.join(legacySchemaMutationRoot, 'mutant.sqlite')
-  applyMigrations({ databasePath: legacySchemaMutationPath, migrationsDirectory: migrations })
+  applyMigrations({ databasePath: legacySchemaMutationPath, migrationsDirectory: baselineMigrationDirectory() })
   const legacySchemaMutationDigests = legacyDigests(legacySchemaMutationPath)
   let legacySchemaMutationDatabase = openDatabase(legacySchemaMutationPath)
   const legacySchemaMutationBefore = schemaDefinitionSnapshot(legacySchemaMutationDatabase)
@@ -4220,6 +4233,7 @@ try {
 
   console.log(JSON.stringify({
     scope: 'design validator only; no production importer, adapter, authentication, or authorization guarantee',
+    production_migration_byte_equality: 'passed',
     fresh_install: 'passed',
     upgrade_from_004: 'passed',
     no_op_migration_rerun: 'passed',
