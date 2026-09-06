@@ -19,13 +19,22 @@ try {
     atlasLanguages: database.prepare('SELECT COUNT(*) AS count FROM atlas_languages').get().count,
     atlasJurisdictions: database.prepare('SELECT COUNT(*) AS count FROM atlas_jurisdictions').get().count,
     atlasJurisdictionVersions: database.prepare('SELECT COUNT(*) AS count FROM atlas_jurisdiction_versions').get().count,
+    atlasEvidenceBundleReceipts: database.prepare('SELECT COUNT(*) AS count FROM atlas_evidence_bundle_receipts').get().count,
+    atlasRetrievalLocations: database.prepare('SELECT COUNT(*) AS count FROM atlas_retrieval_locations').get().count,
+    atlasArtifacts: database.prepare('SELECT COUNT(*) AS count FROM atlas_artifacts').get().count,
+    atlasRetrievalEvents: database.prepare('SELECT COUNT(*) AS count FROM atlas_retrieval_events').get().count,
+    atlasRetrievalRedirects: database.prepare('SELECT COUNT(*) AS count FROM atlas_retrieval_redirects').get().count,
+    atlasArtifactCustodyEvents: database.prepare('SELECT COUNT(*) AS count FROM atlas_artifact_custody_events').get().count,
+    atlasProcessingRuns: database.prepare('SELECT COUNT(*) AS count FROM atlas_processing_runs').get().count,
+    atlasProcessingOutputs: database.prepare('SELECT COUNT(*) AS count FROM atlas_processing_outputs').get().count,
+    atlasUnverifiedCandidateOccurrences: database.prepare('SELECT COUNT(*) AS count FROM atlas_unverified_candidate_occurrences').get().count,
   }
 
   if (integrity !== 'ok') throw new Error(`SQLite integrity check failed: ${integrity}`)
   if (foreignKeyViolations.length > 0) throw new Error('SQLite foreign-key check failed')
   if (counts.instruments < 10 || counts.requirements < 15) throw new Error('Seed dataset is incomplete')
-  if ([counts.atlasPrincipals, counts.atlasLanguages, counts.atlasJurisdictions, counts.atlasJurisdictionVersions].some((count) => count !== 0)) {
-    throw new Error('Tranche 1A Atlas foundations must remain empty until the authority/source quarantine path exists')
+  if (Object.entries(counts).some(([name, count]) => name.startsWith('atlas') && count !== 0)) {
+    throw new Error('Atlas foundation and source-quarantine tables must remain empty until the importer and operational controls are approved and implemented')
   }
 
   console.log('Database checks passed.')

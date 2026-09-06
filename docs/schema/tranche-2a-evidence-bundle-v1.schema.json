@@ -1,0 +1,517 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/tranche-2a-evidence-bundle-v1.schema.json",
+  "title": "JEDI Hiring Atlas Tranche 2A evidence bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "bundle_id",
+    "bundle_sequence",
+    "required_bundles",
+    "bundle_created_at",
+    "bundle_digest_sha256",
+    "manifest_path",
+    "submitter_principal_code",
+    "expected_importer_principal_code",
+    "expected_importer_software_code",
+    "expected_importer_version",
+    "bundle_declarations",
+    "retrieval_locations",
+    "artifacts",
+    "retrieval_events",
+    "custody_events",
+    "processing_runs",
+    "candidate_occurrences"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-evidence-bundle" },
+    "format_version": { "const": "1.0.0" },
+    "bundle_id": { "$ref": "#/$defs/bundleCode" },
+    "bundle_sequence": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "required_bundles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/bundleDependency" }
+    },
+    "bundle_created_at": { "$ref": "#/$defs/timestamp" },
+    "bundle_digest_sha256": { "$ref": "#/$defs/sha256" },
+    "manifest_path": { "$ref": "#/$defs/safeRelativePath" },
+    "submitter_principal_code": { "$ref": "#/$defs/principalCode" },
+    "expected_importer_principal_code": { "$ref": "#/$defs/principalCode" },
+    "expected_importer_software_code": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "expected_importer_version": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "bundle_declarations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contains_credentials", "contains_personal_data", "hostile_input_acknowledged"],
+      "properties": {
+        "contains_credentials": { "const": false },
+        "contains_personal_data": { "const": false },
+        "hostile_input_acknowledged": { "const": true }
+      }
+    },
+    "principal_bootstrap": { "$ref": "#/$defs/principalBootstrap" },
+    "retrieval_locations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/retrievalLocation" }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifact" }
+    },
+    "retrieval_events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/retrievalEvent" }
+    },
+    "custody_events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/custodyEvent" }
+    },
+    "processing_runs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/processingRun" }
+    },
+    "candidate_occurrences": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/candidateOccurrence" }
+    }
+  },
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bundleCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$"
+    },
+    "recordCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$"
+    },
+    "principalCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "pattern": "^(?!.*//)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)[A-Za-z0-9_-][A-Za-z0-9._-]*(?:/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$"
+    },
+    "safeBackendReference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!.*//)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)[A-Za-z0-9_-][A-Za-z0-9._-]*(?:/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$"
+    },
+    "locationUrl": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://[^@\\\\\\u0000-\\u0020\\u007f]+$"
+    },
+    "httpFieldValue": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "etag": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 512,
+      "pattern": "^(?:W/)?\"[!#-~]*\"$"
+    },
+    "httpDate": {
+      "type": "string",
+      "minLength": 29,
+      "maxLength": 29,
+      "pattern": "^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), (?:0[1-9]|[12][0-9]|3[01]) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4} (?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9] GMT$"
+    },
+    "bundleDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle_id", "bundle_digest_sha256"],
+      "properties": {
+        "bundle_id": { "$ref": "#/$defs/bundleCode" },
+        "bundle_digest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "principalBootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trust_root", "principals"],
+      "properties": {
+        "trust_root": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "principal_code", "principal_kind_code", "created_by_principal_code", "created_at"],
+          "properties": {
+            "id": { "const": 1 },
+            "principal_code": { "const": "system.bootstrap" },
+            "principal_kind_code": { "const": "service" },
+            "created_by_principal_code": { "const": "system.bootstrap" },
+            "created_at": { "$ref": "#/$defs/timestamp" }
+          }
+        },
+        "principals": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "principal_code", "principal_kind_code", "created_by_principal_code", "created_at", "runtime_role_code"],
+            "properties": {
+              "id": { "type": "integer", "minimum": 2, "maximum": 9007199254740991 },
+              "principal_code": { "$ref": "#/$defs/principalCode" },
+              "principal_kind_code": { "enum": ["human", "service"] },
+              "created_by_principal_code": { "$ref": "#/$defs/principalCode" },
+              "created_at": { "$ref": "#/$defs/timestamp" },
+              "runtime_role_code": { "enum": ["manifest_submitter", "collector", "bundle_importer"] }
+            }
+          }
+        }
+      }
+    },
+    "retrievalLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "url", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "url": { "$ref": "#/$defs/locationUrl" },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "byte_layer_code", "hash_algorithm_code", "sha256", "byte_length", "staged_path", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "byte_layer_code": { "enum": ["retrieved_body", "derived_output"] },
+        "hash_algorithm_code": { "const": "sha256" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byte_length": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "staged_path": { "$ref": "#/$defs/safeRelativePath" },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "redirectHop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "ordinal", "from_location_code", "to_location_code", "http_status_code"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "ordinal": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "from_location_code": { "$ref": "#/$defs/recordCode" },
+        "to_location_code": { "$ref": "#/$defs/recordCode" },
+        "http_status_code": { "enum": [301, 302, 303, 307, 308] }
+      }
+    },
+    "responseMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "etag": { "$ref": "#/$defs/etag" },
+        "last_modified": { "$ref": "#/$defs/httpDate" },
+        "content_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
+        "content_length": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "content_encoding": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[a-z0-9!#$%&'*+.^_`|~-]+(?:, [a-z0-9!#$%&'*+.^_`|~-]+)*$" },
+        "vary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?:\\*|[a-z0-9!#$%&'*+.^_`|~-]+(?:, [a-z0-9!#$%&'*+.^_`|~-]+)*)$"
+        }
+      }
+    },
+    "requestHeaders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accept", "accept_language", "accept_encoding"],
+      "properties": {
+        "accept": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
+        "accept_language": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
+        "accept_encoding": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] }
+      }
+    },
+    "retrievalEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "requested_location_code", "last_attempted_location_code", "resolved_location_code", "conditional_basis_retrieval_event_code", "conditional_validator_kind_code", "conditional_validator_value", "artifact_code", "artifact_staged_path", "outcome_code", "request_method_code", "request_profile_code", "request_headers", "started_at", "completed_at", "captured_at", "http_status_code", "response_metadata", "observed_sha256", "observed_byte_length", "detected_media_type", "collector_principal_code", "collector_software_code", "collector_version", "redirects", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "requested_location_code": { "$ref": "#/$defs/recordCode" },
+        "last_attempted_location_code": { "$ref": "#/$defs/recordCode" },
+        "resolved_location_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
+        "conditional_basis_retrieval_event_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
+        "conditional_validator_kind_code": { "type": ["string", "null"], "enum": ["etag", "last_modified", null] },
+        "conditional_validator_value": { "anyOf": [{ "$ref": "#/$defs/httpFieldValue" }, { "type": "null" }] },
+        "artifact_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
+        "artifact_staged_path": { "anyOf": [{ "$ref": "#/$defs/safeRelativePath" }, { "type": "null" }] },
+        "outcome_code": { "enum": ["retrieved_retained", "observed_not_retained", "not_modified", "network_failed", "http_failed"] },
+        "request_method_code": { "const": "GET" },
+        "request_profile_code": { "const": "http_get_representation_v1" },
+        "request_headers": { "$ref": "#/$defs/requestHeaders" },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "captured_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+        "http_status_code": { "type": ["integer", "null"], "minimum": 100, "maximum": 599 },
+        "response_metadata": { "$ref": "#/$defs/responseMetadata" },
+        "observed_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "observed_byte_length": { "type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991 },
+        "detected_media_type": { "type": ["string", "null"], "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" },
+        "collector_principal_code": { "$ref": "#/$defs/principalCode" },
+        "collector_software_code": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "collector_version": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "redirects": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/redirectHop" } },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "observed_sha256": { "type": "null" } }, "required": ["observed_sha256"] },
+          "then": { "properties": { "observed_byte_length": { "type": "null" } } },
+          "else": { "properties": { "observed_byte_length": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 } } }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "retrieved_retained" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_staged_path": { "$ref": "#/$defs/safeRelativePath" },
+              "captured_at": { "$ref": "#/$defs/timestamp" },
+              "http_status_code": { "const": 200 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "observed_not_retained" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "$ref": "#/$defs/timestamp" },
+              "http_status_code": { "const": 200 },
+              "detected_media_type": { "type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "not_modified" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "conditional_basis_retrieval_event_code": { "$ref": "#/$defs/recordCode" },
+              "conditional_validator_kind_code": { "enum": ["etag", "last_modified"] },
+              "conditional_validator_value": { "$ref": "#/$defs/httpFieldValue" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "const": 304 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "network_failed" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "type": "null" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "type": "null" },
+              "response_metadata": { "type": "object", "maxProperties": 0 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "outcome_code": { "const": "http_failed" } }, "required": ["outcome_code"] },
+          "then": {
+            "properties": {
+              "resolved_location_code": { "$ref": "#/$defs/recordCode" },
+              "artifact_code": { "type": "null" },
+              "artifact_staged_path": { "type": "null" },
+              "captured_at": { "type": "null" },
+              "http_status_code": { "type": "integer", "minimum": 300, "maximum": 599 },
+              "observed_sha256": { "type": "null" },
+              "observed_byte_length": { "type": "null" },
+              "detected_media_type": { "type": "null" }
+            }
+          }
+        }
+      ]
+    },
+    "repositoryEligibilityDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declared_by_principal_code", "declared_at", "redistribution_eligible_declared", "no_sensitive_data_declared", "size_eligible_declared", "permanent_history_acknowledged"],
+      "properties": {
+        "declared_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "declared_at": { "$ref": "#/$defs/timestamp" },
+        "redistribution_eligible_declared": { "const": true },
+        "no_sensitive_data_declared": { "const": true },
+        "size_eligible_declared": { "const": true },
+        "permanent_history_acknowledged": { "const": true }
+      }
+    },
+    "custodyEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "artifact_code", "copy_code", "event_kind_code", "predecessor_custody_event_code", "custody_class_code", "backend_code", "backend_reference", "repository_eligibility_declaration", "reason", "occurred_at", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "artifact_code": { "$ref": "#/$defs/recordCode" },
+        "copy_code": { "$ref": "#/$defs/recordCode" },
+        "event_kind_code": { "enum": ["placed", "relocated", "restricted", "quarantined", "restored", "tombstoned"] },
+        "predecessor_custody_event_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
+        "custody_class_code": { "enum": ["repository", "restricted_store"] },
+        "backend_code": { "type": ["string", "null"], "minLength": 1, "maxLength": 40 },
+        "backend_reference": { "anyOf": [{ "$ref": "#/$defs/safeBackendReference" }, { "type": "null" }] },
+        "repository_eligibility_declaration": { "anyOf": [{ "$ref": "#/$defs/repositoryEligibilityDeclaration" }, { "type": "null" }] },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "occurred_at": { "$ref": "#/$defs/timestamp" },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "custody_class_code": { "const": "repository" },
+              "event_kind_code": { "enum": ["placed", "relocated", "restored"] }
+            },
+            "required": ["custody_class_code", "event_kind_code"]
+          },
+          "then": { "properties": { "repository_eligibility_declaration": { "$ref": "#/$defs/repositoryEligibilityDeclaration" } } },
+          "else": { "properties": { "repository_eligibility_declaration": { "type": "null" } } }
+        }
+      ]
+    },
+    "processingOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "artifact_code", "staged_path", "ordinal", "output_kind_code", "detected_media_type", "produced_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "artifact_code": { "$ref": "#/$defs/recordCode" },
+        "staged_path": { "$ref": "#/$defs/safeRelativePath" },
+        "ordinal": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "output_kind_code": { "enum": ["decoded_body", "normalized_text", "extracted_text", "ocr_text", "structured_data", "manual_transcript", "diagnostic"] },
+        "detected_media_type": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "produced_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "processingRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "ordinal", "input_artifact_code", "method_code", "processor_principal_code", "processor_software_code", "processor_version", "configuration", "configuration_sha256", "started_at", "completed_at", "outcome_code", "failure_code", "outputs", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "ordinal": { "type": "integer", "minimum": 0, "maximum": 1000 },
+        "input_artifact_code": { "$ref": "#/$defs/recordCode" },
+        "method_code": { "enum": ["content_decoding", "parser", "ocr", "normalization", "manual_transcription"] },
+        "processor_principal_code": { "$ref": "#/$defs/principalCode" },
+        "processor_software_code": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "processor_version": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "configuration": {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": {
+            "pattern": "^(?!.*(?:^|[._-]+)(?:authorization|cookie|credential|credentials|password|passwd|secret|secrets|token|tokens|apikey|api[._-]+key|privatekey|private[._-]+key|signingkey|signing[._-]+key|accesskey|access[._-]+key|client[._-]+secret|refresh[._-]+token|bearer[._-]+token|session[._-]+cookie|auth[._-]+token)(?:$|[._-]+))[a-z][a-z0-9._-]{0,79}$"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              { "type": "string", "maxLength": 1000 },
+              { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+              { "type": "boolean" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "configuration_sha256": { "$ref": "#/$defs/sha256" },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "outcome_code": { "enum": ["succeeded", "failed"] },
+        "failure_code": { "type": ["string", "null"], "minLength": 1, "maxLength": 80 },
+        "outputs": { "type": "array", "maxItems": 1000, "items": { "$ref": "#/$defs/processingOutput" } },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "method_code": { "const": "content_decoding" } },
+            "required": ["method_code"]
+          },
+          "then": {
+            "properties": {
+              "configuration": {
+                "required": ["content_coding"],
+                "properties": {
+                  "content_coding": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "pattern": "^[a-z0-9!#$%&'*+.^_`|~-]+(?:, [a-z0-9!#$%&'*+.^_`|~-]+)*$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "candidateOccurrence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_code", "chain_code", "record_kind_code", "corrects_candidate_record_code", "processing_run_code", "processing_output_code", "claim_type_code", "observed_value", "normalized_value", "confidence_basis_points", "locator_kind_code", "locator_value", "span_start", "span_end", "reason", "recorded_by_principal_code", "recorded_at"],
+      "properties": {
+        "record_code": { "$ref": "#/$defs/recordCode" },
+        "chain_code": { "$ref": "#/$defs/recordCode" },
+        "record_kind_code": { "enum": ["assertion", "correction", "withdrawal"] },
+        "corrects_candidate_record_code": { "anyOf": [{ "$ref": "#/$defs/recordCode" }, { "type": "null" }] },
+        "processing_run_code": { "$ref": "#/$defs/recordCode" },
+        "processing_output_code": { "$ref": "#/$defs/recordCode" },
+        "claim_type_code": { "type": "string", "minLength": 3, "maxLength": 80, "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$" },
+        "observed_value": { "type": ["string", "null"], "minLength": 1, "maxLength": 8000 },
+        "normalized_value": { "type": ["string", "null"], "minLength": 1, "maxLength": 8000 },
+        "confidence_basis_points": { "type": ["integer", "null"], "minimum": 0, "maximum": 10000 },
+        "locator_kind_code": { "enum": ["byte_span", "text_span"] },
+        "locator_value": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "span_start": { "type": ["integer", "null"], "minimum": 0, "maximum": 9007199254740991 },
+        "span_end": { "type": ["integer", "null"], "minimum": 1, "maximum": 9007199254740991 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "recorded_by_principal_code": { "$ref": "#/$defs/principalCode" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" }
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 Status: implemented as production migration `004_tranche_1a_foundations.sql`. Both earlier physical proposals (45 tables and 7 tables) are rejected and superseded in Git history. The retained [proposed SQL](schema/tranche-1-foundations.proposed.sql) is a byte-identical audit artifact; automated tests reject drift. The migration contains exactly four empty `STRICT` tables and is validated by [the committed harness](schema/validate-tranche-1a.mjs).
 
-Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by the next authority/source tranche. Until that tranche provides quarantine and the later review-governance slice provides gates, no `atlas_*` row may be inserted operationally, reviewed, published, exported, or exposed by an API. The existing frontend remains explicitly v1-backed.
+Its sole purpose is to provide stable attribution, language identity, jurisdiction identity, and correction-safe jurisdiction naming needed by Tranche 2A source-evidence quarantine and Tranche 2B source-backed authority drafting. The [Tranche 2A physical design and manifest/import contract](schema-v2-tranche-2a.md) are approved. Migration `005_tranche_2a_source_quarantine.sql` implements the empty nine-table/27-index/27-trigger schema. The fixed-function importer, execution of the explicit one-time first-bundle bootstrap ceremony, authenticated runtime bindings, custody adapters, collectors, and operational security controls remain unimplemented. No real evidence or legal data has been imported. Operational Atlas writes, public exposure, and production use remain unauthorized; the existing frontend remains backed exclusively by legacy v1 data.
 
 ## Physical schema
 
@@ -88,10 +88,10 @@ Named triggers (17): bootstrap and subsequent-principal attribution guards; lang
 ## Deferred work
 
 - Principal lifecycle/status/replacement: review-governance tranche.
-- Jurisdiction retirement, succession, split/merge, containment and membership: source-backed authority tranche.
-- External identifiers: authority tranche with controlled scheme registry, entity-type scope, provenance, correction/withdrawal and deterministic resolution. ELI, EUR-Lex and CELEX identify instruments/sources, never jurisdictions.
+- Jurisdiction retirement, succession, split/merge, containment and membership: Tranche 2B source-backed authority drafting.
+- External identifiers: Tranche 2B with controlled scheme registry, entity-type scope, provenance, correction/withdrawal and deterministic resolution. ELI, EUR-Lex and CELEX identify instruments or authority representations, never jurisdictions.
 - Semantic taxonomies: proposition/semantic tranche with reviewed seeds and legacy crosswalk.
 - Coverage scopes: sourced applicability/national-context tranche.
 - Roles, qualifications, policies, reviews, publication and evaluator: review-governance vertical slice.
 
-No structural or legal row is seeded by Tranche 1A. The production database, repository, API, export, and legacy frontend perform no Atlas writes or reads; the frontend remains backed exclusively by v1.
+No structural or legal row is seeded by Tranche 1A. The approved Tranche 2A physical schema and manifest/import contract are implemented only to the extent of migration `005_tranche_2a_source_quarantine.sql`, which creates nine empty tables, 27 indexes, and 27 triggers. The fixed-function importer, execution of the first-bundle bootstrap ceremony, authenticated runtime bindings, custody adapters, collectors, and operational security controls remain unimplemented. No real evidence or legal data has been imported. Operational Atlas writes, public exposure, and production use remain unauthorized. The frontend remains backed exclusively by legacy v1 data.

@@ -1,6 +1,8 @@
 # Data
 
-The local SQLite database is built from ordered SQL migrations. Applied migration files are protected by SHA-256 checksums in `migration_checksums`; the runner validates filenames, ordering, missing files, and checksums before applying anything new. Migration `004_tranche_1a_foundations.sql` implements four empty, immutable `STRICT` Atlas foundation tables for attribution, canonical languages, jurisdictions, and correction-safe jurisdiction names. It contains no seeds; operational Atlas writes remain prohibited until the authority/source quarantine path exists.
+The local SQLite database is built from ordered SQL migrations. Applied migration files are protected by SHA-256 checksums in `migration_checksums`; the runner validates filenames, ordering, missing files, and checksums before applying anything new. Migration `004_tranche_1a_foundations.sql` implements four empty, immutable `STRICT` Atlas foundation tables for attribution, canonical languages, jurisdictions, and correction-safe jurisdiction names. Migration `005_tranche_2a_source_quarantine.sql` implements nine empty `STRICT` source-evidence quarantine tables with 27 indexes and 27 history/integrity triggers; automated tests require its bytes to remain identical to the approved DDL audit artifact.
+
+Neither migration contains Atlas seeds. Migration 005 imports no substantive evidence or legal data and does not implement the approved evidence-bundle importer, collector, artifact adapter, trusted identity binding, or operational controls. Until those components receive separate implementation approval, Atlas writes and any API, search, export, frontend, public, or production use of Tranche 2A remain prohibited. Schema implementation alone is not authorization to use it.
 
 ```bash
 npm run data:build
