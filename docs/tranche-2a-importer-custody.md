@@ -1,6 +1,6 @@
 # Decision 9 — fixed-function Tranche 2A importer and pilot custody profile
 
-Status: **proposed for approval; not implemented or authorized for real evidence**. The approved version-1 manifest contract and the empty migration-005 schema are unchanged. This decision specifies the operational boundary required before either may be used. It does not authorize credentials, evidence acquisition, principal creation, an import, public exposure, or production use.
+Status: **approved at commit `ee3ccd777849c7ffcad1efe5d5d9170c15171a65`; not implemented or authorized for real evidence**. The approved version-1 manifest contract and the empty migration-005 schema are unchanged. This decision specifies the operational boundary required before either may be used. It does not authorize credentials, evidence acquisition, principal creation, an import, public exposure, or production use. D9.0—the contract freeze—is the next separately reviewed step.
 
 ## Plain-language decision
 
@@ -17,7 +17,7 @@ Repository custody is opt-in only after a separate per-artifact decision clears 
 
 ## Existing contract reconciled
 
-This proposal depends on, and does not revise:
+This approved decision depends on, and does not revise:
 
 - migration `004_tranche_1a_foundations.sql`, including the reserved `system.bootstrap` bootstrap-identity contract and the attribution-only principal model;
 - migration `005_tranche_2a_source_quarantine.sql`, with its nine empty `STRICT` tables, 27 indexes, and 27 triggers;
@@ -448,9 +448,9 @@ Implementation is not eligible for real bytes until automated tests independentl
 
 Tests must distinguish SQLite guarantees, importer behavior, adapter/platform behavior, and operational-policy assertions. Fault injection must cover each preparation, `fsync`, no-replace publish, transaction insert, projection, commit, verification, rename, journal and backup boundary. Security review includes dependency/build provenance and an attempt to bypass the fixed writer API.
 
-## Implementation tranches after approval
+## Separately reviewed implementation tranches
 
-Each tranche ends with synthetic-only tests and a separate review:
+Decision 9 approves the architecture and sequence below only. No D9 tranche is implemented or authorized by that approval. D9.0—the contract freeze—is next and requires separate review; each tranche ends with synthetic-only tests and its own approval boundary.
 
 1. **D9.0 — contract freeze:** versioned runtime/custody/clearance/result schemas, stable error codes, exact limits, synthetic fixtures and threat-model test plan. No credentials or real data.
 2. **D9.1 — launcher and bootstrap control:** OS identity binding, service/build attestation, protected handoff registry, one-use permit, empty-state checks and a synthetic bootstrap dry run/rollback/no-op. Do not execute the real ceremony.
@@ -468,7 +468,7 @@ No tranche may silently widen the approved manifest, evidence schema, corpus, pr
 
 All of the following are mandatory:
 
-- Decision 9 and each relevant implementation tranche are approved, implemented, independently reviewed, and committed; migration 005 remains unchanged and its existing standalone validator passes.
+- Decision 9 remains the approved architecture; D9.0 and each relevant later implementation tranche have been separately approved, implemented, independently reviewed, and committed; migration 005 remains unchanged and its existing standalone validator passes.
 - The exact importer/runtime/dependency build is reproducible and pinned; the fixed writer and promotion verifier pass the full synthetic/adversarial/fault suite.
 - A dedicated clean pilot database through migration 005 is separate from the API database; schema/checksums, empty Atlas state, integrity and FKs are verified.
 - Local restricted CAS, secure descriptor path helper, protected runtime map/handoff, audit journal, scanners, clearance register, lock, reconciler, restriction/tombstone worker and encrypted backup are operational with least-privilege filesystem identities.
@@ -481,12 +481,12 @@ All of the following are mandatory:
 - Incident, recovery, orphan, restriction, tombstone and rollback runbooks have named operators, escalation paths and a second-person check.
 - A final go/no-go record explicitly authorizes only this one bundle and states that Tranche 2A establishes no officiality or legal conclusion.
 
-Until Decision 9 implementation and the separately authorized sequence-1 ceremony, all Atlas tables remain empty. The bootstrap ceremony would add the four principal identities and one technical receipt while leaving the other eight Tranche 2A tables empty. It still would not import real evidence. Only the separately authorized sequence-2 bundle would add the one document's quarantine evidence.
+Until the Decision 9 implementation tranches and the separately authorized sequence-1 ceremony are completed, all Atlas tables remain empty. D9.0 does not execute the ceremony or import evidence. The bootstrap ceremony would add the four principal identities and one technical receipt while leaving the other eight Tranche 2A tables empty. It still would not import real evidence. Only the separately authorized sequence-2 bundle would add the one document's quarantine evidence.
 
-## Recommendation and approval request
+## Approved recommendation and next boundary
 
-Approve the two-bundle controlled-pilot profile: reviewed Git manifests, exact bytes in a restricted local content-addressed filesystem outside Git, an encrypted verified backup, a network-free importer, typed fixed DB writer, disposable candidate clone and independent atomic promotion. Defer repository artifact custody unless separately cleared, and defer hosted object storage to a broker-based production profile.
+Decision 9 approves the two-bundle controlled-pilot profile: reviewed Git manifests, exact bytes in a restricted local content-addressed filesystem outside Git, an encrypted verified backup, a network-free importer, typed fixed DB writer, disposable candidate clone and independent atomic promotion. Repository artifact custody remains deferred unless separately cleared, and hosted object storage remains deferred to a broker-based production profile.
 
 This is the smallest route that preserves exact evidence, a constrained and independently verified write path, deterministic replay while evidence exists, deletion-aware recovery boundaries, crash recovery, restrictable local access with separately governed tombstone/deletion handling, and a clean hosted-storage transition without implying legal verification or public readiness.
 
-**Do you approve Decision 9 as recommended, or would you like to modify it?**
+This approval fixes the design only. D9.0—the contract freeze—is the next separately reviewed step; no importer, bootstrap ceremony, credential, or evidence import is authorized yet.
