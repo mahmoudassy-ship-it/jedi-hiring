@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-0/identity-bindings-v1.schema.json",
+  "title": "JEDI Atlas D9.0 trusted runtime identity bindings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "binding_set_code",
+    "binding_generation",
+    "runtime_profile_record_digest_sha256",
+    "runtime_domain_sha256",
+    "issued_at",
+    "expires_at",
+    "bindings",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-identity-bindings" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "binding_set_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "binding_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "runtime_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "runtime_domain_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "issued_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "expires_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "bindings": {
+      "type": "array",
+      "minItems": 19,
+      "maxItems": 19,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "binding_code",
+          "runtime_role_code",
+          "principal_kind_code",
+          "atlas_principal_code",
+          "subject_kind_code",
+          "unix_uid",
+          "executable_sha256",
+          "ipc_endpoint_code",
+          "allowed_operation_modes",
+          "valid_from",
+          "valid_until"
+        ],
+        "properties": {
+          "binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+          "runtime_role_code": {
+            "enum": [
+              "human_submitter",
+              "collector",
+              "bundle_importer",
+              "database_writer",
+              "cloner_promoter",
+              "independent_verifier",
+              "operational_witness",
+              "recovery_operator",
+              "recovery_authority",
+              "clearance_decider",
+              "clearance_checker",
+              "bootstrap_authority",
+              "custody_adapter",
+              "handoff_broker",
+              "trusted_launcher",
+              "clearance_broker",
+              "journal_broker",
+              "scanner",
+              "backup_adapter"
+            ]
+          },
+          "principal_kind_code": { "enum": ["human", "service"] },
+          "atlas_principal_code": {
+            "oneOf": [
+              { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/principalCode" },
+              { "type": "null" }
+            ]
+          },
+          "subject_kind_code": { "const": "unix_uid" },
+          "unix_uid": { "type": "integer", "minimum": 1000, "maximum": 4294967294 },
+          "executable_sha256": {
+            "oneOf": [
+              { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+              { "type": "null" }
+            ]
+          },
+          "ipc_endpoint_code": {
+            "oneOf": [
+              { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+              { "type": "null" }
+            ]
+          },
+          "allowed_operation_modes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": { "enum": ["bootstrap", "document_import", "dry_run", "no_op_verification", "recovery"] }
+          },
+          "valid_from": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+          "valid_until": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+        }
+      }
+    },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}

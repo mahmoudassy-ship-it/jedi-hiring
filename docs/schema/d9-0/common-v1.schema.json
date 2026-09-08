@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json",
+  "title": "JEDI Atlas D9.0 shared contract definitions",
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "stableCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 96,
+      "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$"
+    },
+    "principalCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9][a-z0-9._-]*[a-z0-9]$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "pattern": "^(?!.*//)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)[A-Za-z0-9_-][A-Za-z0-9._-]*(?:/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$"
+    },
+    "safeBackendReference": {
+      "type": "string",
+      "minLength": 82,
+      "maxLength": 82,
+      "pattern": "^objects/sha256/[0-9a-f]{2}/[0-9a-f]{64}$"
+    },
+    "gitCommit": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "operationNonce": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nonnegativeSafeInteger": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "positiveSafeInteger": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "safeMessage": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[ -~]+$"
+    },
+    "importOutcomeCode": {
+      "enum": ["planned", "imported", "no_op", "recovered", "rejected", "recovery_required"]
+    },
+    "canonicalEffectCode": {
+      "enum": ["none_verified", "promoted_verified", "possibly_promoted", "unknown"]
+    },
+    "stageCode": {
+      "enum": [
+        "startup",
+        "authorization",
+        "operation_lock",
+        "input_open",
+        "manifest_parse",
+        "manifest_contract",
+        "runtime_binding",
+        "handoff_validation",
+        "preflight",
+        "staging_snapshot",
+        "screening",
+        "clearance",
+        "custody_prepare",
+        "custody_backup",
+        "candidate_build",
+        "database_transaction",
+        "projection",
+        "independent_verification",
+        "prior_backup",
+        "promotion",
+        "post_promotion_verification",
+        "final_backup",
+        "reconciliation",
+        "recovery",
+        "completion"
+      ]
+    },
+    "errorCode": {
+      "enum": [
+        "AUTHENTICATION_FAILED",
+        "AUTHORIZATION_DENIED",
+        "OPERATION_LOCK_UNAVAILABLE",
+        "RUNTIME_PROFILE_MISMATCH",
+        "IDENTITY_BINDING_MISMATCH",
+        "INCOMPATIBLE_CONTRACT_VERSION",
+        "IPC_MALFORMED",
+        "IPC_PEER_MISMATCH",
+        "IPC_REPLAY_DETECTED",
+        "INPUT_NOT_FOUND",
+        "INPUT_PATH_INVALID",
+        "INPUT_SYMLINK_REJECTED",
+        "INPUT_ROOT_ESCAPE",
+        "INPUT_TYPE_REJECTED",
+        "INPUT_CHANGED",
+        "MANIFEST_TOO_LARGE",
+        "MANIFEST_ENCODING_INVALID",
+        "MANIFEST_SCHEMA_INVALID",
+        "MANIFEST_DIGEST_MISMATCH",
+        "MANIFEST_PATH_MISMATCH",
+        "MANIFEST_SECRET_REJECTED",
+        "HANDOFF_MISSING",
+        "HANDOFF_MISMATCH",
+        "BUNDLE_SEAL_INVALID",
+        "BOOTSTRAP_PERMIT_INVALID",
+        "BOOTSTRAP_PERMIT_SPENT",
+        "REPLAY_CERTIFICATE_INVALID",
+        "RECOVERY_PERMIT_INVALID",
+        "LOGICAL_STATE_MISMATCH",
+        "BUNDLE_REPLAY_CONFLICT",
+        "BUNDLE_SEQUENCE_CONFLICT",
+        "PREFLIGHT_REJECTED",
+        "RESOURCE_LIMIT_EXCEEDED",
+        "STAGED_BYTES_MISMATCH",
+        "SCREENING_FAILED",
+        "SCREENING_STALE",
+        "SCREENING_TIMEOUT",
+        "CLEARANCE_MISSING",
+        "CLEARANCE_INVALID",
+        "CLEARANCE_EXPIRED",
+        "CLEARANCE_REVOKED",
+        "CUSTODY_CONFLICT",
+        "CUSTODY_CORRUPT",
+        "CUSTODY_TIMEOUT",
+        "CUSTODY_BACKUP_FAILED",
+        "PRIOR_DATABASE_BACKUP_FAILED",
+        "FINAL_BACKUP_FAILED",
+        "CANDIDATE_BUILD_FAILED",
+        "DATABASE_TRANSACTION_FAILED",
+        "PROJECTION_MISMATCH",
+        "INTEGRITY_CHECK_FAILED",
+        "FOREIGN_KEY_CHECK_FAILED",
+        "FORBIDDEN_SURFACE_CHANGED",
+        "INDEPENDENT_VERIFICATION_FAILED",
+        "PROMOTION_FAILED",
+        "PROMOTION_STATE_AMBIGUOUS",
+        "JOURNAL_INTENT_WRITE_FAILED",
+        "JOURNAL_COMPLETION_WRITE_FAILED",
+        "RECOVERY_STATE_AMBIGUOUS",
+        "INTERNAL_CONTRACT_VIOLATION"
+      ]
+    },
+    "retryabilityCode": {
+      "enum": ["never", "new_operation_same_bundle", "recovery_only", "human_decision_required"]
+    },
+    "recoveryClassCode": {
+      "enum": [
+        "none",
+        "reconcile_orphan",
+        "discard_candidate",
+        "complete_post_promotion",
+        "restore_verified_generation",
+        "security_incident",
+        "capacity_incident",
+        "forensic_hold"
+      ]
+    },
+    "checkStatusCode": {
+      "enum": ["passed", "failed", "not_run"]
+    },
+    "rowCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "atlas_evidence_bundle_receipts",
+        "atlas_retrieval_locations",
+        "atlas_artifacts",
+        "atlas_retrieval_events",
+        "atlas_retrieval_redirects",
+        "atlas_artifact_custody_events",
+        "atlas_processing_runs",
+        "atlas_processing_outputs",
+        "atlas_unverified_candidate_occurrences"
+      ],
+      "properties": {
+        "atlas_evidence_bundle_receipts": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_retrieval_locations": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_artifacts": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_retrieval_events": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_retrieval_redirects": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_artifact_custody_events": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_processing_runs": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_processing_outputs": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "atlas_unverified_candidate_occurrences": { "$ref": "#/$defs/nonnegativeSafeInteger" }
+      }
+    },
+    "objectCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prepared", "reused", "orphaned"],
+      "properties": {
+        "prepared": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "reused": { "$ref": "#/$defs/nonnegativeSafeInteger" },
+        "orphaned": { "$ref": "#/$defs/nonnegativeSafeInteger" }
+      }
+    },
+    "artifactIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["byte_layer_code", "hash_algorithm_code", "sha256", "byte_length"],
+      "properties": {
+        "byte_layer_code": { "enum": ["retrieved_body", "derived_output"] },
+        "hash_algorithm_code": { "const": "sha256" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byte_length": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 26214400
+        }
+      }
+    },
+    "custodyCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_kind_code",
+        "capability_sha256",
+        "issued_by_binding_code",
+        "requester_binding_code",
+        "adapter_binding_code",
+        "operation_id",
+        "operation_nonce",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "artifact",
+        "allowed_consumer_operation_codes",
+        "replay_policy_code",
+        "issued_at",
+        "expires_at"
+      ],
+      "properties": {
+        "capability_kind_code": { "enum": ["source_handle", "preparation", "sealed_custody_access"] },
+        "capability_sha256": { "$ref": "#/$defs/sha256" },
+        "issued_by_binding_code": { "$ref": "#/$defs/stableCode" },
+        "requester_binding_code": { "$ref": "#/$defs/stableCode" },
+        "adapter_binding_code": { "$ref": "#/$defs/stableCode" },
+        "operation_id": { "$ref": "#/$defs/stableCode" },
+        "operation_nonce": { "$ref": "#/$defs/operationNonce" },
+        "runtime_profile_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "identity_bindings_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "artifact": { "$ref": "#/$defs/artifactIdentity" },
+        "allowed_consumer_operation_codes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "enum": ["prepare", "verify_prepared", "publish_no_replace", "open_custody", "abandon_temp"] }
+        },
+        "replay_policy_code": {
+          "enum": ["single_consume_prepare", "ordered_verify_then_publish_or_abandon", "single_consume_open_custody"]
+        },
+        "issued_at": { "$ref": "#/$defs/timestamp" },
+        "expires_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "contractReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "format_version", "record_code", "record_digest_sha256"],
+      "properties": {
+        "format": {
+          "enum": [
+            "jedi-atlas-runtime-profile",
+            "jedi-atlas-identity-bindings",
+            "jedi-atlas-collector-handoff",
+            "jedi-atlas-bootstrap-control",
+            "jedi-atlas-custody-adapter-message",
+            "jedi-atlas-clearance-record",
+            "jedi-atlas-operation-journal-event",
+            "jedi-atlas-logical-state-seal"
+          ]
+        },
+        "format_version": { "const": "1.0.0" },
+        "record_code": { "$ref": "#/$defs/stableCode" },
+        "record_digest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "bindingReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding_set_code", "binding_set_digest_sha256", "binding_code"],
+      "properties": {
+        "binding_set_code": { "$ref": "#/$defs/stableCode" },
+        "binding_set_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "binding_code": { "$ref": "#/$defs/stableCode" }
+      }
+    },
+    "bundleReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle_id", "bundle_sequence", "bundle_digest_sha256"],
+      "properties": {
+        "bundle_id": { "$ref": "#/$defs/stableCode" },
+        "bundle_sequence": { "$ref": "#/$defs/positiveSafeInteger" },
+        "bundle_digest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "logicalStateReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state_seal_code", "state_seal_record_digest_sha256", "logical_state_sha256"],
+      "properties": {
+        "state_seal_code": { "$ref": "#/$defs/stableCode" },
+        "state_seal_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "logical_state_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "scannerResultReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scanner_code", "scanner_build_sha256", "rules_sha256", "result_code", "completed_at", "result_digest_sha256"],
+      "properties": {
+        "scanner_code": { "enum": ["malware", "secrets", "personal_data"] },
+        "scanner_build_sha256": { "$ref": "#/$defs/sha256" },
+        "rules_sha256": { "$ref": "#/$defs/sha256" },
+        "result_code": { "const": "clear" },
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "result_digest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

@@ -1,0 +1,3794 @@
+{
+  "format": "jedi-atlas-d90-classifications",
+  "format_version": "1.0.0",
+  "outcomes": [
+    "planned",
+    "imported",
+    "no_op",
+    "recovered",
+    "rejected",
+    "recovery_required"
+  ],
+  "canonical_effects": [
+    "none_verified",
+    "promoted_verified",
+    "possibly_promoted",
+    "unknown"
+  ],
+  "stages": [
+    "startup",
+    "authorization",
+    "operation_lock",
+    "input_open",
+    "manifest_parse",
+    "manifest_contract",
+    "runtime_binding",
+    "handoff_validation",
+    "preflight",
+    "staging_snapshot",
+    "screening",
+    "clearance",
+    "custody_prepare",
+    "custody_backup",
+    "candidate_build",
+    "database_transaction",
+    "projection",
+    "independent_verification",
+    "prior_backup",
+    "promotion",
+    "post_promotion_verification",
+    "final_backup",
+    "reconciliation",
+    "recovery",
+    "completion"
+  ],
+  "retryability_classes": [
+    "never",
+    "new_operation_same_bundle",
+    "recovery_only",
+    "human_decision_required"
+  ],
+  "recovery_classes": [
+    "none",
+    "reconcile_orphan",
+    "discard_candidate",
+    "complete_post_promotion",
+    "restore_verified_generation",
+    "security_incident",
+    "capacity_incident",
+    "forensic_hold"
+  ],
+  "journal_event_kinds": [
+    "operation_started",
+    "stage_entered",
+    "stage_succeeded",
+    "stage_failed",
+    "custody_object_durable",
+    "candidate_committed",
+    "candidate_sealed",
+    "promotion_started",
+    "promotion_observed",
+    "recovery_required",
+    "operation_completed"
+  ],
+  "operation_modes": [
+    "bootstrap",
+    "document_import",
+    "dry_run",
+    "no_op_verification",
+    "recovery"
+  ],
+  "runtime_role_binding_rules": [
+    {
+      "runtime_role_code": "backup_adapter",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.backup",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "bootstrap_authority",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "bootstrap"
+      ]
+    },
+    {
+      "runtime_role_code": "bundle_importer",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.importer",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "clearance_broker",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.clearance",
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "clearance_checker",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "clearance_decider",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "cloner_promoter",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.cloner",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "collector",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.handoff",
+      "allowed_operation_modes": [
+        "document_import"
+      ]
+    },
+    {
+      "runtime_role_code": "custody_adapter",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.custody",
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "database_writer",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.writer",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "handoff_broker",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.handoff",
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "human_submitter",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "independent_verifier",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.verifier",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "journal_broker",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.journal",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "operational_witness",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "bootstrap",
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "recovery_authority",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "recovery_operator",
+      "principal_kind_code": "human",
+      "ipc_endpoint_code": null,
+      "allowed_operation_modes": [
+        "recovery"
+      ]
+    },
+    {
+      "runtime_role_code": "scanner",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.scanner",
+      "allowed_operation_modes": [
+        "document_import",
+        "dry_run",
+        "no_op_verification"
+      ]
+    },
+    {
+      "runtime_role_code": "trusted_launcher",
+      "principal_kind_code": "service",
+      "ipc_endpoint_code": "ipc.launcher",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ]
+    }
+  ],
+  "logical_handle_slot_rules": [
+    {
+      "slot_code": "backup_adapter",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        }
+      ]
+    },
+    {
+      "slot_code": "candidate_database",
+      "recipients": [
+        {
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "canonical_query",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "clearance_register",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "clearance_broker",
+          "access_code": "write_fixed_function"
+        }
+      ]
+    },
+    {
+      "slot_code": "custody_adapter",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        }
+      ]
+    },
+    {
+      "slot_code": "custody_capability_store",
+      "recipients": [
+        {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "handoff_registry",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "operation_journal",
+      "recipients": [
+        {
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        }
+      ]
+    },
+    {
+      "slot_code": "permit_control_store",
+      "recipients": [
+        {
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "recovery_database",
+      "recipients": [
+        {
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "reviewed_root",
+      "recipients": [
+        {
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "slot_code": "staging_root",
+      "recipients": [
+        {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    }
+  ],
+  "custody_capability_rules": [
+    {
+      "capability_kind_code": "source_handle",
+      "payload_field_code": "source_handle_token",
+      "issued_by_runtime_role_code": "custody_adapter",
+      "requester_runtime_role_code": "bundle_importer",
+      "adapter_runtime_role_code": "custody_adapter",
+      "issuance_operation_code": "open_staged",
+      "issuance_outcome_code": "opened",
+      "allowed_consumer_operation_codes": [
+        "prepare"
+      ],
+      "replay_policy_code": "single_consume_prepare",
+      "lifetime_ms_max": 30000
+    },
+    {
+      "capability_kind_code": "preparation",
+      "payload_field_code": "preparation_token",
+      "issued_by_runtime_role_code": "custody_adapter",
+      "requester_runtime_role_code": "bundle_importer",
+      "adapter_runtime_role_code": "custody_adapter",
+      "issuance_operation_code": "prepare",
+      "issuance_outcome_code": "prepared",
+      "allowed_consumer_operation_codes": [
+        "verify_prepared",
+        "publish_no_replace",
+        "abandon_temp"
+      ],
+      "replay_policy_code": "ordered_verify_then_publish_or_abandon",
+      "lifetime_ms_max": 900000
+    },
+    {
+      "capability_kind_code": "sealed_custody_access",
+      "payload_field_code": "sealed_capability_token",
+      "issued_by_runtime_role_code": "custody_adapter",
+      "requester_runtime_role_code": "bundle_importer",
+      "adapter_runtime_role_code": "custody_adapter",
+      "issuance_operation_code": "seal_custody_access",
+      "issuance_outcome_code": "sealed",
+      "allowed_consumer_operation_codes": [
+        "open_custody"
+      ],
+      "replay_policy_code": "single_consume_open_custody",
+      "lifetime_ms_max": 30000
+    }
+  ],
+  "custody_capability_policy": {
+    "binding_policy_code": "exact_operation_nonce_runtime_requester_adapter_artifact",
+    "transport_code": "authenticated_custody_ipc_only",
+    "persistence_code": "protected_short_lived_state_until_expiry_or_reconciliation",
+    "static_credentials_code": "forbidden_everywhere",
+    "capability_alone_authorizes_code": "never"
+  },
+  "custody_clearance_revalidation_policy": {
+    "required_decision_code": "restricted_store_only",
+    "recheck_points": [
+      "sealed_issuance",
+      "open_request_claim",
+      "open_response",
+      "pre_promotion"
+    ]
+  },
+  "custody_capability_transition_rules": [
+    {
+      "capability_kind_code": "source_handle",
+      "from_state_code": "ready",
+      "to_state_code": "consumed",
+      "transition_code": "consumer_succeeded",
+      "consumer_operation_code": "prepare",
+      "trigger_code": "authenticated_request_accepted_atomic_claim",
+      "response_policy_code": "must_be_null",
+      "reason_code": "request_claimed"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "ready",
+      "to_state_code": "verified",
+      "transition_code": "verification_succeeded",
+      "consumer_operation_code": "verify_prepared",
+      "trigger_code": "successful_response",
+      "response_policy_code": "required",
+      "reason_code": "verified_response"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "verified",
+      "to_state_code": "consumed",
+      "transition_code": "consumer_succeeded",
+      "consumer_operation_code": "publish_no_replace",
+      "trigger_code": "successful_response",
+      "response_policy_code": "required",
+      "reason_code": "successful_response"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "ready",
+      "to_state_code": "abandoned",
+      "transition_code": "temporary_abandoned",
+      "consumer_operation_code": "abandon_temp",
+      "trigger_code": "successful_response",
+      "response_policy_code": "required",
+      "reason_code": "abandon_response"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "verified",
+      "to_state_code": "abandoned",
+      "transition_code": "temporary_abandoned",
+      "consumer_operation_code": "abandon_temp",
+      "trigger_code": "successful_response",
+      "response_policy_code": "required",
+      "reason_code": "abandon_response"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "ready",
+      "to_state_code": "invalidated",
+      "transition_code": "integrity_failure",
+      "consumer_operation_code": "verify_prepared",
+      "trigger_code": "corrupt_response",
+      "response_policy_code": "required_corrupt",
+      "reason_code": "corrupt_response"
+    },
+    {
+      "capability_kind_code": "preparation",
+      "from_state_code": "verified",
+      "to_state_code": "invalidated",
+      "transition_code": "integrity_failure",
+      "consumer_operation_code": "publish_no_replace",
+      "trigger_code": "corrupt_response",
+      "response_policy_code": "required_corrupt",
+      "reason_code": "corrupt_response"
+    },
+    {
+      "capability_kind_code": "sealed_custody_access",
+      "from_state_code": "ready",
+      "to_state_code": "consumed",
+      "transition_code": "consumer_succeeded",
+      "consumer_operation_code": "open_custody",
+      "trigger_code": "authenticated_request_accepted_atomic_claim",
+      "response_policy_code": "must_be_null",
+      "reason_code": "request_claimed"
+    }
+  ],
+  "pilot_custody_purpose_rules": [
+    {
+      "operation_code": "open_custody",
+      "processor_policy_code": "disabled",
+      "allowed_purpose_codes": [
+        "integrity"
+      ]
+    }
+  ],
+  "permit_transition_rules": [
+    {
+      "permit_kind_code": "bootstrap",
+      "from_state_code": "ready",
+      "to_state_code": "in_progress",
+      "transition_code": "operation_claimed",
+      "reason_code": "operation_claimed",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "bootstrap",
+      "from_state_code": "ready",
+      "to_state_code": "revoked",
+      "transition_code": "authority_withdrawal",
+      "reason_code": "authority_withdrawal",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "bootstrap_authority",
+      "recorder_binding_policy_code": "exact_permit_issuer_binding",
+      "occurrence_window_code": "issuance_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "bootstrap",
+      "from_state_code": "in_progress",
+      "to_state_code": "spent",
+      "transition_code": "verified_effect",
+      "reason_code": "canonical_receipt_verified",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "bootstrap",
+      "from_state_code": "in_progress",
+      "to_state_code": "recovery_required",
+      "transition_code": "state_ambiguous",
+      "reason_code": "state_ambiguous",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "optional_last_known",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "recovery",
+      "from_state_code": "ready",
+      "to_state_code": "in_progress",
+      "transition_code": "operation_claimed",
+      "reason_code": "operation_claimed",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "recovery",
+      "from_state_code": "in_progress",
+      "to_state_code": "spent",
+      "transition_code": "verified_effect",
+      "reason_code": "canonical_receipt_verified",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "recovery",
+      "from_state_code": "in_progress",
+      "to_state_code": "recovery_required",
+      "transition_code": "state_ambiguous",
+      "reason_code": "state_ambiguous",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "optional_last_known",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "recovery",
+      "from_state_code": "ready",
+      "to_state_code": "revoked",
+      "transition_code": "authority_withdrawal",
+      "reason_code": "authority_withdrawal",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "recovery_authority",
+      "recorder_binding_policy_code": "exact_permit_issuer_binding",
+      "occurrence_window_code": "issuance_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "post_promotion_completion",
+      "from_state_code": "ready",
+      "to_state_code": "in_progress",
+      "transition_code": "operation_claimed",
+      "reason_code": "operation_claimed",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "trusted_launcher",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "post_promotion_completion",
+      "from_state_code": "ready",
+      "to_state_code": "revoked",
+      "transition_code": "authority_withdrawal",
+      "reason_code": "authority_withdrawal",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "recovery_authority",
+      "recorder_binding_policy_code": "exact_permit_issuer_binding",
+      "occurrence_window_code": "issuance_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "post_promotion_completion",
+      "from_state_code": "in_progress",
+      "to_state_code": "spent",
+      "transition_code": "no_effect_verified",
+      "reason_code": "no_effect_verified",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "independent_verifier",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "exact_expected",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    },
+    {
+      "permit_kind_code": "post_promotion_completion",
+      "from_state_code": "in_progress",
+      "to_state_code": "recovery_required",
+      "transition_code": "state_ambiguous",
+      "reason_code": "state_ambiguous",
+      "recovery_permit_required": false,
+      "recorder_runtime_role_code": "independent_verifier",
+      "recorder_binding_policy_code": "exact_runtime_role_binding",
+      "occurrence_window_code": "not_before_inclusive_to_expiry_exclusive",
+      "observed_state_policy_code": "optional_last_known",
+      "persisted_by_runtime_role_code": "trusted_launcher",
+      "persisted_by_binding_policy_code": "exact_runtime_role_binding"
+    }
+  ],
+  "recovery_permit_policy": {
+    "validity_window_code": "not_before_inclusive_to_expiry_exclusive",
+    "maximum_lifetime_ms": 900000,
+    "must_not_outlive_replay_certificate": true,
+    "must_not_outlive_identity_bindings": true,
+    "authority_withdrawal_window_code": "issuance_inclusive_to_expiry_exclusive"
+  },
+  "clearance_context_binding_policy": {
+    "runtime_profile_policy_code": "exact_self_resolving_record_digest",
+    "identity_bindings_policy_code": "exact_self_resolving_record_digest",
+    "clearance_operational_profile_policy_code": "exact_runtime_profile_clearance_entry_digest",
+    "clearance_scope_policy_code": "exact_artifact_and_decision_scope_digest"
+  },
+  "clearance_decision_rules": [
+    {
+      "decision_code": "restricted_store_only",
+      "retention_scope_code": "pilot_only",
+      "redistribution_scope_code": "none",
+      "derivative_use_code": "internal_only",
+      "sensitivity_code": "restricted",
+      "git_permanence_acknowledged": false,
+      "repository_declaration_code": "all_false"
+    },
+    {
+      "decision_code": "repository_eligible",
+      "retention_scope_code": "repository_history",
+      "redistribution_scope_code": "repository",
+      "derivative_use_code": "repository_allowed",
+      "sensitivity_code": "repository_safe",
+      "git_permanence_acknowledged": true,
+      "repository_declaration_code": "all_true"
+    },
+    {
+      "decision_code": "do_not_retain",
+      "retention_scope_code": "none",
+      "redistribution_scope_code": "none",
+      "derivative_use_code": "none",
+      "sensitivity_code": "restricted",
+      "git_permanence_acknowledged": false,
+      "repository_declaration_code": "all_false"
+    }
+  ],
+  "clearance_transition_rules": [
+    {
+      "state_code": "revoked",
+      "replacement_code": "must_be_null",
+      "allowed_reason_codes": [
+        "new_information",
+        "operator_withdrawal",
+        "policy_changed"
+      ]
+    },
+    {
+      "state_code": "superseded",
+      "replacement_code": "required_distinct_same_artifact_decision",
+      "allowed_reason_codes": [
+        "new_information",
+        "policy_changed",
+        "record_corrected"
+      ]
+    }
+  ],
+  "custody_message_rules": [
+    {
+      "operation_code": "open_staged",
+      "request_nonnull_fields": [
+        "bundle_seal_record_digest_sha256",
+        "collector_handoff_record_digest_sha256",
+        "relative_path",
+        "staging_root_slot_code",
+        "staging_snapshot_code"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "opened"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "outcome_code",
+        "bundle_seal_record_digest_sha256",
+        "source_handle_token"
+      ],
+      "success_descriptor_roles": [
+        "staged_source"
+      ],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "prepare",
+      "request_nonnull_fields": [
+        "artifact",
+        "source_handle_token"
+      ],
+      "request_descriptor_roles": [
+        "staged_source"
+      ],
+      "success_outcomes": [
+        "prepared"
+      ],
+      "success_nonnull_fields": [
+        "outcome_code",
+        "preparation_token"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "verify_prepared",
+      "request_nonnull_fields": [
+        "artifact",
+        "preparation_token"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "verified"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "outcome_code",
+        "preparation_token"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "corrupt": [
+          "CUSTODY_CORRUPT"
+        ],
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "publish_no_replace",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "preparation_token"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "published",
+        "reused_verified"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "durability_receipt_sha256",
+        "outcome_code"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "corrupt": [
+          "CUSTODY_CORRUPT"
+        ],
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "seal_custody_access",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "purpose_code"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "sealed"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "custody_leaf_projection_sha256",
+        "custody_evaluated_at",
+        "known_through_bundle_sequence",
+        "outcome_code",
+        "purpose_code",
+        "sealed_capability_token"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "open_custody",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "purpose_code",
+        "sealed_capability_token"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "available"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "custody_leaf_projection_sha256",
+        "custody_evaluated_at",
+        "known_through_bundle_sequence",
+        "outcome_code",
+        "purpose_code"
+      ],
+      "success_descriptor_roles": [
+        "custody_source"
+      ],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "corrupt": [
+          "CUSTODY_CORRUPT"
+        ],
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "operation_code": "abandon_temp",
+      "request_nonnull_fields": [
+        "preparation_token"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "abandoned",
+        "already_absent"
+      ],
+      "success_nonnull_fields": [
+        "outcome_code",
+        "preparation_token"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ],
+      "failure_error_codes": {
+        "rejected": [
+          "CUSTODY_CONFLICT"
+        ],
+        "retryable_failure": [
+          "CUSTODY_TIMEOUT"
+        ]
+      }
+    }
+  ],
+  "journal_stage_origin_rules": [
+    {
+      "stage_code": "startup",
+      "runtime_role_code": "trusted_launcher"
+    },
+    {
+      "stage_code": "authorization",
+      "runtime_role_code": "trusted_launcher"
+    },
+    {
+      "stage_code": "operation_lock",
+      "runtime_role_code": "trusted_launcher"
+    },
+    {
+      "stage_code": "input_open",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "manifest_parse",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "manifest_contract",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "runtime_binding",
+      "runtime_role_code": "trusted_launcher"
+    },
+    {
+      "stage_code": "handoff_validation",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "preflight",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "staging_snapshot",
+      "runtime_role_code": "custody_adapter"
+    },
+    {
+      "stage_code": "screening",
+      "runtime_role_code": "scanner"
+    },
+    {
+      "stage_code": "clearance",
+      "runtime_role_code": "clearance_broker"
+    },
+    {
+      "stage_code": "custody_prepare",
+      "runtime_role_code": "custody_adapter"
+    },
+    {
+      "stage_code": "custody_backup",
+      "runtime_role_code": "backup_adapter"
+    },
+    {
+      "stage_code": "candidate_build",
+      "runtime_role_code": "cloner_promoter"
+    },
+    {
+      "stage_code": "database_transaction",
+      "runtime_role_code": "database_writer"
+    },
+    {
+      "stage_code": "projection",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "stage_code": "independent_verification",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "stage_code": "prior_backup",
+      "runtime_role_code": "backup_adapter"
+    },
+    {
+      "stage_code": "promotion",
+      "runtime_role_code": "cloner_promoter"
+    },
+    {
+      "stage_code": "post_promotion_verification",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "stage_code": "final_backup",
+      "runtime_role_code": "backup_adapter"
+    },
+    {
+      "stage_code": "reconciliation",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "stage_code": "recovery",
+      "runtime_role_code": "bundle_importer"
+    },
+    {
+      "stage_code": "completion",
+      "runtime_role_code": "bundle_importer"
+    }
+  ],
+  "journal_event_origin_rules": [
+    {
+      "event_kind_code": "operation_started",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "trusted_launcher"
+    },
+    {
+      "event_kind_code": "stage_entered",
+      "origin_policy_code": "stage_role",
+      "runtime_role_code": null
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "origin_policy_code": "stage_role",
+      "runtime_role_code": null
+    },
+    {
+      "event_kind_code": "stage_failed",
+      "origin_policy_code": "stage_role",
+      "runtime_role_code": null
+    },
+    {
+      "event_kind_code": "custody_object_durable",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "custody_adapter"
+    },
+    {
+      "event_kind_code": "candidate_committed",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "database_writer"
+    },
+    {
+      "event_kind_code": "candidate_sealed",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "event_kind_code": "promotion_started",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "cloner_promoter"
+    },
+    {
+      "event_kind_code": "promotion_observed",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "independent_verifier"
+    },
+    {
+      "event_kind_code": "recovery_required",
+      "origin_policy_code": "stage_role",
+      "runtime_role_code": null
+    },
+    {
+      "event_kind_code": "operation_completed",
+      "origin_policy_code": "exact_role",
+      "runtime_role_code": "bundle_importer"
+    }
+  ],
+  "journal_event_rules": [
+    {
+      "event_kind_code": "operation_started",
+      "stage_policy": "startup_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "none"
+      ],
+      "rows_policy": "required_zero",
+      "objects_policy": "required_zero",
+      "candidate_hash_policy": "forbidden",
+      "backup_hash_policy": "forbidden",
+      "observed_state_policy": "forbidden",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "stage_entered",
+      "stage_policy": "any_registered",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "none"
+      ],
+      "rows_policy": "forbidden",
+      "objects_policy": "forbidden",
+      "candidate_hash_policy": "forbidden",
+      "backup_hash_policy": "forbidden",
+      "observed_state_policy": "forbidden",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_policy": "any_registered",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "none"
+      ],
+      "rows_policy": "forbidden",
+      "objects_policy": "forbidden",
+      "candidate_hash_policy": "forbidden",
+      "backup_hash_policy": "forbidden",
+      "observed_state_policy": "forbidden",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "stage_failed",
+      "stage_policy": "matches_error",
+      "error_policy": "required",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified",
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "allowed_dispositions": [
+        "none",
+        "temporary",
+        "durable_referenced",
+        "durable_orphan",
+        "candidate_only",
+        "backup_only"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "optional",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "optional",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "custody_object_durable",
+      "stage_policy": "custody_prepare_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "durable_referenced",
+        "durable_orphan"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "required_nonzero",
+      "candidate_hash_policy": "forbidden",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "optional",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "candidate_committed",
+      "stage_policy": "database_transaction_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "candidate_only"
+      ],
+      "rows_policy": "required_nonzero",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "required",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "forbidden",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "candidate_sealed",
+      "stage_policy": "independent_verification_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "candidate_only"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "required",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "required",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "promotion_started",
+      "stage_policy": "promotion_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "allowed_dispositions": [
+        "candidate_only"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "required",
+      "backup_hash_policy": "required",
+      "observed_state_policy": "forbidden",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "promotion_observed",
+      "stage_policy": "post_promotion_only",
+      "error_policy": "forbidden",
+      "result_policy": "forbidden",
+      "allowed_canonical_effects": [
+        "promoted_verified"
+      ],
+      "allowed_dispositions": [
+        "durable_referenced"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "required",
+      "backup_hash_policy": "required",
+      "observed_state_policy": "required",
+      "terminal": false
+    },
+    {
+      "event_kind_code": "recovery_required",
+      "stage_policy": "matches_error",
+      "error_policy": "required",
+      "result_policy": "recovery_required_only",
+      "allowed_canonical_effects": [
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "allowed_dispositions": [
+        "temporary",
+        "durable_orphan",
+        "candidate_only",
+        "backup_only",
+        "durable_referenced"
+      ],
+      "rows_policy": "optional",
+      "objects_policy": "optional",
+      "candidate_hash_policy": "optional",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "optional",
+      "terminal": true
+    },
+    {
+      "event_kind_code": "operation_completed",
+      "stage_policy": "completion_only",
+      "error_policy": "matches_result",
+      "result_policy": "required_terminal",
+      "allowed_canonical_effects": [
+        "none_verified",
+        "promoted_verified"
+      ],
+      "allowed_dispositions": [
+        "none",
+        "durable_referenced",
+        "durable_orphan",
+        "candidate_only",
+        "backup_only"
+      ],
+      "rows_policy": "required",
+      "objects_policy": "required",
+      "candidate_hash_policy": "optional",
+      "backup_hash_policy": "optional",
+      "observed_state_policy": "required_when_error_absent_else_error_policy",
+      "terminal": true
+    }
+  ],
+  "result_rules": [
+    {
+      "outcome": "planned",
+      "allowed_operation_modes": [
+        "dry_run"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "all_zero",
+      "check_policy": "plan_passed",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "imported",
+      "allowed_operation_modes": [
+        "bootstrap"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "bootstrap_exact",
+      "check_policy": "all_passed",
+      "allowed_canonical_effects": [
+        "promoted_verified"
+      ],
+      "error_required": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "imported",
+      "allowed_operation_modes": [
+        "document_import"
+      ],
+      "allowed_bundle_kinds": [
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "document_exact",
+      "check_policy": "all_passed",
+      "allowed_canonical_effects": [
+        "promoted_verified"
+      ],
+      "error_required": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "no_op",
+      "allowed_operation_modes": [
+        "no_op_verification"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "all_zero",
+      "check_policy": "all_passed",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "recovered",
+      "allowed_operation_modes": [
+        "recovery"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "known",
+      "check_policy": "recovery_verified",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "bootstrap"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "document_import"
+      ],
+      "allowed_bundle_kinds": [
+        "single_document"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "dry_run"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "no_op_verification"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "recovery"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "rejected",
+      "allowed_operation_modes": [
+        "bootstrap",
+        "document_import",
+        "dry_run",
+        "no_op_verification",
+        "recovery"
+      ],
+      "allowed_bundle_kinds": [
+        "null"
+      ],
+      "bundle_reference_policy": "all_or_none",
+      "count_policy": "rows_zero_objects_orphan_only",
+      "check_policy": "failed_or_early_all_not_run",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "recovery_required",
+      "allowed_operation_modes": [
+        "bootstrap"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "unknown_allowed",
+      "check_policy": "ambiguity_visible",
+      "allowed_canonical_effects": [
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "recovery_required",
+      "allowed_operation_modes": [
+        "document_import"
+      ],
+      "allowed_bundle_kinds": [
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "unknown_allowed",
+      "check_policy": "ambiguity_visible",
+      "allowed_canonical_effects": [
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    },
+    {
+      "outcome": "recovery_required",
+      "allowed_operation_modes": [
+        "recovery"
+      ],
+      "allowed_bundle_kinds": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "bundle_reference_policy": "required_all",
+      "count_policy": "unknown_allowed",
+      "check_policy": "ambiguity_visible",
+      "allowed_canonical_effects": [
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "error_required": true,
+      "exit_zero": false
+    }
+  ],
+  "outcome_rules": [
+    {
+      "outcome": "planned",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "counts_may_be_unknown": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "imported",
+      "allowed_canonical_effects": [
+        "promoted_verified"
+      ],
+      "error_required": false,
+      "counts_may_be_unknown": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "no_op",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "counts_may_be_unknown": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "recovered",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": false,
+      "counts_may_be_unknown": false,
+      "exit_zero": true
+    },
+    {
+      "outcome": "rejected",
+      "allowed_canonical_effects": [
+        "none_verified"
+      ],
+      "error_required": true,
+      "counts_may_be_unknown": false,
+      "exit_zero": false
+    },
+    {
+      "outcome": "recovery_required",
+      "allowed_canonical_effects": [
+        "possibly_promoted",
+        "promoted_verified",
+        "unknown"
+      ],
+      "error_required": true,
+      "counts_may_be_unknown": true,
+      "exit_zero": false
+    }
+  ],
+  "result_error_rules": [
+    {
+      "result_outcome_code": "rejected",
+      "allowed_error_codes": [
+        "AUTHENTICATION_FAILED",
+        "AUTHORIZATION_DENIED",
+        "OPERATION_LOCK_UNAVAILABLE",
+        "RUNTIME_PROFILE_MISMATCH",
+        "IDENTITY_BINDING_MISMATCH",
+        "INCOMPATIBLE_CONTRACT_VERSION",
+        "IPC_MALFORMED",
+        "IPC_PEER_MISMATCH",
+        "IPC_REPLAY_DETECTED",
+        "INPUT_NOT_FOUND",
+        "INPUT_PATH_INVALID",
+        "INPUT_SYMLINK_REJECTED",
+        "INPUT_ROOT_ESCAPE",
+        "INPUT_TYPE_REJECTED",
+        "INPUT_CHANGED",
+        "MANIFEST_TOO_LARGE",
+        "MANIFEST_ENCODING_INVALID",
+        "MANIFEST_SCHEMA_INVALID",
+        "MANIFEST_DIGEST_MISMATCH",
+        "MANIFEST_PATH_MISMATCH",
+        "MANIFEST_SECRET_REJECTED",
+        "HANDOFF_MISSING",
+        "HANDOFF_MISMATCH",
+        "BUNDLE_SEAL_INVALID",
+        "BOOTSTRAP_PERMIT_INVALID",
+        "BOOTSTRAP_PERMIT_SPENT",
+        "REPLAY_CERTIFICATE_INVALID",
+        "RECOVERY_PERMIT_INVALID",
+        "LOGICAL_STATE_MISMATCH",
+        "BUNDLE_REPLAY_CONFLICT",
+        "BUNDLE_SEQUENCE_CONFLICT",
+        "PREFLIGHT_REJECTED",
+        "RESOURCE_LIMIT_EXCEEDED",
+        "STAGED_BYTES_MISMATCH",
+        "SCREENING_FAILED",
+        "SCREENING_STALE",
+        "SCREENING_TIMEOUT",
+        "CLEARANCE_MISSING",
+        "CLEARANCE_INVALID",
+        "CLEARANCE_EXPIRED",
+        "CLEARANCE_REVOKED",
+        "CUSTODY_CONFLICT",
+        "CUSTODY_CORRUPT",
+        "CUSTODY_TIMEOUT",
+        "CUSTODY_BACKUP_FAILED",
+        "PRIOR_DATABASE_BACKUP_FAILED",
+        "CANDIDATE_BUILD_FAILED",
+        "DATABASE_TRANSACTION_FAILED",
+        "PROJECTION_MISMATCH",
+        "INTEGRITY_CHECK_FAILED",
+        "FOREIGN_KEY_CHECK_FAILED",
+        "FORBIDDEN_SURFACE_CHANGED",
+        "INDEPENDENT_VERIFICATION_FAILED",
+        "PROMOTION_FAILED",
+        "JOURNAL_INTENT_WRITE_FAILED",
+        "INTERNAL_CONTRACT_VIOLATION"
+      ]
+    },
+    {
+      "result_outcome_code": "recovery_required",
+      "allowed_error_codes": [
+        "FINAL_BACKUP_FAILED",
+        "PROMOTION_STATE_AMBIGUOUS",
+        "JOURNAL_COMPLETION_WRITE_FAILED",
+        "RECOVERY_STATE_AMBIGUOUS"
+      ]
+    }
+  ],
+  "error_rules": [
+    {
+      "code": "AUTHENTICATION_FAILED",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "Authenticated runtime identity was not accepted."
+    },
+    {
+      "code": "AUTHORIZATION_DENIED",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The requested operation is not authorized."
+    },
+    {
+      "code": "OPERATION_LOCK_UNAVAILABLE",
+      "stage": "operation_lock",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "none",
+      "safe_message": "The exclusive operation lock is unavailable."
+    },
+    {
+      "code": "RUNTIME_PROFILE_MISMATCH",
+      "stage": "runtime_binding",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The protected runtime profile does not match the frozen contract."
+    },
+    {
+      "code": "IDENTITY_BINDING_MISMATCH",
+      "stage": "runtime_binding",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The authenticated peer does not match the protected identity binding."
+    },
+    {
+      "code": "INCOMPATIBLE_CONTRACT_VERSION",
+      "stage": "startup",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "A contract type, version, or schema hash is not supported."
+    },
+    {
+      "code": "IPC_MALFORMED",
+      "stage": "startup",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The local protocol message is malformed."
+    },
+    {
+      "code": "IPC_PEER_MISMATCH",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The local protocol peer is not the bound peer."
+    },
+    {
+      "code": "IPC_REPLAY_DETECTED",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "A local protocol nonce or request was replayed."
+    },
+    {
+      "code": "INPUT_NOT_FOUND",
+      "stage": "input_open",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "none",
+      "safe_message": "A required reviewed input is unavailable."
+    },
+    {
+      "code": "INPUT_PATH_INVALID",
+      "stage": "input_open",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "An input path does not satisfy the frozen relative-path profile."
+    },
+    {
+      "code": "INPUT_SYMLINK_REJECTED",
+      "stage": "input_open",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "A symbolic or magic link was rejected."
+    },
+    {
+      "code": "INPUT_ROOT_ESCAPE",
+      "stage": "input_open",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "An input attempted to escape its reviewed root."
+    },
+    {
+      "code": "INPUT_TYPE_REJECTED",
+      "stage": "input_open",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "An input is not an allowed regular file."
+    },
+    {
+      "code": "INPUT_CHANGED",
+      "stage": "staging_snapshot",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "An input changed while its immutable snapshot was being established."
+    },
+    {
+      "code": "MANIFEST_TOO_LARGE",
+      "stage": "manifest_parse",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "The manifest exceeds the frozen pilot limit."
+    },
+    {
+      "code": "MANIFEST_ENCODING_INVALID",
+      "stage": "manifest_parse",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "The manifest encoding or JSON lexical profile is invalid."
+    },
+    {
+      "code": "MANIFEST_SCHEMA_INVALID",
+      "stage": "manifest_contract",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "The manifest does not satisfy its exact schema."
+    },
+    {
+      "code": "MANIFEST_DIGEST_MISMATCH",
+      "stage": "manifest_contract",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The manifest digest does not match its canonical payload."
+    },
+    {
+      "code": "MANIFEST_PATH_MISMATCH",
+      "stage": "input_open",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The opened manifest path does not match its declaration."
+    },
+    {
+      "code": "MANIFEST_SECRET_REJECTED",
+      "stage": "manifest_contract",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The input contains prohibited secret-like material."
+    },
+    {
+      "code": "HANDOFF_MISSING",
+      "stage": "handoff_validation",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "A required collector handoff is missing."
+    },
+    {
+      "code": "HANDOFF_MISMATCH",
+      "stage": "handoff_validation",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "A collector handoff does not match the reviewed evidence tuple."
+    },
+    {
+      "code": "BUNDLE_SEAL_INVALID",
+      "stage": "handoff_validation",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The reviewed bundle seal is absent, expired, or inconsistent."
+    },
+    {
+      "code": "BOOTSTRAP_PERMIT_INVALID",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The bootstrap permit is absent, expired, or inconsistent."
+    },
+    {
+      "code": "BOOTSTRAP_PERMIT_SPENT",
+      "stage": "authorization",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "The bootstrap permit has already been consumed."
+    },
+    {
+      "code": "REPLAY_CERTIFICATE_INVALID",
+      "stage": "recovery",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The replay certificate cannot authorize this recovery target."
+    },
+    {
+      "code": "RECOVERY_PERMIT_INVALID",
+      "stage": "recovery",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "The recovery permit does not authorize this exact reconstruction."
+    },
+    {
+      "code": "LOGICAL_STATE_MISMATCH",
+      "stage": "preflight",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "The canonical logical state does not match the sealed expectation."
+    },
+    {
+      "code": "BUNDLE_REPLAY_CONFLICT",
+      "stage": "preflight",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "A stable bundle identity conflicts with accepted content."
+    },
+    {
+      "code": "BUNDLE_SEQUENCE_CONFLICT",
+      "stage": "preflight",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The bundle sequence or dependency head is invalid."
+    },
+    {
+      "code": "PREFLIGHT_REJECTED",
+      "stage": "preflight",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "none",
+      "safe_message": "The bundle failed deterministic semantic preflight."
+    },
+    {
+      "code": "RESOURCE_LIMIT_EXCEEDED",
+      "stage": "startup",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "capacity_incident",
+      "safe_message": "A frozen resource limit would be exceeded."
+    },
+    {
+      "code": "STAGED_BYTES_MISMATCH",
+      "stage": "staging_snapshot",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "Staged bytes do not match the declared artifact identity."
+    },
+    {
+      "code": "SCREENING_FAILED",
+      "stage": "screening",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "security_incident",
+      "safe_message": "Artifact screening did not produce a clear result."
+    },
+    {
+      "code": "SCREENING_STALE",
+      "stage": "screening",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "none",
+      "safe_message": "A scanner build, ruleset, or result is too old."
+    },
+    {
+      "code": "SCREENING_TIMEOUT",
+      "stage": "screening",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "capacity_incident",
+      "safe_message": "Artifact screening exceeded its timeout."
+    },
+    {
+      "code": "CLEARANCE_MISSING",
+      "stage": "clearance",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "A required exact-artifact clearance is missing."
+    },
+    {
+      "code": "CLEARANCE_INVALID",
+      "stage": "clearance",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The artifact clearance does not satisfy the pilot profile."
+    },
+    {
+      "code": "CLEARANCE_EXPIRED",
+      "stage": "clearance",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The artifact clearance has expired."
+    },
+    {
+      "code": "CLEARANCE_REVOKED",
+      "stage": "clearance",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "none",
+      "safe_message": "The artifact clearance has been revoked or superseded."
+    },
+    {
+      "code": "CUSTODY_CONFLICT",
+      "stage": "custody_prepare",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "reconcile_orphan",
+      "safe_message": "Custody state conflicts with the requested exact-byte operation."
+    },
+    {
+      "code": "CUSTODY_CORRUPT",
+      "stage": "custody_prepare",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "A custody object failed integrity verification."
+    },
+    {
+      "code": "CUSTODY_TIMEOUT",
+      "stage": "custody_prepare",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "capacity_incident",
+      "safe_message": "A custody operation exceeded its timeout."
+    },
+    {
+      "code": "CUSTODY_BACKUP_FAILED",
+      "stage": "custody_backup",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "reconcile_orphan",
+      "safe_message": "Required artifact backup durability was not established."
+    },
+    {
+      "code": "PRIOR_DATABASE_BACKUP_FAILED",
+      "stage": "prior_backup",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "capacity_incident",
+      "safe_message": "The verified prior database backup was not established."
+    },
+    {
+      "code": "FINAL_BACKUP_FAILED",
+      "stage": "final_backup",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "complete_post_promotion",
+      "safe_message": "The promoted database backup was not completed."
+    },
+    {
+      "code": "CANDIDATE_BUILD_FAILED",
+      "stage": "candidate_build",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "discard_candidate",
+      "safe_message": "The disposable candidate database could not be built."
+    },
+    {
+      "code": "DATABASE_TRANSACTION_FAILED",
+      "stage": "database_transaction",
+      "retryable": true,
+      "retryability_code": "new_operation_same_bundle",
+      "recovery_class_code": "discard_candidate",
+      "safe_message": "The candidate database transaction failed."
+    },
+    {
+      "code": "PROJECTION_MISMATCH",
+      "stage": "projection",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "The persisted projection does not match the canonical bundle."
+    },
+    {
+      "code": "INTEGRITY_CHECK_FAILED",
+      "stage": "independent_verification",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "Database integrity verification failed."
+    },
+    {
+      "code": "FOREIGN_KEY_CHECK_FAILED",
+      "stage": "independent_verification",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "Database foreign-key verification failed."
+    },
+    {
+      "code": "FORBIDDEN_SURFACE_CHANGED",
+      "stage": "independent_verification",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "security_incident",
+      "safe_message": "A forbidden database or application surface changed."
+    },
+    {
+      "code": "INDEPENDENT_VERIFICATION_FAILED",
+      "stage": "independent_verification",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "Independent candidate verification failed."
+    },
+    {
+      "code": "PROMOTION_FAILED",
+      "stage": "promotion",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "restore_verified_generation",
+      "safe_message": "Atomic candidate promotion did not complete safely."
+    },
+    {
+      "code": "PROMOTION_STATE_AMBIGUOUS",
+      "stage": "post_promotion_verification",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "complete_post_promotion",
+      "safe_message": "Canonical promotion state requires privileged recovery."
+    },
+    {
+      "code": "JOURNAL_INTENT_WRITE_FAILED",
+      "stage": "operation_lock",
+      "retryable": false,
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "The protected intent journal was not established before effects."
+    },
+    {
+      "code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "stage": "completion",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "complete_post_promotion",
+      "safe_message": "Protected completion journaling did not complete."
+    },
+    {
+      "code": "RECOVERY_STATE_AMBIGUOUS",
+      "stage": "recovery",
+      "retryable": false,
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "Recovery cannot classify the durable state safely."
+    },
+    {
+      "code": "INTERNAL_CONTRACT_VIOLATION",
+      "stage": "startup",
+      "retryable": false,
+      "retryability_code": "never",
+      "recovery_class_code": "forensic_hold",
+      "safe_message": "A trusted component violated the frozen contract."
+    }
+  ],
+  "record_digest_sha256": "6dff0288aa76baef2dcaeaed6ce5c810da25b1aa198f9664ee71622e0610ae4b",
+  "post_promotion_completion_permit_policy": {
+    "scope_code": "noncanonical_completion_only",
+    "maximum_lifetime_ms": 900000,
+    "allowed_actions": [
+      "complete_final_backup",
+      "complete_operation_journal"
+    ],
+    "canonical_write_code": "denied",
+    "allowed_canonical_effect_code": "none_verified",
+    "required_operation_mode_code": "recovery",
+    "required_bundle_kind_codes": [
+      "principal_bootstrap",
+      "single_document"
+    ],
+    "distinct_human_roles": [
+      "operational_witness",
+      "recovery_authority",
+      "recovery_operator"
+    ],
+    "required_source_recovery_class_code": "complete_post_promotion",
+    "allowed_source_error_codes": [
+      "PROMOTION_STATE_AMBIGUOUS",
+      "FINAL_BACKUP_FAILED",
+      "JOURNAL_COMPLETION_WRITE_FAILED"
+    ],
+    "source_journal_head_policy_code": "current_terminal_head",
+    "completion_journal_head_policy_code": "exact_authorized_operation_completed_current_terminal",
+    "completion_backup_inventory_required": true
+  },
+  "bootstrap_distinct_human_roles": [
+    "human_submitter",
+    "operational_witness",
+    "bootstrap_authority"
+  ],
+  "journal_authorization_rules": [
+    {
+      "operation_mode_code": "bootstrap",
+      "authorization_policy_code": "required_exact_permit",
+      "allowed_permit_kind_codes": [
+        "bootstrap"
+      ]
+    },
+    {
+      "operation_mode_code": "document_import",
+      "authorization_policy_code": "required_exact_bundle_seal",
+      "allowed_permit_kind_codes": []
+    },
+    {
+      "operation_mode_code": "dry_run",
+      "authorization_policy_code": "forbidden",
+      "allowed_permit_kind_codes": []
+    },
+    {
+      "operation_mode_code": "no_op_verification",
+      "authorization_policy_code": "forbidden",
+      "allowed_permit_kind_codes": []
+    },
+    {
+      "operation_mode_code": "recovery",
+      "authorization_policy_code": "required_exact_permit",
+      "allowed_permit_kind_codes": [
+        "recovery",
+        "post_promotion_completion"
+      ]
+    }
+  ],
+  "recovered_result_authorization_rules": [
+    {
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "recovery",
+      "terminal_transition_code": "verified_effect",
+      "count_policy_code": "known"
+    },
+    {
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "post_promotion_completion",
+      "terminal_transition_code": "no_effect_verified",
+      "count_policy_code": "all_zero"
+    },
+    {
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "post_promotion_completion",
+      "terminal_transition_code": "no_effect_verified",
+      "count_policy_code": "all_zero"
+    }
+  ],
+  "post_promotion_source_error_rules": [
+    {
+      "error_code": "PROMOTION_STATE_AMBIGUOUS",
+      "allowed_bundle_kind_codes": [
+        "single_document"
+      ],
+      "canonical_effect_code": "possibly_promoted",
+      "object_disposition_code": "candidate_only",
+      "observed_state_policy_code": "optional"
+    },
+    {
+      "error_code": "FINAL_BACKUP_FAILED",
+      "allowed_bundle_kind_codes": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "canonical_effect_code": "promoted_verified",
+      "object_disposition_code": "durable_referenced",
+      "observed_state_policy_code": "required"
+    },
+    {
+      "error_code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "allowed_bundle_kind_codes": [
+        "principal_bootstrap",
+        "single_document"
+      ],
+      "canonical_effect_code": "promoted_verified",
+      "object_disposition_code": "durable_referenced",
+      "observed_state_policy_code": "required"
+    }
+  ],
+  "error_effect_rules": [
+    {
+      "error_code": "AUTHENTICATION_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "AUTHORIZATION_DENIED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "OPERATION_LOCK_UNAVAILABLE",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "RUNTIME_PROFILE_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IDENTITY_BINDING_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INCOMPATIBLE_CONTRACT_VERSION",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_MALFORMED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_PEER_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_REPLAY_DETECTED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_NOT_FOUND",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_PATH_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_SYMLINK_REJECTED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_ROOT_ESCAPE",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_TYPE_REJECTED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_CHANGED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_TOO_LARGE",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_ENCODING_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_SCHEMA_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_DIGEST_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_PATH_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_SECRET_REJECTED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "HANDOFF_MISSING",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "HANDOFF_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BUNDLE_SEAL_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BOOTSTRAP_PERMIT_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BOOTSTRAP_PERMIT_SPENT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "REPLAY_CERTIFICATE_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "RECOVERY_PERMIT_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "LOGICAL_STATE_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BUNDLE_REPLAY_CONFLICT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BUNDLE_SEQUENCE_CONFLICT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "PREFLIGHT_REJECTED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "RESOURCE_LIMIT_EXCEEDED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "STAGED_BYTES_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "SCREENING_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "SCREENING_STALE",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "SCREENING_TIMEOUT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CLEARANCE_MISSING",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CLEARANCE_INVALID",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CLEARANCE_EXPIRED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CLEARANCE_REVOKED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CUSTODY_CONFLICT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "durable_orphan",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CUSTODY_CORRUPT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CUSTODY_TIMEOUT",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "CUSTODY_BACKUP_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "durable_orphan",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "PRIOR_DATABASE_BACKUP_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "FINAL_BACKUP_FAILED",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "object_disposition_code": "durable_referenced",
+      "observed_state_policy_code": "required"
+    },
+    {
+      "error_code": "CANDIDATE_BUILD_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "candidate_only",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "DATABASE_TRANSACTION_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "candidate_only",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "PROJECTION_MISMATCH",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INTEGRITY_CHECK_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "FOREIGN_KEY_CHECK_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "FORBIDDEN_SURFACE_CHANGED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INDEPENDENT_VERIFICATION_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "PROMOTION_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "backup_only",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "PROMOTION_STATE_AMBIGUOUS",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "possibly_promoted",
+      "object_disposition_code": "candidate_only",
+      "observed_state_policy_code": "optional"
+    },
+    {
+      "error_code": "JOURNAL_INTENT_WRITE_FAILED",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    },
+    {
+      "error_code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "object_disposition_code": "durable_referenced",
+      "observed_state_policy_code": "required"
+    },
+    {
+      "error_code": "RECOVERY_STATE_AMBIGUOUS",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "backup_only",
+      "observed_state_policy_code": "optional"
+    },
+    {
+      "error_code": "INTERNAL_CONTRACT_VIOLATION",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "none",
+      "observed_state_policy_code": "forbidden"
+    }
+  ],
+  "permit_scope_execution_rules": [
+    {
+      "permit_kind_code": "bootstrap",
+      "scope_code": "canonical_first_acceptance_only",
+      "canonical_write_code": "one_atomic_promotion",
+      "allowed_canonical_effect_codes": [
+        "none_verified",
+        "possibly_promoted",
+        "promoted_verified"
+      ],
+      "allowed_journal_event_kind_codes": [
+        "operation_started",
+        "stage_entered",
+        "stage_succeeded",
+        "stage_failed",
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required",
+        "operation_completed"
+      ],
+      "allowed_stage_codes": [
+        "startup",
+        "authorization",
+        "operation_lock",
+        "input_open",
+        "manifest_parse",
+        "manifest_contract",
+        "runtime_binding",
+        "handoff_validation",
+        "preflight",
+        "staging_snapshot",
+        "screening",
+        "clearance",
+        "custody_prepare",
+        "custody_backup",
+        "candidate_build",
+        "database_transaction",
+        "projection",
+        "independent_verification",
+        "prior_backup",
+        "promotion",
+        "post_promotion_verification",
+        "final_backup",
+        "reconciliation",
+        "recovery",
+        "completion"
+      ],
+      "allowed_origin_runtime_role_codes": [
+        "backup_adapter",
+        "bundle_importer",
+        "cloner_promoter",
+        "database_writer",
+        "independent_verifier",
+        "trusted_launcher"
+      ],
+      "allowed_handle_slot_codes": [
+        "backup_adapter",
+        "candidate_database",
+        "canonical_query",
+        "operation_journal",
+        "permit_control_store"
+      ]
+    },
+    {
+      "permit_kind_code": "recovery",
+      "scope_code": "exact_bootstrap_reconstruction_only",
+      "canonical_write_code": "denied",
+      "allowed_canonical_effect_codes": [
+        "none_verified",
+        "unknown"
+      ],
+      "allowed_journal_event_kind_codes": [
+        "operation_started",
+        "stage_entered",
+        "stage_succeeded",
+        "stage_failed",
+        "recovery_required",
+        "operation_completed"
+      ],
+      "allowed_stage_codes": [
+        "startup",
+        "authorization",
+        "operation_lock",
+        "input_open",
+        "database_transaction",
+        "independent_verification",
+        "reconciliation",
+        "recovery",
+        "completion"
+      ],
+      "allowed_origin_runtime_role_codes": [
+        "backup_adapter",
+        "bundle_importer",
+        "database_writer",
+        "independent_verifier",
+        "trusted_launcher"
+      ],
+      "allowed_handle_slot_codes": [
+        "backup_adapter",
+        "canonical_query",
+        "operation_journal",
+        "permit_control_store",
+        "recovery_database"
+      ]
+    },
+    {
+      "permit_kind_code": "post_promotion_completion",
+      "scope_code": "noncanonical_completion_only",
+      "canonical_write_code": "denied",
+      "allowed_canonical_effect_codes": [
+        "none_verified"
+      ],
+      "allowed_journal_event_kind_codes": [
+        "operation_started",
+        "stage_entered",
+        "stage_succeeded",
+        "stage_failed",
+        "recovery_required",
+        "operation_completed"
+      ],
+      "allowed_stage_codes": [
+        "startup",
+        "authorization",
+        "operation_lock",
+        "independent_verification",
+        "post_promotion_verification",
+        "final_backup",
+        "reconciliation",
+        "recovery",
+        "completion"
+      ],
+      "allowed_origin_runtime_role_codes": [
+        "backup_adapter",
+        "bundle_importer",
+        "independent_verifier",
+        "trusted_launcher"
+      ],
+      "allowed_handle_slot_codes": [
+        "backup_adapter",
+        "canonical_query",
+        "operation_journal",
+        "permit_control_store"
+      ]
+    }
+  ],
+  "error_bundle_reference_rules": [
+    {
+      "error_code": "AUTHENTICATION_FAILED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "AUTHORIZATION_DENIED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "OPERATION_LOCK_UNAVAILABLE",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "RUNTIME_PROFILE_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IDENTITY_BINDING_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INCOMPATIBLE_CONTRACT_VERSION",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_MALFORMED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_PEER_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "IPC_REPLAY_DETECTED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_NOT_FOUND",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_PATH_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_SYMLINK_REJECTED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_ROOT_ESCAPE",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_TYPE_REJECTED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "INPUT_CHANGED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_TOO_LARGE",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_ENCODING_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_SCHEMA_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_DIGEST_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_PATH_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "MANIFEST_SECRET_REJECTED",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "HANDOFF_MISSING",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "HANDOFF_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BUNDLE_SEAL_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BOOTSTRAP_PERMIT_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BOOTSTRAP_PERMIT_SPENT",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "REPLAY_CERTIFICATE_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "RECOVERY_PERMIT_INVALID",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "LOGICAL_STATE_MISMATCH",
+      "bundle_reference_policy_code": "forbidden"
+    },
+    {
+      "error_code": "BUNDLE_REPLAY_CONFLICT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "BUNDLE_SEQUENCE_CONFLICT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "PREFLIGHT_REJECTED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "RESOURCE_LIMIT_EXCEEDED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "STAGED_BYTES_MISMATCH",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "SCREENING_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "SCREENING_STALE",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "SCREENING_TIMEOUT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CLEARANCE_MISSING",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CLEARANCE_INVALID",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CLEARANCE_EXPIRED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CLEARANCE_REVOKED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CUSTODY_CONFLICT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CUSTODY_CORRUPT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CUSTODY_TIMEOUT",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CUSTODY_BACKUP_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "PRIOR_DATABASE_BACKUP_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "FINAL_BACKUP_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "CANDIDATE_BUILD_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "DATABASE_TRANSACTION_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "PROJECTION_MISMATCH",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "INTEGRITY_CHECK_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "FOREIGN_KEY_CHECK_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "FORBIDDEN_SURFACE_CHANGED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "INDEPENDENT_VERIFICATION_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "PROMOTION_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "PROMOTION_STATE_AMBIGUOUS",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "JOURNAL_INTENT_WRITE_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "RECOVERY_STATE_AMBIGUOUS",
+      "bundle_reference_policy_code": "required"
+    },
+    {
+      "error_code": "INTERNAL_CONTRACT_VIOLATION",
+      "bundle_reference_policy_code": "optional_all_or_none"
+    }
+  ],
+  "permit_claim_policy": {
+    "minimum_remaining_lifetime_ms": 60000,
+    "expired_ready_projection_code": "terminal_expired_unused",
+    "expired_in_progress_projection_code": "terminal_recovery_hold",
+    "post_expiry_transition_policy_code": "forbidden"
+  },
+  "bootstrap_permit_policy": {
+    "maximum_lifetime_ms": 3600000
+  },
+  "journal_history_rules": [
+    {
+      "operation_mode_code": "dry_run",
+      "result_outcome_code": "planned",
+      "canonical_effect_code": "none_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "forbidden",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "no_op_verification",
+      "result_outcome_code": "no_op",
+      "canonical_effect_code": "none_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "forbidden",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "bootstrap",
+      "result_outcome_code": "imported",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "bootstrap",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "final_backup"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "document_import",
+      "result_outcome_code": "imported",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "custody_object_durable",
+          "stage_code": "custody_prepare"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "final_backup"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "recovery",
+      "result_outcome_code": "recovered",
+      "canonical_effect_code": "none_verified",
+      "permit_kind_code": "recovery",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "recovery",
+      "result_outcome_code": "recovered",
+      "canonical_effect_code": "none_verified",
+      "permit_kind_code": "post_promotion_completion",
+      "terminal_error_code": null,
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "forbidden"
+    },
+    {
+      "operation_mode_code": "bootstrap",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "possibly_promoted",
+      "permit_kind_code": "bootstrap",
+      "terminal_error_code": "PROMOTION_STATE_AMBIGUOUS",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "post_promotion_verification"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "promotion_observed",
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "optional",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "document_import",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "possibly_promoted",
+      "permit_kind_code": "none",
+      "terminal_error_code": "PROMOTION_STATE_AMBIGUOUS",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "custody_object_durable",
+          "stage_code": "custody_prepare"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "post_promotion_verification"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "promotion_observed",
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "optional",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "bootstrap",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "bootstrap",
+      "terminal_error_code": "FINAL_BACKUP_FAILED",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "final_backup"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "optional",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "bootstrap",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "bootstrap",
+      "terminal_error_code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "final_backup"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "document_import",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": "FINAL_BACKUP_FAILED",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "custody_object_durable",
+          "stage_code": "custody_prepare"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "final_backup"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "optional",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "document_import",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "promoted_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": "JOURNAL_COMPLETION_WRITE_FAILED",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "custody_object_durable",
+          "stage_code": "custody_prepare"
+        },
+        {
+          "event_kind_code": "candidate_committed",
+          "stage_code": "database_transaction"
+        },
+        {
+          "event_kind_code": "candidate_sealed",
+          "stage_code": "independent_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "prior_backup"
+        },
+        {
+          "event_kind_code": "promotion_started",
+          "stage_code": "promotion"
+        },
+        {
+          "event_kind_code": "promotion_observed",
+          "stage_code": "post_promotion_verification"
+        },
+        {
+          "event_kind_code": "stage_succeeded",
+          "stage_code": "final_backup"
+        },
+        {
+          "event_kind_code": "recovery_required",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "operation_completed"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "required",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    },
+    {
+      "operation_mode_code": "dry_run",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "permit_kind_code": "none",
+      "terminal_error_code": "MANIFEST_SCHEMA_INVALID",
+      "required_ordered_milestones": [
+        {
+          "event_kind_code": "operation_started",
+          "stage_code": "startup"
+        },
+        {
+          "event_kind_code": "operation_completed",
+          "stage_code": "completion"
+        }
+      ],
+      "forbidden_event_kind_codes": [
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required"
+      ],
+      "terminal_count_policy_code": "match_result_rule",
+      "terminal_backup_policy_code": "forbidden",
+      "stage_failure_milestone_policy_code": "optional_penultimate_same_terminal_context"
+    }
+  ]
+}

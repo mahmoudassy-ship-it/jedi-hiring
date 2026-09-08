@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-0/operation-journal-event-v1.schema.json",
+  "title": "JEDI Atlas D9.0 append-intended operation journal event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "journal_code",
+    "operation_mode_code",
+    "operation_id",
+    "operation_nonce",
+    "event_sequence",
+    "previous_event_record_digest_sha256",
+    "event_kind_code",
+    "stage_code",
+    "component_binding_code",
+    "component_executable_sha256",
+    "recorded_by_binding_code",
+    "runtime_profile_record_digest_sha256",
+    "identity_bindings_record_digest_sha256",
+    "authorization_permit_record_digest_sha256",
+    "authorization_bundle_seal_record_digest_sha256",
+    "prepromotion_authorization_record_digest_sha256",
+    "bundle",
+    "target_logical_state",
+    "observed_logical_state",
+    "canonical_effect_code",
+    "result_outcome_code",
+    "error_code",
+    "retryability_code",
+    "recovery_class_code",
+    "rows_delta",
+    "objects_delta",
+    "object_disposition_code",
+    "candidate_file_sha256",
+    "backup_inventory_sha256",
+    "event_at",
+    "persisted_at",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-operation-journal-event" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "journal_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_mode_code": { "enum": ["bootstrap", "document_import", "dry_run", "no_op_verification", "recovery"] },
+    "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/operationNonce" },
+    "event_sequence": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "previous_event_record_digest_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "event_kind_code": {
+      "enum": [
+        "operation_started",
+        "stage_entered",
+        "stage_succeeded",
+        "stage_failed",
+        "custody_object_durable",
+        "candidate_committed",
+        "candidate_sealed",
+        "promotion_started",
+        "promotion_observed",
+        "recovery_required",
+        "operation_completed"
+      ]
+    },
+    "stage_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stageCode" },
+    "component_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "component_executable_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "recorded_by_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "runtime_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "identity_bindings_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "authorization_permit_record_digest_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "authorization_bundle_seal_record_digest_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "prepromotion_authorization_record_digest_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "bundle": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/bundleReference" }, { "type": "null" }]
+    },
+    "target_logical_state": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/logicalStateReference" },
+    "observed_logical_state": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/logicalStateReference" }, { "type": "null" }]
+    },
+    "canonical_effect_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/canonicalEffectCode" },
+    "result_outcome_code": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/importOutcomeCode" }, { "type": "null" }]
+    },
+    "error_code": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/errorCode" }, { "type": "null" }]
+    },
+    "retryability_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/retryabilityCode" },
+    "recovery_class_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/recoveryClassCode" },
+    "rows_delta": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/rowCounts" }, { "type": "null" }]
+    },
+    "objects_delta": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/objectCounts" }, { "type": "null" }]
+    },
+    "object_disposition_code": { "enum": ["none", "temporary", "durable_referenced", "durable_orphan", "candidate_only", "backup_only"] },
+    "candidate_file_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "backup_inventory_sha256": {
+      "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }]
+    },
+    "event_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}
