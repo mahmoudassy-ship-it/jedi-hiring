@@ -1,0 +1,321 @@
+{
+  "fixture_format": "jedi-atlas-d90-invalid-fixtures",
+  "fixture_version": "1.0.0",
+  "cases": [
+    {
+      "case_code": "unknown_nested_field",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "add", "json_pointer": "/limits/unreviewed_override", "value": 1 },
+      "expected_layer_code": "schema",
+      "expected_error_code": "MANIFEST_SCHEMA_INVALID"
+    },
+    {
+      "case_code": "incompatible_contract_version",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "set", "json_pointer": "/format_version", "value": "1.1.0" },
+      "expected_layer_code": "schema",
+      "expected_error_code": "INCOMPATIBLE_CONTRACT_VERSION"
+    },
+    {
+      "case_code": "unsafe_limit_raise",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "set", "json_pointer": "/limits/artifact_bytes_max", "value": 26214401 },
+      "expected_layer_code": "schema",
+      "expected_error_code": "RUNTIME_PROFILE_MISMATCH"
+    },
+    {
+      "case_code": "processor_enabled",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "set", "json_pointer": "/processor_policy_code", "value": "enabled" },
+      "expected_layer_code": "schema",
+      "expected_error_code": "RUNTIME_PROFILE_MISMATCH"
+    },
+    {
+      "case_code": "path_traversal",
+      "base_fixture_code": "collector_handoff",
+      "mutation": { "operation": "set", "json_pointer": "/staged_path", "value": "staging/../escape.bin" },
+      "expected_layer_code": "schema",
+      "expected_error_code": "INPUT_PATH_INVALID"
+    },
+    {
+      "case_code": "absolute_path",
+      "base_fixture_code": "custody_open_request",
+      "mutation": { "operation": "set", "json_pointer": "/payload/relative_path", "value": "/synthetic/escape.bin" },
+      "expected_layer_code": "schema",
+      "expected_error_code": "INPUT_PATH_INVALID"
+    },
+    {
+      "case_code": "secret_like_value",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/conditions/0", "value": "Authorization: Bearer synthetic-value" },
+      "expected_layer_code": "secret_scan",
+      "expected_error_code": "MANIFEST_SECRET_REJECTED"
+    },
+    {
+      "case_code": "credential_like_key",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "add", "json_pointer": "/api_key", "value": "synthetic-value" },
+      "expected_layer_code": "secret_scan",
+      "expected_error_code": "MANIFEST_SECRET_REJECTED"
+    },
+    {
+      "case_code": "submitter_kind_spoof",
+      "base_fixture_code": "identity_bindings",
+      "mutation": { "operation": "set", "json_pointer": "/bindings/11/principal_kind_code", "value": "service" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "collector_importer_uid_collision",
+      "base_fixture_code": "identity_bindings",
+      "mutation": { "operation": "set", "json_pointer": "/bindings/7/unix_uid", "value": 61007 },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "expired_identity_snapshot",
+      "base_fixture_code": "identity_bindings",
+      "mutation": { "operation": "set", "json_pointer": "/expires_at", "value": "2030-01-01T00:00:00.000Z" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "handoff_artifact_mismatch",
+      "base_fixture_code": "collector_handoff",
+      "mutation": { "operation": "set", "json_pointer": "/artifact/byte_length", "value": 31 },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "HANDOFF_MISMATCH"
+    },
+    {
+      "case_code": "bundle_seal_handoff_mismatch",
+      "base_fixture_code": "document_bundle_seal",
+      "mutation": { "operation": "set", "json_pointer": "/collector_handoffs/0/record_code", "value": "synthetic.handoff-other" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "BUNDLE_SEAL_INVALID"
+    },
+    {
+      "case_code": "bootstrap_self_witness",
+      "base_fixture_code": "bootstrap_permit",
+      "mutation": { "operation": "set", "json_pointer": "/witness_binding_code", "value": "binding.submitter" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "bootstrap_transition_gap",
+      "base_fixture_code": "bootstrap_transition_spent",
+      "mutation": { "operation": "set", "json_pointer": "/transition_sequence", "value": 3 },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "BOOTSTRAP_PERMIT_INVALID"
+    },
+    {
+      "case_code": "bootstrap_transition_fork",
+      "base_fixture_code": "bootstrap_transition_spent",
+      "mutation": { "operation": "set", "json_pointer": "/previous_transition_record_digest_sha256", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "BOOTSTRAP_PERMIT_INVALID"
+    },
+    {
+      "case_code": "replay_certificate_canonical_target",
+      "base_fixture_code": "replay_certificate",
+      "mutation": { "operation": "set", "json_pointer": "/target_database_class_code", "value": "canonical" },
+      "expected_layer_code": "schema",
+      "expected_error_code": "REPLAY_CERTIFICATE_INVALID"
+    },
+    {
+      "case_code": "ipc_request_claims_response_digest",
+      "base_fixture_code": "custody_open_request",
+      "mutation": { "operation": "set", "json_pointer": "/request_record_digest_sha256", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IPC_MALFORMED"
+    },
+    {
+      "case_code": "ipc_wrong_peer",
+      "base_fixture_code": "custody_open_request",
+      "mutation": { "operation": "set", "json_pointer": "/recipient_binding_code", "value": "binding.writer" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IPC_PEER_MISMATCH"
+    },
+    {
+      "case_code": "ipc_replayed_nonce",
+      "base_fixture_code": "custody_open_request",
+      "mutation": { "operation": "set", "json_pointer": "/request_sequence", "value": 0 },
+      "expected_layer_code": "schema",
+      "expected_error_code": "IPC_REPLAY_DETECTED"
+    },
+    {
+      "case_code": "ipc_response_missing_descriptor",
+      "base_fixture_code": "custody_open_response",
+      "mutation": { "operation": "set", "json_pointer": "/ancillary_descriptors", "value": [] },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IPC_MALFORMED"
+    },
+    {
+      "case_code": "clearance_self_check",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/independently_checked_by_binding_code", "value": "binding.clearance-decider" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "repository_clearance_without_declarations",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/decision_code", "value": "repository_eligible" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "CLEARANCE_INVALID"
+    },
+    {
+      "case_code": "stale_scanner_result",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/scanner_results/0/completed_at", "value": "2029-12-31T22:00:00.000Z" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "SCREENING_STALE"
+    },
+    {
+      "case_code": "journal_chain_gap",
+      "base_fixture_code": "journal_completed",
+      "mutation": { "operation": "set", "json_pointer": "/event_sequence", "value": 3 },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "RECOVERY_STATE_AMBIGUOUS"
+    },
+    {
+      "case_code": "journal_impossible_terminal",
+      "base_fixture_code": "journal_started",
+      "mutation": { "operation": "set", "json_pointer": "/result_outcome_code", "value": "imported" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "INTERNAL_CONTRACT_VIOLATION"
+    },
+    {
+      "case_code": "result_success_with_unknown_effect",
+      "base_fixture_code": "import_result_success",
+      "mutation": { "operation": "set", "json_pointer": "/canonical_effect_code", "value": "unknown" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "INTERNAL_CONTRACT_VIOLATION"
+    },
+    {
+      "case_code": "result_recovery_without_error",
+      "base_fixture_code": "import_result_recovery_required",
+      "mutation": { "operation": "set", "json_pointer": "/error", "value": null },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "INTERNAL_CONTRACT_VIOLATION"
+    },
+    {
+      "case_code": "result_wrong_error_matrix",
+      "base_fixture_code": "import_result_recovery_required",
+      "mutation": { "operation": "set", "json_pointer": "/error/retryability_code", "value": "never" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "INTERNAL_CONTRACT_VIOLATION"
+    },
+    {
+      "case_code": "runtime_component_release_mismatch",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "set", "json_pointer": "/component_releases/4/executable_sha256", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "runtime_component_order_changed",
+      "base_fixture_code": "runtime_profile",
+      "mutation": { "operation": "set", "json_pointer": "/component_releases/0/runtime_role_code", "value": "trusted_launcher" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "RUNTIME_PROFILE_MISMATCH"
+    },
+    {
+      "case_code": "runtime_domain_binding_mismatch",
+      "base_fixture_code": "identity_bindings",
+      "mutation": { "operation": "set", "json_pointer": "/runtime_domain_sha256", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "bootstrap_bundle_contains_handoff",
+      "base_fixture_code": "bootstrap_bundle_seal",
+      "mutation": { "operation": "add", "json_pointer": "/collector_handoffs/0", "value": { "format": "jedi-atlas-collector-handoff", "format_version": "1.0.0", "record_code": "synthetic.handoff-001", "record_digest_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" } },
+      "expected_layer_code": "schema",
+      "expected_error_code": "MANIFEST_SCHEMA_INVALID"
+    },
+    {
+      "case_code": "recovery_self_witness",
+      "base_fixture_code": "recovery_permit",
+      "mutation": { "operation": "set", "json_pointer": "/witness_binding_code", "value": "binding.recovery-operator" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "IDENTITY_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "recovery_transition_invalid_edge",
+      "base_fixture_code": "recovery_transition_spent",
+      "mutation": { "operation": "set", "json_pointer": "/to_state_code", "value": "recovery_required" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "BOOTSTRAP_PERMIT_INVALID"
+    },
+    {
+      "case_code": "clearance_mixed_repository_declarations",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/repository_declarations/size_eligible", "value": true },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "CLEARANCE_INVALID"
+    },
+    {
+      "case_code": "journal_nonerror_retryability",
+      "base_fixture_code": "journal_started",
+      "mutation": { "operation": "set", "json_pointer": "/retryability_code", "value": "recovery_only" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "RECOVERY_STATE_AMBIGUOUS"
+    },
+    {
+      "case_code": "journal_component_build_mismatch",
+      "base_fixture_code": "journal_started",
+      "mutation": { "operation": "set", "json_pointer": "/component_executable_sha256", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "RECOVERY_STATE_AMBIGUOUS"
+    },
+    {
+      "case_code": "result_operation_mode_mismatch",
+      "base_fixture_code": "import_result_success",
+      "mutation": { "operation": "set", "json_pointer": "/operation_mode_code", "value": "bootstrap" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "INTERNAL_CONTRACT_VIOLATION"
+    },
+    {
+      "case_code": "userinfo_path_secret",
+      "base_fixture_code": "collector_handoff",
+      "mutation": { "operation": "set", "json_pointer": "/staged_path", "value": "https://synthetic:credential@host.invalid/object" },
+      "expected_layer_code": "secret_scan",
+      "expected_error_code": "MANIFEST_SECRET_REJECTED"
+    },
+    {
+      "case_code": "signed_query_path_secret",
+      "base_fixture_code": "collector_handoff",
+      "mutation": { "operation": "set", "json_pointer": "/staged_path", "value": "safe/path?x-amz-signature=synthetic" },
+      "expected_layer_code": "secret_scan",
+      "expected_error_code": "MANIFEST_SECRET_REJECTED"
+    },
+    {
+      "case_code": "recovery_transition_outside_permit_window",
+      "base_fixture_code": "recovery_transition_in_progress",
+      "mutation": { "operation": "set", "json_pointer": "/occurred_at", "value": "2030-01-01T02:06:03.000Z" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "BOOTSTRAP_PERMIT_INVALID"
+    },
+    {
+      "case_code": "replay_certificate_lineage_mismatch",
+      "base_fixture_code": "replay_certificate",
+      "mutation": { "operation": "set", "json_pointer": "/canonical_lineage_code", "value": "synthetic.other-lineage" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "LOGICAL_STATE_MISMATCH"
+    },
+    {
+      "case_code": "recovery_permit_replay_identity_mismatch",
+      "base_fixture_code": "recovery_permit",
+      "mutation": { "operation": "set", "json_pointer": "/replay_certificate/record_code", "value": "synthetic.replay-certificate-other" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "RECOVERY_PERMIT_INVALID"
+    },
+    {
+      "case_code": "clearance_noncausal_activation",
+      "base_fixture_code": "clearance_decision",
+      "mutation": { "operation": "set", "json_pointer": "/not_before", "value": "2030-01-01T00:07:59.000Z" },
+      "expected_layer_code": "semantic",
+      "expected_error_code": "CLEARANCE_INVALID"
+    }
+  ]
+}

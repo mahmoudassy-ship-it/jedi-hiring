@@ -1,0 +1,118 @@
+{
+  "format": "jedi-atlas-d90-contract-catalog",
+  "format_version": "1.0.0",
+  "hash_profile": "sha256-over-exact-file-bytes",
+  "catalog_self_digest": "not_present_to_avoid_self_reference",
+  "instance_policy": {
+    "repository_contents": "schemas_and_synthetic_fixtures_only",
+    "real_contract_instances": "protected_operational_storage_outside_git_and_atlas_sqlite",
+    "credentials_permitted": false,
+    "operational_authorization_created": false
+  },
+  "schemas": [
+    {
+      "schema_role": "shared_definitions",
+      "schema_file": "common-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json",
+      "raw_sha256": "98343556dfc84187ca0596485ceb1dc78fcff7ca1986a72b71bdfec53ec47113"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/runtime-profile-v1.schema.json",
+      "contract_format": "jedi-atlas-runtime-profile",
+      "contract_version": "1.0.0",
+      "raw_sha256": "841a6f1fc4d335185118f0b88deb3bd13e85cf9963623508ac3bf3840eabb955"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/identity-bindings-v1.schema.json",
+      "contract_format": "jedi-atlas-identity-bindings",
+      "contract_version": "1.0.0",
+      "raw_sha256": "ac4f71b5ebfa29f79e3bc2fca84356694e11e4e75f8e4207848ddcd3d9e3cb11"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/collector-handoff-v1.schema.json",
+      "contract_format": "jedi-atlas-collector-handoff",
+      "contract_version": "1.0.0",
+      "raw_sha256": "66b21adbf39eda5eeab249bef33bd69cb96ec090021e1d513ce66824cce3c1ca"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/bootstrap-control-v1.schema.json",
+      "contract_format": "jedi-atlas-bootstrap-control",
+      "contract_version": "1.0.0",
+      "raw_sha256": "8b7eaa0ca367e8bea9d151d438482cd66ca0cffa5d8eb3640fad9c8f89cdd5b7"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/custody-adapter-message-v1.schema.json",
+      "contract_format": "jedi-atlas-custody-adapter-message",
+      "contract_version": "1.0.0",
+      "raw_sha256": "c631391c33798175da639e88c71009c1dba3daaaa8206bf8a730033eee676444"
+    },
+    {
+      "schema_role": "protected_operational_helper",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/custody-capability-control-v1.schema.json",
+      "contract_format": "jedi-atlas-custody-capability-control",
+      "contract_version": "1.0.0",
+      "raw_sha256": "779d8e8020469c1d84c2e28489263f38817b6941ff60208ab6c65df4f7d4833f"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "clearance-record-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/clearance-record-v1.schema.json",
+      "contract_format": "jedi-atlas-clearance-record",
+      "contract_version": "1.0.0",
+      "raw_sha256": "30e19480671b6e61178708909bb11563f75720d65b17d37996ed1bbb8533225b"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/operation-journal-event-v1.schema.json",
+      "contract_format": "jedi-atlas-operation-journal-event",
+      "contract_version": "1.0.0",
+      "raw_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/logical-state-seal-v1.schema.json",
+      "contract_format": "jedi-atlas-logical-state-seal",
+      "contract_version": "1.0.0",
+      "raw_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+    },
+    {
+      "schema_role": "top_level_contract",
+      "schema_file": "importer-result-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/importer-result-v1.schema.json",
+      "contract_format": "jedi-atlas-import-result",
+      "contract_version": "1.0.0",
+      "raw_sha256": "5fedf0c942cc2f4bc9a51e058b6f927c45fe48cc1eb0f560a21c4a8b129119ec"
+    }
+  ],
+  "classifications": {
+    "file": "classifications-v1.json",
+    "format": "jedi-atlas-d90-classifications",
+    "format_version": "1.0.0",
+    "raw_sha256": "86b9e5eb0d249927f6c29a216034c216d98f8583759113d8a646eea8b1cb4c15"
+  },
+  "field_registry": {
+    "file": "field-registry-v1.json",
+    "format": "jedi-atlas-d90-field-registry",
+    "format_version": "1.0.0",
+    "raw_sha256": "fd7797b531d348b31c33ff902a5f0093c196d878ee5d4ba62c3fbb62b9ad2949"
+  },
+  "digest_profiles": {
+    "file": "digest-profiles-v1.json",
+    "format": "jedi-atlas-d90-digest-profiles",
+    "format_version": "1.0.0",
+    "raw_sha256": "1d3f7882952dfe53daf64b0306a42d7dbb71d2e3d501806a597f5d57c20d46cf"
+  }
+}

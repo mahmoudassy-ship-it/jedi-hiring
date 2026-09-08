@@ -1,0 +1,376 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-0/runtime-profile-v1.schema.json",
+  "title": "JEDI Atlas D9.0 controlled-pilot runtime profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "profile_code",
+    "profile_generation",
+    "issued_at",
+    "runtime_domain_sha256",
+    "contract_catalog_sha256",
+    "evidence_bundle_contract",
+    "migration_hashes",
+    "component_releases",
+    "database_contract",
+    "operational_profiles",
+    "write_surface_policy",
+    "logical_handle_slots",
+    "ipc",
+    "limits",
+    "pilot_bundle_shape",
+    "scanner_policy",
+    "custody_policy",
+    "processor_policy_code",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-runtime-profile" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "profile_code": { "const": "pilot_local_restricted_v1" },
+    "profile_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "issued_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "runtime_domain_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "contract_catalog_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "evidence_bundle_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "format_version", "schema_sha256"],
+      "properties": {
+        "format": { "const": "jedi-atlas-evidence-bundle" },
+        "format_version": { "const": "1.0.0" },
+        "schema_sha256": { "const": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1" }
+      }
+    },
+    "migration_hashes": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["migration_name", "sha256"],
+        "properties": {
+          "migration_name": {
+            "enum": [
+              "001_schema.sql",
+              "002_reference_data.sql",
+              "003_seed_eu_core.sql",
+              "004_tranche_1a_foundations.sql",
+              "005_tranche_2a_source_quarantine.sql"
+            ]
+          },
+          "sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "component_releases": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runtime_role_code", "executable_sha256", "dependency_lock_sha256"],
+        "properties": {
+          "runtime_role_code": {
+            "enum": [
+              "backup_adapter",
+              "bundle_importer",
+              "clearance_broker",
+              "cloner_promoter",
+              "collector",
+              "custody_adapter",
+              "database_writer",
+              "handoff_broker",
+              "independent_verifier",
+              "journal_broker",
+              "scanner",
+              "trusted_launcher"
+            ]
+          },
+          "executable_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+          "dependency_lock_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "database_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["complete_schema_sha256", "legacy_schema_sha256", "exact_object_inventory_sha256", "prohibited_surfaces_sha256"],
+      "properties": {
+        "complete_schema_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "legacy_schema_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "exact_object_inventory_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "prohibited_surfaces_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+      }
+    },
+    "operational_profiles": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profile_kind_code", "profile_code", "generation", "profile_sha256"],
+        "properties": {
+          "profile_kind_code": { "enum": ["backup", "clearance", "custody_adapter", "handoff", "journal", "scanner_registry"] },
+          "profile_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+          "generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+          "profile_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "write_surface_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_database_access_code",
+        "candidate_insert_tables",
+        "atlas_principal_write_code",
+        "tranche_1a_nonprincipal_write_code",
+        "legacy_write_code",
+        "tranche_2b_write_code",
+        "review_publication_write_code",
+        "application_surface_write_code",
+        "forbidden_operation_codes"
+      ],
+      "properties": {
+        "canonical_database_access_code": { "const": "no_handle_except_atomic_promoter" },
+        "candidate_insert_tables": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "enum": [
+              "atlas_artifact_custody_events",
+              "atlas_artifacts",
+              "atlas_evidence_bundle_receipts",
+              "atlas_principals",
+              "atlas_processing_outputs",
+              "atlas_processing_runs",
+              "atlas_retrieval_events",
+              "atlas_retrieval_locations",
+              "atlas_retrieval_redirects",
+              "atlas_unverified_candidate_occurrences"
+            ]
+          }
+        },
+        "atlas_principal_write_code": { "const": "bootstrap_exact_roster_only" },
+        "tranche_1a_nonprincipal_write_code": { "const": "denied" },
+        "legacy_write_code": { "const": "denied" },
+        "tranche_2b_write_code": { "const": "denied" },
+        "review_publication_write_code": { "const": "denied" },
+        "application_surface_write_code": { "const": "denied" },
+        "forbidden_operation_codes": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": { "enum": ["attach", "ddl", "delete", "extension_load", "replace", "update", "writable_schema"] }
+        }
+      }
+    },
+    "logical_handle_slots": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot_code", "recipients"],
+        "properties": {
+          "slot_code": {
+            "enum": [
+              "reviewed_root",
+              "staging_root",
+              "canonical_query",
+              "candidate_database",
+              "custody_adapter",
+              "custody_capability_store",
+              "operation_journal",
+              "permit_control_store",
+              "recovery_database",
+              "clearance_register",
+              "handoff_registry",
+              "backup_adapter"
+            ]
+          },
+          "recipients": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["runtime_role_code", "access_code"],
+              "properties": {
+                "runtime_role_code": {
+                  "enum": [
+                    "bundle_importer",
+                    "clearance_broker",
+                    "cloner_promoter",
+                    "custody_adapter",
+                    "database_writer",
+                    "independent_verifier",
+                    "journal_broker",
+                    "trusted_launcher"
+                  ]
+                },
+                "access_code": {
+                  "enum": ["append_intended", "create_and_transfer", "fixed_function_client", "read_only", "write_fixed_function"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ipc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["address_family_code", "socket_type_code", "encoding_code", "framing_code", "max_packet_bytes", "max_ancillary_fds", "request_timeout_ms", "peer_credentials_required", "canonical_payload_required"],
+      "properties": {
+        "address_family_code": { "const": "AF_UNIX" },
+        "socket_type_code": { "const": "SOCK_SEQPACKET" },
+        "encoding_code": { "const": "utf8" },
+        "framing_code": { "const": "one_json_document_per_packet" },
+        "max_packet_bytes": { "const": 65536 },
+        "max_ancillary_fds": { "const": 8 },
+        "request_timeout_ms": { "const": 30000 },
+        "peer_credentials_required": { "const": true },
+        "canonical_payload_required": { "const": true }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_bytes_max",
+        "contract_file_bytes_max",
+        "relative_path_bytes_max",
+        "path_component_bytes_max",
+        "backend_reference_bytes_max",
+        "artifact_bytes_max",
+        "bundle_artifact_bytes_max",
+        "json_depth_max",
+        "json_members_max",
+        "result_bytes_max",
+        "journal_event_bytes_max",
+        "error_message_bytes_max",
+        "stdout_bytes_max",
+        "stderr_bytes_max",
+        "scanner_output_bytes_max",
+        "open_fds_max",
+        "sandbox_processes_max",
+        "sandbox_threads_max",
+        "sandbox_cpu_time_ms_max",
+        "rss_bytes_max",
+        "temporary_storage_bytes_max",
+        "operation_timeout_ms",
+        "scanner_timeout_ms",
+        "scanner_result_age_seconds_max",
+        "scanner_rules_age_seconds_max",
+        "hash_copy_timeout_ms",
+        "backup_timeout_ms",
+        "database_busy_timeout_ms",
+        "orphan_grace_seconds",
+        "concurrent_operations_max"
+      ],
+      "properties": {
+        "manifest_bytes_max": { "const": 2097152 },
+        "contract_file_bytes_max": { "const": 262144 },
+        "relative_path_bytes_max": { "const": 240 },
+        "path_component_bytes_max": { "const": 120 },
+        "backend_reference_bytes_max": { "const": 82 },
+        "artifact_bytes_max": { "const": 26214400 },
+        "bundle_artifact_bytes_max": { "const": 26214400 },
+        "json_depth_max": { "const": 32 },
+        "json_members_max": { "const": 4096 },
+        "result_bytes_max": { "const": 32768 },
+        "journal_event_bytes_max": { "const": 65536 },
+        "error_message_bytes_max": { "const": 512 },
+        "stdout_bytes_max": { "const": 32768 },
+        "stderr_bytes_max": { "const": 32768 },
+        "scanner_output_bytes_max": { "const": 1048576 },
+        "open_fds_max": { "const": 64 },
+        "sandbox_processes_max": { "const": 1 },
+        "sandbox_threads_max": { "const": 4 },
+        "sandbox_cpu_time_ms_max": { "const": 600000 },
+        "rss_bytes_max": { "const": 536870912 },
+        "temporary_storage_bytes_max": { "const": 134217728 },
+        "operation_timeout_ms": { "const": 900000 },
+        "scanner_timeout_ms": { "const": 120000 },
+        "scanner_result_age_seconds_max": { "const": 3600 },
+        "scanner_rules_age_seconds_max": { "const": 86400 },
+        "hash_copy_timeout_ms": { "const": 120000 },
+        "backup_timeout_ms": { "const": 300000 },
+        "database_busy_timeout_ms": { "const": 5000 },
+        "orphan_grace_seconds": { "const": 86400 },
+        "concurrent_operations_max": { "const": 1 }
+      }
+    },
+    "pilot_bundle_shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bootstrap_principals_exact", "bootstrap_artifacts_exact", "document_artifacts_exact", "document_retrieval_events_exact", "document_http_200_retained_exact", "document_redirects_max", "document_custody_placements_exact", "processing_runs_exact", "processing_outputs_exact", "candidate_occurrences_exact", "required_dependencies_for_document_exact"],
+      "properties": {
+        "bootstrap_principals_exact": { "const": 4 },
+        "bootstrap_artifacts_exact": { "const": 0 },
+        "document_artifacts_exact": { "const": 1 },
+        "document_retrieval_events_exact": { "const": 1 },
+        "document_http_200_retained_exact": { "const": 1 },
+        "document_redirects_max": { "const": 5 },
+        "document_custody_placements_exact": { "const": 1 },
+        "processing_runs_exact": { "const": 0 },
+        "processing_outputs_exact": { "const": 0 },
+        "candidate_occurrences_exact": { "const": 0 },
+        "required_dependencies_for_document_exact": { "const": 1 }
+      }
+    },
+    "scanner_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network_code", "shell_code", "failure_policy_code", "required_scanners"],
+      "properties": {
+        "network_code": { "const": "denied" },
+        "shell_code": { "const": "denied" },
+        "failure_policy_code": { "const": "fail_closed" },
+        "required_scanners": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scanner_code", "build_sha256", "rules_sha256"],
+            "properties": {
+              "scanner_code": { "enum": ["malware", "secrets", "personal_data"] },
+              "build_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+              "rules_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+            }
+          }
+        }
+      }
+    },
+    "custody_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["custody_class_code", "backend_code", "reference_profile_code", "publish_code", "backup_required"],
+      "properties": {
+        "custody_class_code": { "const": "restricted_store" },
+        "backend_code": { "const": "pilot_local_cas_v1" },
+        "reference_profile_code": { "const": "sha256_fanout_v1" },
+        "publish_code": { "const": "no_replace" },
+        "backup_required": { "const": true }
+      }
+    },
+    "processor_policy_code": { "const": "disabled" },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}

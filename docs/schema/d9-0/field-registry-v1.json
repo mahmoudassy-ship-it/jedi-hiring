@@ -1,0 +1,1059 @@
+{
+  "format": "jedi-atlas-d90-field-registry",
+  "format_version": "1.0.0",
+  "pointer_pattern_profile": "rfc6901-single-segment-wildcard-v1",
+  "instance_policy": {
+    "version_controlled_instances": "synthetic_fixtures_only",
+    "real_instances": "protected_operational_storage_outside_git_and_atlas_sqlite",
+    "credentials_allowed": false,
+    "static_credentials_allowed": false,
+    "ephemeral_custody_capabilities_allowed": "custody_adapter_authenticated_ipc_only",
+    "full_custody_capability_persistence": "protected_short_lived_store_only",
+    "authorization_implication": false,
+    "legal_review_implication": false
+  },
+  "controlled_values": {
+    "confidentiality_codes": [
+      "repository_contract_definition",
+      "internal_operational",
+      "restricted_operational",
+      "restricted_personnel_security",
+      "restricted_legal_security",
+      "highly_restricted_control"
+    ],
+    "atlas_state_classes": [
+      "contract_definition",
+      "operational_non_atlas",
+      "operational_ephemeral",
+      "atlas_identity_reference",
+      "atlas_state_commitment",
+      "redacted_explanation"
+    ],
+    "digest_coverage_codes": [
+      "schema_definition_only",
+      "included_in_record_digest",
+      "excluded_self_digest",
+      "not_self_digested"
+    ]
+  },
+  "schemas": [
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json",
+      "schema_file": "common-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "contract_maintainer"
+        ],
+        "consumers": [
+          "schema_validator",
+          "contract_validator"
+        ],
+        "storage": "version_controlled_contract_schema",
+        "confidentiality": "repository_contract_definition",
+        "atlas_state_class": "contract_definition",
+        "digest_coverage": "schema_definition_only"
+      },
+      "overrides": []
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/runtime-profile-v1.schema.json",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "release_administrator"
+        ],
+        "consumers": [
+          "trusted_launcher",
+          "bundle_importer",
+          "database_writer",
+          "independent_verifier",
+          "custody_adapter",
+          "scanner",
+          "backup_adapter"
+        ],
+        "storage": "protected_runtime_profile_store_outside_git_and_sqlite",
+        "confidentiality": "restricted_operational",
+        "atlas_state_class": "operational_non_atlas",
+        "digest_coverage": "included_in_record_digest"
+      },
+      "overrides": [
+        {
+          "json_pointer_pattern": "/record_digest_sha256",
+          "digest_coverage": "excluded_self_digest"
+        },
+        {
+          "json_pointer_pattern": "/migration_hashes/*",
+          "atlas_state_class": "atlas_state_commitment"
+        },
+        {
+          "json_pointer_pattern": "/logical_handle_slots/*",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/scanner_policy/*",
+          "confidentiality": "restricted_personnel_security"
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/identity-bindings-v1.schema.json",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "system_administrator"
+        ],
+        "consumers": [
+          "trusted_launcher",
+          "authenticated_ipc_endpoint"
+        ],
+        "storage": "protected_identity_binding_store_outside_git_and_sqlite",
+        "confidentiality": "restricted_personnel_security",
+        "atlas_state_class": "operational_non_atlas",
+        "digest_coverage": "included_in_record_digest"
+      },
+      "overrides": [
+        {
+          "json_pointer_pattern": "/record_digest_sha256",
+          "digest_coverage": "excluded_self_digest"
+        },
+        {
+          "json_pointer_pattern": "/bindings/*/unix_uid",
+          "confidentiality": "highly_restricted_control"
+        },
+        {
+          "json_pointer_pattern": "/bindings/*/atlas_principal_code",
+          "atlas_state_class": "atlas_identity_reference"
+        },
+        {
+          "json_pointer_pattern": "/bindings/*/executable_sha256",
+          "confidentiality": "restricted_personnel_security"
+        },
+        {
+          "json_pointer_pattern": "/bindings/*/ipc_endpoint_code",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/bindings/*/allowed_operation_modes",
+          "confidentiality": "restricted_operational"
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/collector-handoff-v1.schema.json",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "variants": [
+        {
+          "variant_code": "collector_handoff",
+          "selector": {
+            "record_kind_code": "collector_handoff"
+          },
+          "default": {
+            "trusted_producers": [
+              "collector_handoff_broker"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "bundle_importer",
+              "custody_adapter",
+              "independent_verifier"
+            ],
+            "storage": "protected_append_intended_handoff_register_outside_git_and_sqlite",
+            "confidentiality": "restricted_personnel_security",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/collector_principal_code",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/staged_path",
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            }
+          ]
+        },
+        {
+          "variant_code": "bundle_seal",
+          "selector": {
+            "record_kind_code": "bundle_seal"
+          },
+          "default": {
+            "trusted_producers": [
+              "trusted_launcher"
+            ],
+            "consumers": [
+              "bundle_importer",
+              "custody_adapter",
+              "independent_verifier"
+            ],
+            "storage": "protected_append_intended_handoff_register_outside_git_and_sqlite",
+            "confidentiality": "restricted_personnel_security",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/manifest_path",
+              "confidentiality": "restricted_operational"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/bootstrap-control-v1.schema.json",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "variants": [
+        {
+          "variant_code": "permit_issuance",
+          "selector": {
+            "record_kind_code": "permit_issuance"
+          },
+          "default": {
+            "trusted_producers": [
+              "bootstrap_authority"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "database_writer",
+              "independent_verifier"
+            ],
+            "storage": "protected_one_use_bootstrap_control_store_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/target_empty_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/bootstrap_bundle",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "permit_transition",
+          "selector": {
+            "record_kind_code": "permit_transition"
+          },
+          "default": {
+            "trusted_producers": [
+              "registered_permit_transition_recorder"
+            ],
+            "consumers": [
+              "database_writer",
+              "independent_verifier",
+              "recovery_operator"
+            ],
+            "storage": "protected_one_use_bootstrap_control_store_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/recorded_by_runtime_role_code",
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/observed_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/persisted_by_binding_code",
+              "trusted_producers": [
+                "trusted_launcher"
+              ],
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/persisted_at",
+              "trusted_producers": [
+                "trusted_launcher"
+              ],
+              "confidentiality": "restricted_personnel_security"
+            }
+          ]
+        },
+        {
+          "variant_code": "replay_certificate",
+          "selector": {
+            "record_kind_code": "replay_certificate"
+          },
+          "default": {
+            "trusted_producers": [
+              "independent_verifier"
+            ],
+            "consumers": [
+              "recovery_authority",
+              "trusted_launcher",
+              "recovery_operator"
+            ],
+            "storage": "protected_one_use_bootstrap_control_store_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/accepted_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/accepted_bootstrap_bundle",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "recovery_permit",
+          "selector": {
+            "record_kind_code": "recovery_permit"
+          },
+          "default": {
+            "trusted_producers": [
+              "recovery_authority"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "database_writer",
+              "independent_verifier",
+              "recovery_operator"
+            ],
+            "storage": "protected_one_use_bootstrap_control_store_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/accepted_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/target_empty_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/accepted_bootstrap_bundle",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "post_promotion_completion_permit",
+          "selector": {
+            "record_kind_code": "post_promotion_completion_permit"
+          },
+          "default": {
+            "trusted_producers": [
+              "recovery_authority"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "bundle_importer",
+              "independent_verifier",
+              "journal_broker",
+              "backup_adapter"
+            ],
+            "storage": "protected_one_use_recovery_control_store_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/verified_canonical_logical_state",
+              "atlas_state_class": "atlas_state_commitment"
+            },
+            {
+              "json_pointer_pattern": "/target_bundle",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/custody-adapter-message-v1.schema.json",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "variants": [
+        {
+          "variant_code": "request",
+          "selector": {
+            "message_kind_code": "request"
+          },
+          "default": {
+            "trusted_producers": [
+              "bundle_importer"
+            ],
+            "consumers": [
+              "custody_adapter"
+            ],
+            "storage": "authenticated_local_ipc_with_minimized_journal_summary",
+            "confidentiality": "restricted_personnel_security",
+            "atlas_state_class": "operational_ephemeral",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/ancillary_descriptors/*",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/payload/source_handle_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/preparation_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/sealed_capability_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/payload/backend_reference",
+              "confidentiality": "restricted_operational",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/payload/collector_handoff_record_digest_sha256",
+              "trusted_producers": [
+                "trusted_launcher"
+              ],
+              "atlas_state_class": "operational_non_atlas"
+            },
+            {
+              "json_pointer_pattern": "/payload/staging_snapshot_code",
+              "trusted_producers": [
+                "trusted_launcher"
+              ],
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/payload/bundle_seal_record_digest_sha256",
+              "trusted_producers": [
+                "trusted_launcher"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_non_atlas"
+            }
+          ]
+        },
+        {
+          "variant_code": "response",
+          "selector": {
+            "message_kind_code": "response"
+          },
+          "default": {
+            "trusted_producers": [
+              "custody_adapter"
+            ],
+            "consumers": [
+              "bundle_importer"
+            ],
+            "storage": "authenticated_local_ipc_with_minimized_journal_summary",
+            "confidentiality": "restricted_personnel_security",
+            "atlas_state_class": "operational_ephemeral",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/ancillary_descriptors/*",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/payload/source_handle_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/preparation_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/sealed_capability_token/*",
+              "trusted_producers": [
+                "custody_adapter_capability_issuer"
+              ],
+              "confidentiality": "highly_restricted_control",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/payload/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/payload/backend_reference",
+              "confidentiality": "restricted_operational",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/custody-capability-control-v1.schema.json",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "variants": [
+        {
+          "variant_code": "source_issuance",
+          "selector": {
+            "record_kind_code": "capability_issuance",
+            "capability_kind_code": "source_handle"
+          },
+          "default": {
+            "trusted_producers": [
+              "custody_adapter_capability_issuer"
+            ],
+            "consumers": [
+              "custody_adapter",
+              "bundle_importer",
+              "trusted_launcher",
+              "independent_verifier"
+            ],
+            "storage": "protected_short_lived_capability_store_outside_git_atlas_results_and_journal",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "preparation_issuance",
+          "selector": {
+            "record_kind_code": "capability_issuance",
+            "capability_kind_code": "preparation"
+          },
+          "default": {
+            "trusted_producers": [
+              "custody_adapter_capability_issuer"
+            ],
+            "consumers": [
+              "custody_adapter",
+              "bundle_importer",
+              "trusted_launcher",
+              "independent_verifier"
+            ],
+            "storage": "protected_short_lived_capability_store_outside_git_atlas_results_and_journal",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "sealed_issuance",
+          "selector": {
+            "record_kind_code": "capability_issuance",
+            "capability_kind_code": "sealed_custody_access"
+          },
+          "default": {
+            "trusted_producers": [
+              "custody_adapter_capability_issuer"
+            ],
+            "consumers": [
+              "custody_adapter",
+              "bundle_importer",
+              "trusted_launcher",
+              "independent_verifier"
+            ],
+            "storage": "protected_short_lived_capability_store_outside_git_atlas_results_and_journal",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/operation_nonce",
+              "atlas_state_class": "operational_ephemeral"
+            },
+            {
+              "json_pointer_pattern": "/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            }
+          ]
+        },
+        {
+          "variant_code": "transition",
+          "selector": {
+            "record_kind_code": "capability_transition"
+          },
+          "default": {
+            "trusted_producers": [
+              "custody_adapter_capability_state_recorder"
+            ],
+            "consumers": [
+              "custody_adapter",
+              "bundle_importer",
+              "trusted_launcher",
+              "independent_verifier"
+            ],
+            "storage": "protected_short_lived_capability_store_outside_git_atlas_results_and_journal",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/clearance-record-v1.schema.json",
+      "schema_file": "clearance-record-v1.schema.json",
+      "variants": [
+        {
+          "variant_code": "clearance_decision",
+          "selector": {
+            "record_kind_code": "clearance_decision"
+          },
+          "default": {
+            "trusted_producers": [
+              "clearance_broker_after_distinct_decider_and_checker"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "bundle_importer",
+              "custody_adapter",
+              "independent_verifier"
+            ],
+            "storage": "protected_clearance_register_outside_git_and_sqlite",
+            "confidentiality": "restricted_legal_security",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/conditions/*",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/limitations/*",
+              "confidentiality": "highly_restricted_control"
+            },
+            {
+              "json_pointer_pattern": "/scanner_results/*",
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/decided_by_binding_code",
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/independently_checked_by_binding_code",
+              "confidentiality": "restricted_personnel_security"
+            }
+          ]
+        },
+        {
+          "variant_code": "clearance_revocation",
+          "selector": {
+            "record_kind_code": "clearance_transition",
+            "state_code": "revoked"
+          },
+          "default": {
+            "trusted_producers": [
+              "clearance_broker"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "bundle_importer",
+              "custody_adapter",
+              "independent_verifier"
+            ],
+            "storage": "protected_clearance_register_outside_git_and_sqlite",
+            "confidentiality": "restricted_legal_security",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            }
+          ]
+        },
+        {
+          "variant_code": "clearance_supersession",
+          "selector": {
+            "record_kind_code": "clearance_transition",
+            "state_code": "superseded"
+          },
+          "default": {
+            "trusted_producers": [
+              "clearance_broker"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "bundle_importer",
+              "custody_adapter",
+              "independent_verifier"
+            ],
+            "storage": "protected_clearance_register_outside_git_and_sqlite",
+            "confidentiality": "restricted_legal_security",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            }
+          ]
+        },
+        {
+          "variant_code": "prepromotion_authorization",
+          "selector": {
+            "record_kind_code": "prepromotion_authorization"
+          },
+          "default": {
+            "trusted_producers": [
+              "independent_verifier_through_clearance_broker"
+            ],
+            "consumers": [
+              "trusted_launcher",
+              "cloner_promoter",
+              "independent_verifier"
+            ],
+            "storage": "protected_clearance_register_outside_git_and_sqlite",
+            "confidentiality": "highly_restricted_control",
+            "atlas_state_class": "operational_non_atlas",
+            "digest_coverage": "included_in_record_digest"
+          },
+          "overrides": [
+            {
+              "json_pointer_pattern": "/record_digest_sha256",
+              "digest_coverage": "excluded_self_digest"
+            },
+            {
+              "json_pointer_pattern": "/artifact",
+              "atlas_state_class": "atlas_identity_reference"
+            },
+            {
+              "json_pointer_pattern": "/authorized_by_binding_code",
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/persisted_by_binding_code",
+              "trusted_producers": [
+                "clearance_broker"
+              ],
+              "confidentiality": "restricted_personnel_security"
+            },
+            {
+              "json_pointer_pattern": "/persisted_at",
+              "trusted_producers": [
+                "clearance_broker"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/operation-journal-event-v1.schema.json",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "trusted_component_through_journal_broker"
+        ],
+        "consumers": [
+          "trusted_launcher",
+          "recovery_operator",
+          "independent_verifier"
+        ],
+        "storage": "protected_append_intended_operation_journal_outside_git_and_sqlite",
+        "confidentiality": "restricted_personnel_security",
+        "atlas_state_class": "operational_non_atlas",
+        "digest_coverage": "included_in_record_digest"
+      },
+      "overrides": [
+        {
+          "json_pointer_pattern": "/record_digest_sha256",
+          "digest_coverage": "excluded_self_digest"
+        },
+        {
+          "json_pointer_pattern": "/component_binding_code",
+          "confidentiality": "highly_restricted_control"
+        },
+        {
+          "json_pointer_pattern": "/operation_nonce",
+          "confidentiality": "highly_restricted_control",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/target_logical_state",
+          "atlas_state_class": "atlas_state_commitment"
+        },
+        {
+          "json_pointer_pattern": "/observed_logical_state",
+          "atlas_state_class": "atlas_state_commitment"
+        },
+        {
+          "json_pointer_pattern": "/bundle",
+          "atlas_state_class": "atlas_identity_reference"
+        },
+        {
+          "json_pointer_pattern": "/event_at",
+          "atlas_state_class": "operational_non_atlas"
+        },
+        {
+          "json_pointer_pattern": "/persisted_at",
+          "trusted_producers": [
+            "journal_broker"
+          ],
+          "atlas_state_class": "operational_non_atlas"
+        },
+        {
+          "json_pointer_pattern": "/authorization_bundle_seal_record_digest_sha256",
+          "trusted_producers": [
+            "trusted_launcher"
+          ],
+          "confidentiality": "highly_restricted_control"
+        },
+        {
+          "json_pointer_pattern": "/prepromotion_authorization_record_digest_sha256",
+          "trusted_producers": [
+            "independent_verifier_through_clearance_broker"
+          ],
+          "confidentiality": "highly_restricted_control"
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/logical-state-seal-v1.schema.json",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "independent_read_only_verifier"
+        ],
+        "consumers": [
+          "trusted_launcher",
+          "bootstrap_permit_checker",
+          "cloner_promoter",
+          "recovery_verifier"
+        ],
+        "storage": "protected_seal_store_journal_and_backup_inventory_outside_atlas_sqlite",
+        "confidentiality": "restricted_operational",
+        "atlas_state_class": "atlas_state_commitment",
+        "digest_coverage": "included_in_record_digest"
+      },
+      "overrides": [
+        {
+          "json_pointer_pattern": "/record_digest_sha256",
+          "digest_coverage": "excluded_self_digest"
+        },
+        {
+          "json_pointer_pattern": "/operation_nonce",
+          "confidentiality": "highly_restricted_control",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/file_sha256",
+          "atlas_state_class": "operational_non_atlas"
+        },
+        {
+          "json_pointer_pattern": "/device_number",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/inode_number",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/mode_octal",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/state_payload/principal_roster/*",
+          "confidentiality": "restricted_personnel_security",
+          "atlas_state_class": "atlas_state_commitment"
+        }
+      ]
+    },
+    {
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-0/importer-result-v1.schema.json",
+      "schema_file": "importer-result-v1.schema.json",
+      "default": {
+        "trusted_producers": [
+          "bundle_importer"
+        ],
+        "consumers": [
+          "trusted_launcher",
+          "recovery_operator",
+          "journal_broker"
+        ],
+        "storage": "bounded_standard_output_and_minimized_journal_reference",
+        "confidentiality": "internal_operational",
+        "atlas_state_class": "operational_non_atlas",
+        "digest_coverage": "not_self_digested"
+      },
+      "overrides": [
+        {
+          "json_pointer_pattern": "/operation_id",
+          "confidentiality": "restricted_operational",
+          "atlas_state_class": "operational_ephemeral"
+        },
+        {
+          "json_pointer_pattern": "/bundle_id",
+          "atlas_state_class": "atlas_identity_reference"
+        },
+        {
+          "json_pointer_pattern": "/bundle_sequence",
+          "atlas_state_class": "atlas_identity_reference"
+        },
+        {
+          "json_pointer_pattern": "/bundle_digest_sha256",
+          "atlas_state_class": "atlas_identity_reference"
+        },
+        {
+          "json_pointer_pattern": "/error/message",
+          "confidentiality": "internal_operational",
+          "atlas_state_class": "redacted_explanation"
+        }
+      ]
+    }
+  ]
+}

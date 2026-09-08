@@ -1,0 +1,103 @@
+{
+  "format": "jedi-atlas-evidence-bundle",
+  "format_version": "1.0.0",
+  "bundle_id": "synthetic.bundle-002",
+  "bundle_sequence": 2,
+  "required_bundles": [
+    {
+      "bundle_id": "synthetic.bootstrap-bundle",
+      "bundle_digest_sha256": "327c4ce915f9ca9b69193ccb86c89a1d11a2395d36f7088ae256fa228e566875"
+    }
+  ],
+  "bundle_created_at": "2030-01-01T00:06:30.000Z",
+  "bundle_digest_sha256": "2273ab881df419197add1b749671571d35779b4768eca2b90a946341b4cac152",
+  "manifest_path": "manifests/synthetic-bundle-002.json",
+  "submitter_principal_code": "synthetic.human",
+  "expected_importer_principal_code": "synthetic.importer",
+  "expected_importer_software_code": "synthetic-importer",
+  "expected_importer_version": "1.0.0",
+  "bundle_declarations": {
+    "contains_credentials": false,
+    "contains_personal_data": false,
+    "hostile_input_acknowledged": true
+  },
+  "retrieval_locations": [
+    {
+      "record_code": "location.98a192a7250043bc631f1d30d08b604cd13d71c3a06a15b0ffc6baace0c29b3f",
+      "url": "https://example.invalid/synthetic",
+      "recorded_by_principal_code": "synthetic.human",
+      "recorded_at": "2030-01-01T00:05:13.000Z"
+    }
+  ],
+  "artifacts": [
+    {
+      "record_code": "artifact.retrieved_body.sha256.c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173.32",
+      "byte_layer_code": "retrieved_body",
+      "hash_algorithm_code": "sha256",
+      "sha256": "c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173",
+      "byte_length": 32,
+      "staged_path": "objects/sha256/c7/c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173",
+      "recorded_by_principal_code": "synthetic.human",
+      "recorded_at": "2030-01-01T00:05:15.000Z"
+    }
+  ],
+  "retrieval_events": [
+    {
+      "record_code": "synthetic.bundle-002.retrieval-001",
+      "requested_location_code": "location.98a192a7250043bc631f1d30d08b604cd13d71c3a06a15b0ffc6baace0c29b3f",
+      "last_attempted_location_code": "location.98a192a7250043bc631f1d30d08b604cd13d71c3a06a15b0ffc6baace0c29b3f",
+      "resolved_location_code": "location.98a192a7250043bc631f1d30d08b604cd13d71c3a06a15b0ffc6baace0c29b3f",
+      "conditional_basis_retrieval_event_code": null,
+      "conditional_validator_kind_code": null,
+      "conditional_validator_value": null,
+      "artifact_code": "artifact.retrieved_body.sha256.c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173.32",
+      "artifact_staged_path": "objects/sha256/c7/c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173",
+      "outcome_code": "retrieved_retained",
+      "request_method_code": "GET",
+      "request_profile_code": "http_get_representation_v1",
+      "request_headers": {
+        "accept": "application/octet-stream",
+        "accept_language": null,
+        "accept_encoding": "identity"
+      },
+      "started_at": "2030-01-01T00:05:14.000Z",
+      "completed_at": "2030-01-01T00:05:15.000Z",
+      "captured_at": "2030-01-01T00:05:15.000Z",
+      "http_status_code": 200,
+      "response_metadata": {
+        "etag": "\"synthetic-v1\"",
+        "content_type": "application/octet-stream",
+        "content_length": 32,
+        "vary": "accept"
+      },
+      "observed_sha256": null,
+      "observed_byte_length": null,
+      "detected_media_type": "application/octet-stream",
+      "collector_principal_code": "synthetic.collector",
+      "collector_software_code": "synthetic.collector-build",
+      "collector_version": "1.0.0",
+      "redirects": [],
+      "recorded_by_principal_code": "synthetic.human",
+      "recorded_at": "2030-01-01T00:05:16.000Z"
+    }
+  ],
+  "custody_events": [
+    {
+      "record_code": "synthetic.bundle-002.custody-001",
+      "artifact_code": "artifact.retrieved_body.sha256.c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173.32",
+      "copy_code": "synthetic.copy-001",
+      "event_kind_code": "placed",
+      "predecessor_custody_event_code": null,
+      "custody_class_code": "restricted_store",
+      "backend_code": "pilot_local_cas_v1",
+      "backend_reference": "objects/sha256/c7/c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173",
+      "repository_eligibility_declaration": null,
+      "reason": "Synthetic restricted-store pilot placement.",
+      "occurred_at": "2030-01-01T00:05:15.000Z",
+      "recorded_by_principal_code": "synthetic.human",
+      "recorded_at": "2030-01-01T00:05:17.000Z"
+    }
+  ],
+  "processing_runs": [],
+  "candidate_occurrences": []
+}

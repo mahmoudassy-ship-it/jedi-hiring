@@ -1,0 +1,2832 @@
+{
+  "format": "jedi-atlas-d90-digest-profiles",
+  "format_version": "1.0.0",
+  "algorithm_code": "sha256",
+  "domain_separator_code": "none_v1",
+  "canonical_json_profile": {
+    "encoding_code": "utf8_no_bom",
+    "unicode_normalization_code": "none",
+    "object_key_order_code": "utf16_code_unit_ascending",
+    "array_order_code": "as_declared_unless_projection_profile_requires_order",
+    "number_code": "nonnegative_safe_integer_decimal_no_exponent",
+    "null_code": "literal_null",
+    "line_ending_code": "none_after_compact_serialization",
+    "duplicate_key_code": "reject"
+  },
+  "payload_profiles": [
+    {
+      "profile_code": "canonical_contract_record_v1",
+      "input_code": "exact_schema_validated_contract_record",
+      "projection_code": "all_top_level_members_except_record_digest_sha256_nested_members_unchanged",
+      "ordering_code": "canonical_json_profile",
+      "retention_code": "exact_record_bytes_or_closed_object_required",
+      "description": "Canonicalize the exact closed contract object after omitting only its top-level record_digest_sha256 member. No domain prefix is added."
+    },
+    {
+      "profile_code": "canonical_evidence_bundle_v1",
+      "input_code": "exact_approved_evidence_manifest_object",
+      "projection_code": "all_top_level_members_except_bundle_digest_sha256_nested_members_unchanged",
+      "ordering_code": "canonical_json_profile",
+      "retention_code": "version_controlled_manifest_required",
+      "description": "Canonicalize the exact approved evidence manifest after omitting only its top-level bundle_digest_sha256 member. No domain prefix is added."
+    },
+    {
+      "profile_code": "canonical_clearance_scope_v1",
+      "input_code": "same_clearance_decision_record",
+      "projection_code": "clearance_scope_v1",
+      "ordering_code": "canonical_json_profile_with_conditions_and_limitations_in_declared_order",
+      "retention_code": "exact_clearance_decision_record_required",
+      "description": "Project exactly the registered artifact and operational admission-scope fields from one immutable clearance decision, preserving conditions and limitations array order."
+    },
+    {
+      "profile_code": "canonical_retrieval_request_fingerprint_v1",
+      "input_code": "resolved_manifest_retrieval_request",
+      "projection_code": "object_with_request_method_code_request_profile_code_requested_location_url_request_headers_conditional_basis_bundle_and_event_validator_kind_and_validator_value",
+      "ordering_code": "canonical_json_profile",
+      "retention_code": "manifest_and_pinned_dependencies_required",
+      "description": "Canonicalize exactly the named request fields, resolving the requested location URL and a conditional basis to its pinned bundle id, sequence, digest and event code; null conditional members remain explicit."
+    },
+    {
+      "profile_code": "canonical_principal_roster_v1",
+      "input_code": "logical_state_principal_roster_array",
+      "projection_code": "complete_array_items_with_id_principal_code_principal_kind_code_created_by_principal_code_and_created_at",
+      "ordering_code": "id_integer_ascending",
+      "retention_code": "logical_state_payload_required",
+      "description": "Canonicalize the complete principal_roster array after requiring ascending id and the exact five closed item members."
+    },
+    {
+      "profile_code": "canonical_logical_state_payload_v1",
+      "input_code": "logical_state_seal_state_payload",
+      "projection_code": "complete_state_payload_object_no_omissions",
+      "ordering_code": "canonical_json_profile_with_registered_logical_set_orders",
+      "retention_code": "logical_state_seal_required",
+      "description": "Canonicalize the complete state_payload object, including nulls and every nested digest; no member is omitted."
+    },
+    {
+      "profile_code": "exact_contract_file_bytes_v1",
+      "input_code": "named_version_controlled_contract_or_schema_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "exact_file_bytes_required",
+      "description": "Hash the exact named repository file bytes, including their existing line endings and final-byte state, without parsing or normalization."
+    },
+    {
+      "profile_code": "exact_executable_bytes_v1",
+      "input_code": "named_executable_or_scanner_build_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_release_artifact_required",
+      "description": "Hash the exact executable release bytes selected by the sibling runtime role or scanner code."
+    },
+    {
+      "profile_code": "exact_dependency_lock_bytes_v1",
+      "input_code": "named_dependency_lock_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_release_artifact_required",
+      "description": "Hash the exact dependency-lock file bytes for the sibling component release."
+    },
+    {
+      "profile_code": "exact_candidate_database_bytes_v1",
+      "input_code": "closed_candidate_database_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "operation_candidate_file_required",
+      "description": "Hash the exact closed SQLite candidate file bytes named by the containing seal or journal event; this is not the logical-state digest."
+    },
+    {
+      "profile_code": "exact_scanner_rules_bytes_v1",
+      "input_code": "named_scanner_ruleset_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "authenticated_scanner_registry_artifact_required",
+      "description": "Hash the exact scanner rules/signature-set bytes selected by the sibling scanner code."
+    },
+    {
+      "profile_code": "exact_runtime_domain_marker_bytes_v1",
+      "input_code": "protected_runtime_domain_marker_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_runtime_profile_store_required",
+      "description": "Hash the exact noncredential runtime-domain marker bytes retained with the protected profile generation; the marker is never caller supplied."
+    },
+    {
+      "profile_code": "exact_operational_profile_bytes_v1",
+      "input_code": "protected_profile_file_selected_by_profile_kind_code_profile_code_and_generation",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_profile_store_required",
+      "description": "Hash the exact operational-profile file bytes identified by the sibling kind, code and generation."
+    },
+    {
+      "profile_code": "exact_collection_profile_bytes_v1",
+      "input_code": "protected_collector_profile_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_handoff_register_dependency_required",
+      "description": "Hash the exact collector request-policy/configuration file bytes used for the handoff."
+    },
+    {
+      "profile_code": "exact_clearance_support_bytes_v1",
+      "input_code": "protected_clearance_support_record_file_selected_by_supporting_record_code",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_clearance_register_dependency_required",
+      "description": "Hash the exact supporting-record bytes selected by supporting_record_code; the digest does not itself establish rights."
+    },
+    {
+      "profile_code": "exact_scanner_result_bytes_v1",
+      "input_code": "protected_scanner_result_record_file_selected_by_scanner_tuple",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_clearance_register_dependency_required",
+      "description": "Hash the exact bounded scanner-result record bytes selected by scanner code, build, rules and completion time."
+    },
+    {
+      "profile_code": "exact_custody_durability_receipt_bytes_v1",
+      "input_code": "adapter_durability_receipt_file_for_exact_request",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_operation_journal_dependency_required",
+      "description": "Hash the exact adapter durability-receipt bytes bound to the request digest and resulting backend reference."
+    },
+    {
+      "profile_code": "exact_backup_inventory_bytes_v1",
+      "input_code": "protected_backup_inventory_file_for_operation",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_backup_register_dependency_required",
+      "description": "Hash the exact backup-inventory file bytes for the containing operation and generation."
+    },
+    {
+      "profile_code": "exact_incident_record_bytes_v1",
+      "input_code": "protected_incident_record_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_recovery_store_dependency_required",
+      "description": "Hash the exact incident-record bytes reviewed by the recovery authority."
+    },
+    {
+      "profile_code": "exact_restore_plan_bytes_v1",
+      "input_code": "protected_restore_plan_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_recovery_store_dependency_required",
+      "description": "Hash the exact restore-plan bytes authorized for the recovery operation."
+    },
+    {
+      "profile_code": "exact_repair_plan_bytes_v1",
+      "input_code": "protected_repair_plan_file",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "protected_recovery_store_dependency_required",
+      "description": "Hash the exact noncanonical completion-repair plan bytes authorized for the post-promotion recovery operation."
+    },
+    {
+      "profile_code": "exact_artifact_bytes_v1",
+      "input_code": "artifact_identity_byte_layer",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "verified_staging_or_custody_bytes_required",
+      "description": "Hash exactly byte_length bytes at the sibling byte_layer_code, with no decoding, decompression or normalization."
+    },
+    {
+      "profile_code": "exact_migration_file_bytes_v1",
+      "input_code": "migration_file_selected_by_migration_name",
+      "projection_code": "identity",
+      "ordering_code": "byte_sequence",
+      "retention_code": "version_controlled_migration_required",
+      "description": "Hash the exact migration file bytes selected by the sibling migration_name."
+    },
+    {
+      "profile_code": "sqlite_complete_schema_inventory_v1",
+      "input_code": "sqlite_schema_noninternal_rows",
+      "projection_code": "array_of_objects_type_name_table_name_and_sql_including_migration_ledgers",
+      "ordering_code": "type_binary_ascending_then_name_binary_ascending",
+      "retention_code": "reconstructible_database_required",
+      "description": "Select sqlite_schema rows whose names do not start sqlite_; project {type,name,table_name,sql}, preserving SQL and null exactly, and order by type then name with BINARY."
+    },
+    {
+      "profile_code": "sqlite_legacy_schema_inventory_v1",
+      "input_code": "sqlite_schema_legacy_application_rows",
+      "projection_code": "complete_schema_projection_excluding_atlas_prefix_schema_migrations_and_migration_checksums",
+      "ordering_code": "type_binary_ascending_then_name_binary_ascending",
+      "retention_code": "reconstructible_database_required",
+      "description": "Apply the complete-schema projection, then exclude names beginning atlas_ and the exact names schema_migrations and migration_checksums."
+    },
+    {
+      "profile_code": "sqlite_table_rows_v1",
+      "input_code": "all_declared_columns_from_one_named_sqlite_table",
+      "projection_code": "array_of_row_objects_using_raw_sqlite_integer_text_null_values_and_lowercase_blob_hex_objects",
+      "ordering_code": "every_declared_column_in_pragma_table_info_order_with_binary_collation",
+      "retention_code": "reconstructible_database_required",
+      "description": "Project every declared column, retaining deterministic integer IDs and foreign-key IDs; encode BLOB as {blob_hex}; order by every declared column in PRAGMA table_info order using BINARY. No FK-to-code substitution occurs in v1."
+    },
+    {
+      "profile_code": "sqlite_receipt_row_v1",
+      "input_code": "one_atlas_evidence_bundle_receipts_row",
+      "projection_code": "object_with_bundle_sequence_bundle_code_format_version_code_bundle_digest_sha256_manifest_path_bundle_created_at_submitted_by_principal_code_imported_by_principal_code_importer_software_code_importer_version_recorded_by_principal_code_and_recorded_at",
+      "ordering_code": "canonical_json_profile",
+      "retention_code": "accepted_manifest_principal_roster_and_migration_projection_required",
+      "description": "Project one receipt without its local id, resolving its three principal FKs to stable codes, with exactly the twelve named members."
+    },
+    {
+      "profile_code": "sqlite_object_inventory_v1",
+      "input_code": "sqlite_schema_noninternal_rows",
+      "projection_code": "array_of_objects_type_name_and_table_name",
+      "ordering_code": "type_binary_ascending_then_name_binary_ascending",
+      "retention_code": "reconstructible_database_required",
+      "description": "Select sqlite_schema rows whose names do not start sqlite_; project {type,name,table_name} and order by type then name with BINARY."
+    },
+    {
+      "profile_code": "receipt_dependency_graph_v1",
+      "input_code": "accepted_bundle_receipt_graph",
+      "projection_code": "array_of_objects_bundle_code_bundle_sequence_bundle_digest_sha256_and_required_bundles_each_with_bundle_id_bundle_sequence_and_bundle_digest_sha256",
+      "ordering_code": "bundle_sequence_ascending_then_bundle_code_binary_ascending_required_bundles_in_manifest_order",
+      "retention_code": "accepted_manifests_and_receipts_required",
+      "description": "Canonicalize every accepted receipt and the exact ordered dependency references from its retained manifest."
+    },
+    {
+      "profile_code": "prohibited_surfaces_v1",
+      "input_code": "fixed_forbidden_repository_surface_inventory",
+      "projection_code": "array_of_objects_surface_code_path_kind_and_exact_content_sha256",
+      "ordering_code": "surface_code_binary_ascending_then_path_utf8_binary_ascending",
+      "retention_code": "reviewed_git_tree_required",
+      "description": "Canonicalize the frozen legacy, API, frontend, export, search, migration and Tranche 2B surface inventory and exact content hashes."
+    },
+    {
+      "profile_code": "canonical_custody_leaf_projection_v1",
+      "input_code": "bounded_current_atlas_custody_leaf_with_resolved_foreign_keys",
+      "projection_code": "complete_custody_leaf_semantic_fields_v1",
+      "ordering_code": "canonical_json_profile",
+      "retention_code": "accepted_manifest_receipt_and_migration_projection_required",
+      "description": "Resolve the exact bitemporal migration-005 custody leaf, replace foreign keys with stable codes and its receipt tuple, and canonicalize every named semantic field without omission."
+    }
+  ],
+  "registry_self_digest": "not_present_to_avoid_self_reference",
+  "external_byte_source_contract": {
+    "hash_input_code": "entire_opened_regular_file_v1",
+    "start_offset": 0,
+    "extent_code": "through_eof_exactly_once",
+    "transformations": [],
+    "symlink_policy_code": "reject_every_path_component_and_final_target",
+    "file_type_code": "regular_file",
+    "confinement_code": "open_relative_to_preopened_logical_root_no_absolute_path_no_parent_escape",
+    "stability_code": "same_device_inode_size_and_change_metadata_before_and_after_hash",
+    "short_read_code": "reject",
+    "growth_or_truncation_code": "reject",
+    "byte_length_code": "opened_file_size_must_equal_declared_length_when_a_length_is_present",
+    "availability_code": "exact_bytes_must_be_retrievable_from_the_named_protected_store",
+    "authorization_code": "digest_and_retrievability_do_not_grant_access_or_authority",
+    "resolver_definitions": [
+      {
+        "resolver_code": "repository_contract_catalog_v1",
+        "storage_code": "reviewed_git_tree",
+        "selection_code": "fixed_path_docs_schema_d9_0_contract_catalog_v1_json"
+      },
+      {
+        "resolver_code": "repository_evidence_bundle_schema_v1",
+        "storage_code": "reviewed_git_tree",
+        "selection_code": "fixed_path_docs_schema_tranche_2a_evidence_bundle_v1_schema_json"
+      },
+      {
+        "resolver_code": "repository_migration_by_name_v1",
+        "storage_code": "reviewed_git_tree",
+        "selection_code": "data_migrations_child_selected_by_sibling_migration_name"
+      },
+      {
+        "resolver_code": "protected_component_executable_by_role_v1",
+        "storage_code": "protected_release_store",
+        "selection_code": "exact_release_file_selected_by_runtime_profile_generation_and_sibling_runtime_role_code"
+      },
+      {
+        "resolver_code": "protected_dependency_lock_by_role_v1",
+        "storage_code": "protected_release_store",
+        "selection_code": "exact_lock_file_selected_by_runtime_profile_generation_and_sibling_runtime_role_code"
+      },
+      {
+        "resolver_code": "protected_scanner_executable_by_scanner_v1",
+        "storage_code": "authenticated_scanner_registry",
+        "selection_code": "exact_release_file_selected_by_scanner_code_and_build_digest"
+      },
+      {
+        "resolver_code": "protected_scanner_rules_by_scanner_v1",
+        "storage_code": "authenticated_scanner_registry",
+        "selection_code": "one_exact_ruleset_file_selected_by_scanner_code_and_rules_digest"
+      },
+      {
+        "resolver_code": "protected_runtime_domain_marker_v1",
+        "storage_code": "protected_runtime_profile_store",
+        "selection_code": "one_noncredential_marker_file_selected_by_profile_code_and_profile_generation"
+      },
+      {
+        "resolver_code": "protected_operational_profile_v1",
+        "storage_code": "protected_profile_store",
+        "selection_code": "one_exact_profile_file_selected_by_profile_kind_code_profile_code_and_generation"
+      },
+      {
+        "resolver_code": "protected_collection_profile_v1",
+        "storage_code": "protected_handoff_dependency_store",
+        "selection_code": "one_exact_profile_file_selected_by_collector_binding_retrieval_event_and_collection_profile_digest"
+      },
+      {
+        "resolver_code": "protected_clearance_support_record_v1",
+        "storage_code": "protected_clearance_register",
+        "selection_code": "one_exact_file_selected_by_supporting_record_code_and_supporting_record_digest"
+      },
+      {
+        "resolver_code": "protected_scanner_result_record_v1",
+        "storage_code": "protected_clearance_register",
+        "selection_code": "one_exact_file_selected_by_artifact_scanner_code_build_rules_completed_at_and_result_digest"
+      },
+      {
+        "resolver_code": "protected_custody_durability_receipt_v1",
+        "storage_code": "protected_operation_journal",
+        "selection_code": "one_exact_file_selected_by_request_record_digest_backend_reference_and_durability_receipt_digest"
+      },
+      {
+        "resolver_code": "protected_backup_inventory_v1",
+        "storage_code": "protected_backup_register",
+        "selection_code": "one_exact_file_selected_by_operation_id_and_backup_inventory_digest"
+      },
+      {
+        "resolver_code": "protected_incident_record_v1",
+        "storage_code": "protected_recovery_store",
+        "selection_code": "content_addressed_exact_file_selected_by_incident_record_digest"
+      },
+      {
+        "resolver_code": "protected_repair_plan_v1",
+        "storage_code": "protected_recovery_store",
+        "selection_code": "content_addressed_exact_file_selected_by_repair_plan_digest"
+      },
+      {
+        "resolver_code": "protected_restore_plan_v1",
+        "storage_code": "protected_recovery_store",
+        "selection_code": "content_addressed_exact_file_selected_by_restore_plan_digest"
+      },
+      {
+        "resolver_code": "candidate_database_by_operation_v1",
+        "storage_code": "operation_candidate_store",
+        "selection_code": "closed_candidate_file_selected_by_operation_id_and_candidate_file_digest"
+      },
+      {
+        "resolver_code": "artifact_bytes_by_identity_v1",
+        "storage_code": "verified_staging_or_custody_store",
+        "selection_code": "exact_bytes_selected_by_byte_layer_sha256_and_byte_length"
+      }
+    ]
+  },
+  "contract_projections": {
+    "clearance_scope_v1": {
+      "source_schema_file": "clearance-record-v1.schema.json",
+      "source_record_kind_code": "clearance_decision",
+      "field_mappings": [
+        {
+          "output_field": "artifact",
+          "source_pointer": "/artifact"
+        },
+        {
+          "output_field": "capture_context_code",
+          "source_pointer": "/capture_context_code"
+        },
+        {
+          "output_field": "conditions",
+          "source_pointer": "/conditions"
+        },
+        {
+          "output_field": "contains_credentials",
+          "source_pointer": "/contains_credentials"
+        },
+        {
+          "output_field": "contains_personal_data",
+          "source_pointer": "/contains_personal_data"
+        },
+        {
+          "output_field": "decision_code",
+          "source_pointer": "/decision_code"
+        },
+        {
+          "output_field": "derivative_use_code",
+          "source_pointer": "/derivative_use_code"
+        },
+        {
+          "output_field": "expires_at",
+          "source_pointer": "/expires_at"
+        },
+        {
+          "output_field": "git_permanence_acknowledged",
+          "source_pointer": "/git_permanence_acknowledged"
+        },
+        {
+          "output_field": "limitations",
+          "source_pointer": "/limitations"
+        },
+        {
+          "output_field": "not_before",
+          "source_pointer": "/not_before"
+        },
+        {
+          "output_field": "redistribution_scope_code",
+          "source_pointer": "/redistribution_scope_code"
+        },
+        {
+          "output_field": "repository_declarations",
+          "source_pointer": "/repository_declarations"
+        },
+        {
+          "output_field": "retention_scope_code",
+          "source_pointer": "/retention_scope_code"
+        },
+        {
+          "output_field": "sensitivity_code",
+          "source_pointer": "/sensitivity_code"
+        }
+      ],
+      "nested_field_sets": [
+        {
+          "output_field": "artifact",
+          "fields": [
+            "byte_layer_code",
+            "byte_length",
+            "hash_algorithm_code",
+            "sha256"
+          ]
+        },
+        {
+          "output_field": "repository_declarations",
+          "fields": [
+            "no_sensitive_data",
+            "permanent_history_acknowledged",
+            "redistribution_eligible",
+            "size_eligible"
+          ]
+        }
+      ],
+      "ordered_array_fields": [
+        "conditions",
+        "limitations"
+      ],
+      "transformation_code": "identity_from_same_record",
+      "omission_code": "all_unlisted_fields"
+    }
+  },
+  "sqlite_projections": {
+    "value_encoding_code": "canonical_json_sqlite_values_v1",
+    "integer_encoding_code": "json_safe_integer",
+    "text_encoding_code": "json_string_without_normalization",
+    "null_encoding_code": "json_null",
+    "blob_encoding_code": "object_with_single_blob_hex_member_lowercase_even_length",
+    "unsupported_storage_classes": [
+      "real"
+    ],
+    "schema_inventories": [
+      {
+        "projection_code": "complete_schema",
+        "select_sql": "SELECT type,name,tbl_name AS table_name,sql FROM sqlite_schema WHERE substr(name,1,7) <> 'sqlite_' ORDER BY type COLLATE BINARY ASC,name COLLATE BINARY ASC",
+        "included_objects_code": "all_noninternal_objects"
+      },
+      {
+        "projection_code": "legacy_schema",
+        "select_sql": "SELECT type,name,tbl_name AS table_name,sql FROM sqlite_schema WHERE substr(name,1,7) <> 'sqlite_' AND substr(name,1,6) <> 'atlas_' AND name NOT IN ('schema_migrations','migration_checksums') ORDER BY type COLLATE BINARY ASC,name COLLATE BINARY ASC",
+        "included_objects_code": "exact_frozen_v1_object_set",
+        "included_objects": [
+          {
+            "type": "index",
+            "name": "country_overlays_jurisdiction_idx",
+            "table_name": "country_overlays"
+          },
+          {
+            "type": "index",
+            "name": "requirement_actors_actor_idx",
+            "table_name": "requirement_actors"
+          },
+          {
+            "type": "index",
+            "name": "requirement_lenses_lens_idx",
+            "table_name": "requirement_legal_lenses"
+          },
+          {
+            "type": "index",
+            "name": "requirement_stages_stage_idx",
+            "table_name": "requirement_hiring_stages"
+          },
+          {
+            "type": "index",
+            "name": "requirements_effect_idx",
+            "table_name": "requirements"
+          },
+          {
+            "type": "index",
+            "name": "requirements_instrument_id_idx",
+            "table_name": "requirements"
+          },
+          {
+            "type": "index",
+            "name": "requirements_status_idx",
+            "table_name": "requirements"
+          },
+          {
+            "type": "table",
+            "name": "actors",
+            "table_name": "actors"
+          },
+          {
+            "type": "table",
+            "name": "country_overlays",
+            "table_name": "country_overlays"
+          },
+          {
+            "type": "table",
+            "name": "hiring_stages",
+            "table_name": "hiring_stages"
+          },
+          {
+            "type": "table",
+            "name": "jurisdictions",
+            "table_name": "jurisdictions"
+          },
+          {
+            "type": "table",
+            "name": "legal_instruments",
+            "table_name": "legal_instruments"
+          },
+          {
+            "type": "table",
+            "name": "legal_lenses",
+            "table_name": "legal_lenses"
+          },
+          {
+            "type": "table",
+            "name": "requirement_actors",
+            "table_name": "requirement_actors"
+          },
+          {
+            "type": "table",
+            "name": "requirement_hiring_stages",
+            "table_name": "requirement_hiring_stages"
+          },
+          {
+            "type": "table",
+            "name": "requirement_legal_lenses",
+            "table_name": "requirement_legal_lenses"
+          },
+          {
+            "type": "table",
+            "name": "requirement_relations",
+            "table_name": "requirement_relations"
+          },
+          {
+            "type": "table",
+            "name": "requirement_search",
+            "table_name": "requirement_search"
+          },
+          {
+            "type": "table",
+            "name": "requirement_search_config",
+            "table_name": "requirement_search_config"
+          },
+          {
+            "type": "table",
+            "name": "requirement_search_data",
+            "table_name": "requirement_search_data"
+          },
+          {
+            "type": "table",
+            "name": "requirement_search_docsize",
+            "table_name": "requirement_search_docsize"
+          },
+          {
+            "type": "table",
+            "name": "requirement_search_idx",
+            "table_name": "requirement_search_idx"
+          },
+          {
+            "type": "table",
+            "name": "requirements",
+            "table_name": "requirements"
+          },
+          {
+            "type": "table",
+            "name": "source_checks",
+            "table_name": "source_checks"
+          },
+          {
+            "type": "trigger",
+            "name": "requirements_search_delete",
+            "table_name": "requirements"
+          },
+          {
+            "type": "trigger",
+            "name": "requirements_search_insert",
+            "table_name": "requirements"
+          },
+          {
+            "type": "trigger",
+            "name": "requirements_search_update",
+            "table_name": "requirements"
+          }
+        ]
+      },
+      {
+        "projection_code": "exact_object_inventory",
+        "select_sql": "SELECT type,name,tbl_name AS table_name FROM sqlite_schema WHERE substr(name,1,7) <> 'sqlite_' ORDER BY type COLLATE BINARY ASC,name COLLATE BINARY ASC",
+        "included_objects_code": "all_noninternal_objects"
+      }
+    ],
+    "table_rows": {
+      "foreign_key_projection_code": "raw_deterministic_integer_ids_no_code_substitution",
+      "row_projection_code": "all_columns_in_declared_pragma_table_info_order",
+      "row_order_code": "all_projection_columns_binary_ascending_in_declared_order",
+      "projections": [
+        {
+          "table_code": "actors",
+          "columns": [
+            "id",
+            "slug",
+            "name"
+          ],
+          "ordering_columns": [
+            "id",
+            "slug",
+            "name"
+          ]
+        },
+        {
+          "table_code": "country_overlays",
+          "columns": [
+            "id",
+            "jurisdiction_id",
+            "requirement_id",
+            "title",
+            "summary",
+            "official_url",
+            "status",
+            "effective_from",
+            "last_verified_on"
+          ],
+          "ordering_columns": [
+            "id",
+            "jurisdiction_id",
+            "requirement_id",
+            "title",
+            "summary",
+            "official_url",
+            "status",
+            "effective_from",
+            "last_verified_on"
+          ]
+        },
+        {
+          "table_code": "hiring_stages",
+          "columns": [
+            "id",
+            "slug",
+            "name",
+            "position"
+          ],
+          "ordering_columns": [
+            "id",
+            "slug",
+            "name",
+            "position"
+          ]
+        },
+        {
+          "table_code": "jurisdictions",
+          "columns": [
+            "id",
+            "code",
+            "name",
+            "level",
+            "parent_id",
+            "notes"
+          ],
+          "ordering_columns": [
+            "id",
+            "code",
+            "name",
+            "level",
+            "parent_id",
+            "notes"
+          ]
+        },
+        {
+          "table_code": "legal_instruments",
+          "columns": [
+            "id",
+            "slug",
+            "title",
+            "short_title",
+            "citation",
+            "instrument_type",
+            "jurisdiction_id",
+            "status",
+            "official_url",
+            "adopted_on",
+            "applies_from",
+            "transposition_deadline",
+            "last_verified_on",
+            "notes"
+          ],
+          "ordering_columns": [
+            "id",
+            "slug",
+            "title",
+            "short_title",
+            "citation",
+            "instrument_type",
+            "jurisdiction_id",
+            "status",
+            "official_url",
+            "adopted_on",
+            "applies_from",
+            "transposition_deadline",
+            "last_verified_on",
+            "notes"
+          ]
+        },
+        {
+          "table_code": "legal_lenses",
+          "columns": [
+            "id",
+            "slug",
+            "name",
+            "position"
+          ],
+          "ordering_columns": [
+            "id",
+            "slug",
+            "name",
+            "position"
+          ]
+        },
+        {
+          "table_code": "requirement_actors",
+          "columns": [
+            "requirement_id",
+            "actor_id"
+          ],
+          "ordering_columns": [
+            "requirement_id",
+            "actor_id"
+          ]
+        },
+        {
+          "table_code": "requirement_hiring_stages",
+          "columns": [
+            "requirement_id",
+            "hiring_stage_id"
+          ],
+          "ordering_columns": [
+            "requirement_id",
+            "hiring_stage_id"
+          ]
+        },
+        {
+          "table_code": "requirement_legal_lenses",
+          "columns": [
+            "requirement_id",
+            "legal_lens_id"
+          ],
+          "ordering_columns": [
+            "requirement_id",
+            "legal_lens_id"
+          ]
+        },
+        {
+          "table_code": "requirement_relations",
+          "columns": [
+            "from_requirement_id",
+            "to_requirement_id",
+            "relation_type",
+            "notes"
+          ],
+          "ordering_columns": [
+            "from_requirement_id",
+            "to_requirement_id",
+            "relation_type",
+            "notes"
+          ]
+        },
+        {
+          "table_code": "requirement_search",
+          "columns": [
+            "title",
+            "plain_summary",
+            "compliance_action"
+          ],
+          "ordering_columns": [
+            "title",
+            "plain_summary",
+            "compliance_action"
+          ]
+        },
+        {
+          "table_code": "requirements",
+          "columns": [
+            "id",
+            "slug",
+            "instrument_id",
+            "title",
+            "plain_summary",
+            "source_locator",
+            "legal_effect",
+            "status",
+            "effective_from",
+            "effective_note",
+            "compliance_action",
+            "escalation_trigger",
+            "review_status",
+            "is_generated",
+            "last_reviewed_on"
+          ],
+          "ordering_columns": [
+            "id",
+            "slug",
+            "instrument_id",
+            "title",
+            "plain_summary",
+            "source_locator",
+            "legal_effect",
+            "status",
+            "effective_from",
+            "effective_note",
+            "compliance_action",
+            "escalation_trigger",
+            "review_status",
+            "is_generated",
+            "last_reviewed_on"
+          ]
+        },
+        {
+          "table_code": "source_checks",
+          "columns": [
+            "id",
+            "instrument_id",
+            "checked_on",
+            "check_status",
+            "notes"
+          ],
+          "ordering_columns": [
+            "id",
+            "instrument_id",
+            "checked_on",
+            "check_status",
+            "notes"
+          ]
+        },
+        {
+          "table_code": "atlas_artifact_custody_events",
+          "columns": [
+            "id",
+            "custody_event_code",
+            "artifact_id",
+            "copy_code",
+            "event_kind_code",
+            "predecessor_custody_event_id",
+            "custody_class_code",
+            "backend_code",
+            "backend_reference",
+            "eligibility_declared_by_principal_id",
+            "eligibility_declared_at",
+            "redistribution_eligible_declared",
+            "no_sensitive_data_declared",
+            "size_eligible_declared",
+            "permanent_history_acknowledged",
+            "reason",
+            "occurred_at",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "custody_event_code",
+            "artifact_id",
+            "copy_code",
+            "event_kind_code",
+            "predecessor_custody_event_id",
+            "custody_class_code",
+            "backend_code",
+            "backend_reference",
+            "eligibility_declared_by_principal_id",
+            "eligibility_declared_at",
+            "redistribution_eligible_declared",
+            "no_sensitive_data_declared",
+            "size_eligible_declared",
+            "permanent_history_acknowledged",
+            "reason",
+            "occurred_at",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_artifacts",
+          "columns": [
+            "id",
+            "artifact_code",
+            "byte_layer_code",
+            "hash_algorithm_code",
+            "sha256",
+            "byte_length",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "artifact_code",
+            "byte_layer_code",
+            "hash_algorithm_code",
+            "sha256",
+            "byte_length",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_evidence_bundle_receipts",
+          "columns": [
+            "id",
+            "bundle_sequence",
+            "bundle_code",
+            "format_version_code",
+            "bundle_digest_sha256",
+            "manifest_path",
+            "bundle_created_at",
+            "submitted_by_principal_id",
+            "imported_by_principal_id",
+            "importer_software_code",
+            "importer_version",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "bundle_sequence",
+            "bundle_code",
+            "format_version_code",
+            "bundle_digest_sha256",
+            "manifest_path",
+            "bundle_created_at",
+            "submitted_by_principal_id",
+            "imported_by_principal_id",
+            "importer_software_code",
+            "importer_version",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_jurisdiction_versions",
+          "columns": [
+            "id",
+            "jurisdiction_id",
+            "language_id",
+            "effective_from",
+            "record_kind_code",
+            "name",
+            "description",
+            "corrects_jurisdiction_version_id",
+            "reason",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "jurisdiction_id",
+            "language_id",
+            "effective_from",
+            "record_kind_code",
+            "name",
+            "description",
+            "corrects_jurisdiction_version_id",
+            "reason",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_jurisdictions",
+          "columns": [
+            "id",
+            "jurisdiction_code",
+            "jurisdiction_kind_code",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "jurisdiction_code",
+            "jurisdiction_kind_code",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_languages",
+          "columns": [
+            "id",
+            "language_code",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "language_code",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_principals",
+          "columns": [
+            "id",
+            "principal_code",
+            "principal_kind_code",
+            "created_by_principal_id",
+            "created_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "principal_code",
+            "principal_kind_code",
+            "created_by_principal_id",
+            "created_at"
+          ]
+        },
+        {
+          "table_code": "atlas_processing_outputs",
+          "columns": [
+            "id",
+            "processing_output_code",
+            "processing_run_id",
+            "artifact_id",
+            "output_ordinal",
+            "output_kind_code",
+            "detected_media_type",
+            "produced_at",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "processing_output_code",
+            "processing_run_id",
+            "artifact_id",
+            "output_ordinal",
+            "output_kind_code",
+            "detected_media_type",
+            "produced_at",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_processing_runs",
+          "columns": [
+            "id",
+            "processing_run_code",
+            "run_ordinal",
+            "input_artifact_id",
+            "method_code",
+            "processor_principal_id",
+            "processor_software_code",
+            "processor_version",
+            "configuration_sha256",
+            "started_at",
+            "completed_at",
+            "outcome_code",
+            "failure_code",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "processing_run_code",
+            "run_ordinal",
+            "input_artifact_id",
+            "method_code",
+            "processor_principal_id",
+            "processor_software_code",
+            "processor_version",
+            "configuration_sha256",
+            "started_at",
+            "completed_at",
+            "outcome_code",
+            "failure_code",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_retrieval_events",
+          "columns": [
+            "id",
+            "retrieval_event_code",
+            "requested_location_id",
+            "last_attempted_location_id",
+            "resolved_location_id",
+            "conditional_basis_retrieval_event_id",
+            "conditional_validator_kind_code",
+            "conditional_validator_value",
+            "artifact_id",
+            "outcome_code",
+            "request_method_code",
+            "request_profile_code",
+            "request_accept",
+            "request_accept_language",
+            "request_accept_encoding",
+            "started_at",
+            "completed_at",
+            "captured_at",
+            "http_status_code",
+            "response_etag",
+            "response_last_modified",
+            "response_content_type",
+            "response_content_length",
+            "response_content_encoding",
+            "response_vary",
+            "detected_media_type",
+            "observed_sha256",
+            "observed_byte_length",
+            "collector_principal_id",
+            "collector_software_code",
+            "collector_version",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "retrieval_event_code",
+            "requested_location_id",
+            "last_attempted_location_id",
+            "resolved_location_id",
+            "conditional_basis_retrieval_event_id",
+            "conditional_validator_kind_code",
+            "conditional_validator_value",
+            "artifact_id",
+            "outcome_code",
+            "request_method_code",
+            "request_profile_code",
+            "request_accept",
+            "request_accept_language",
+            "request_accept_encoding",
+            "started_at",
+            "completed_at",
+            "captured_at",
+            "http_status_code",
+            "response_etag",
+            "response_last_modified",
+            "response_content_type",
+            "response_content_length",
+            "response_content_encoding",
+            "response_vary",
+            "detected_media_type",
+            "observed_sha256",
+            "observed_byte_length",
+            "collector_principal_id",
+            "collector_software_code",
+            "collector_version",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_retrieval_locations",
+          "columns": [
+            "id",
+            "location_code",
+            "location_url",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "location_code",
+            "location_url",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_retrieval_redirects",
+          "columns": [
+            "id",
+            "redirect_code",
+            "retrieval_event_id",
+            "hop_ordinal",
+            "from_location_id",
+            "to_location_id",
+            "http_status_code",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "redirect_code",
+            "retrieval_event_id",
+            "hop_ordinal",
+            "from_location_id",
+            "to_location_id",
+            "http_status_code",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        },
+        {
+          "table_code": "atlas_unverified_candidate_occurrences",
+          "columns": [
+            "id",
+            "candidate_record_code",
+            "candidate_chain_code",
+            "record_kind_code",
+            "corrects_candidate_occurrence_id",
+            "processing_run_id",
+            "processing_output_id",
+            "claim_type_code",
+            "observed_value",
+            "normalized_value",
+            "confidence_basis_points",
+            "locator_kind_code",
+            "locator_value",
+            "span_start",
+            "span_end",
+            "reason",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ],
+          "ordering_columns": [
+            "id",
+            "candidate_record_code",
+            "candidate_chain_code",
+            "record_kind_code",
+            "corrects_candidate_occurrence_id",
+            "processing_run_id",
+            "processing_output_id",
+            "claim_type_code",
+            "observed_value",
+            "normalized_value",
+            "confidence_basis_points",
+            "locator_kind_code",
+            "locator_value",
+            "span_start",
+            "span_end",
+            "reason",
+            "evidence_bundle_receipt_id",
+            "recorded_by_principal_id",
+            "recorded_at"
+          ]
+        }
+      ]
+    },
+    "receipt_row": {
+      "selector_code": "unique_bundle_tuple",
+      "selector_fields": [
+        "bundle_code",
+        "bundle_sequence",
+        "bundle_digest_sha256"
+      ],
+      "excluded_columns": [
+        "id"
+      ],
+      "output_fields": [
+        "bundle_sequence",
+        "bundle_code",
+        "format_version_code",
+        "bundle_digest_sha256",
+        "manifest_path",
+        "bundle_created_at",
+        "submitted_by_principal_code",
+        "imported_by_principal_code",
+        "importer_software_code",
+        "importer_version",
+        "recorded_by_principal_code",
+        "recorded_at"
+      ],
+      "foreign_key_replacements": [
+        {
+          "input_field": "submitted_by_principal_id",
+          "output_field": "submitted_by_principal_code",
+          "target_table": "atlas_principals",
+          "target_field": "principal_code"
+        },
+        {
+          "input_field": "imported_by_principal_id",
+          "output_field": "imported_by_principal_code",
+          "target_table": "atlas_principals",
+          "target_field": "principal_code"
+        },
+        {
+          "input_field": "recorded_by_principal_id",
+          "output_field": "recorded_by_principal_code",
+          "target_table": "atlas_principals",
+          "target_field": "principal_code"
+        }
+      ],
+      "canonical_container_code": "single_json_object_not_array"
+    },
+    "receipt_dependency_graph": {
+      "receipt_order_fields": [
+        "bundle_sequence",
+        "bundle_code"
+      ],
+      "receipt_order_collations": [
+        "numeric_ascending",
+        "binary_ascending"
+      ],
+      "receipt_fields": [
+        "bundle_code",
+        "bundle_sequence",
+        "bundle_digest_sha256",
+        "required_bundles"
+      ],
+      "dependency_fields": [
+        "bundle_id",
+        "bundle_sequence",
+        "bundle_digest_sha256"
+      ],
+      "dependency_order_code": "retained_manifest_array_order",
+      "genesis_payload": [],
+      "bootstrap_successor_payload": [
+        {
+          "bundle_code": "synthetic.bootstrap-bundle",
+          "bundle_sequence": 1,
+          "bundle_digest_sha256": "327c4ce915f9ca9b69193ccb86c89a1d11a2395d36f7088ae256fa228e566875",
+          "required_bundles": []
+        }
+      ],
+      "document_successor_payload": [
+        {
+          "bundle_code": "synthetic.bootstrap-bundle",
+          "bundle_sequence": 1,
+          "bundle_digest_sha256": "327c4ce915f9ca9b69193ccb86c89a1d11a2395d36f7088ae256fa228e566875",
+          "required_bundles": []
+        },
+        {
+          "bundle_code": "synthetic.bundle-002",
+          "bundle_sequence": 2,
+          "bundle_digest_sha256": "2273ab881df419197add1b749671571d35779b4768eca2b90a946341b4cac152",
+          "required_bundles": [
+            {
+              "bundle_id": "synthetic.bootstrap-bundle",
+              "bundle_sequence": 1,
+              "bundle_digest_sha256": "327c4ce915f9ca9b69193ccb86c89a1d11a2395d36f7088ae256fa228e566875"
+            }
+          ]
+        }
+      ]
+    },
+    "prohibited_surfaces": {
+      "item_fields": [
+        "surface_code",
+        "path",
+        "kind",
+        "exact_content_sha256"
+      ],
+      "ordering_fields": [
+        "surface_code",
+        "path"
+      ],
+      "ordering_collations": [
+        "binary_ascending",
+        "utf8_binary_ascending"
+      ],
+      "inventory_source_code": "version_controlled_closed_surface_inventory_required",
+      "items": [
+        {
+          "surface_code": "api",
+          "path": "backend/src/app.mjs",
+          "kind": "file",
+          "exact_content_sha256": "006d389d1250cfcef23ed5dedf4cd0ff926785413e8d5d5be5745fcf925ac801"
+        },
+        {
+          "surface_code": "api",
+          "path": "backend/src/server.mjs",
+          "kind": "file",
+          "exact_content_sha256": "57685790e904c77c8e8e8d30f5b8ee424963ebb5b93dc4cb34586fed64af86b6"
+        },
+        {
+          "surface_code": "data_repository",
+          "path": "backend/src/database.mjs",
+          "kind": "file",
+          "exact_content_sha256": "1aa140d7b2ea2400a066113b9f3aa87986415bc2c612339624b2aef77b70b99f"
+        },
+        {
+          "surface_code": "data_validation",
+          "path": "data/scripts/check.mjs",
+          "kind": "file",
+          "exact_content_sha256": "2b716f88617413e57fad7156a8d963cb93b5e8e1c59a85bcfc051df91ff071fe"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/index.html",
+          "kind": "file",
+          "exact_content_sha256": "2c640fe6cd2e6a8c8fc2d449f98b82669dde08bc9915c1b70bf19e3111ffa1e5"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/components/AppLayout.tsx",
+          "kind": "file",
+          "exact_content_sha256": "65ef2c9c38cf8c177f65ff6d6aa74d53c7937d56c2061a3db7fa346581926fa8"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/components/OverviewStrip.tsx",
+          "kind": "file",
+          "exact_content_sha256": "953dd1603dae16e6b9f5e9c065e7ebd8351586a2d759ea6389170ec17131d74d"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/components/RequirementTable.tsx",
+          "kind": "file",
+          "exact_content_sha256": "387729e718e3c2e0dafe578e047eba70837e38c431caf4d3b8aad0706be41d2f"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/lib/api.ts",
+          "kind": "file",
+          "exact_content_sha256": "b77566f6b68b0684e1a3a95035a6aa600537346145780a478c3634ead8731ce3"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/lib/format.ts",
+          "kind": "file",
+          "exact_content_sha256": "b0d8ca2bba2757b512a7476dbeeb8f4052217a3bf38a8286851ee4f1f7c32e6f"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/main.tsx",
+          "kind": "file",
+          "exact_content_sha256": "463da292d324871c1fba1594d2b608fdcdca64510c8ae06cafd45b288ccbeab5"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/pages/CountriesPage.tsx",
+          "kind": "file",
+          "exact_content_sha256": "a126e8a19d68c553e715d36eefbb414911745fdc1fc8ae86cf99eff81a48caf5"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/pages/LegalMapPage.tsx",
+          "kind": "file",
+          "exact_content_sha256": "9716a221e824e733bb682488f8363f2d5c3975b7e80fdfb6ed8c629ef922edb1"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/pages/RequirementDetailPage.tsx",
+          "kind": "file",
+          "exact_content_sha256": "4aacf0803221982c4f0b1364b74730443efbeae3446a49545ca8e290484b0bbb"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/pages/SourcesPage.tsx",
+          "kind": "file",
+          "exact_content_sha256": "af64a3470a0a29c352a9bc6325aa9d2cf2b8182e2d3963171820eaa42b7581f3"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/styles.css",
+          "kind": "file",
+          "exact_content_sha256": "0afadd1a8ccdf1a83015c95076fdba1ca73f01b4ab39bdebfa955d78aecb5a33"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/src/vite-env.d.ts",
+          "kind": "file",
+          "exact_content_sha256": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/tsconfig.json",
+          "kind": "file",
+          "exact_content_sha256": "c750f07c510abb36139414628cc1719d8c1e4c6fad6d02941347e1b5ff30a134"
+        },
+        {
+          "surface_code": "frontend",
+          "path": "frontend/vite.config.ts",
+          "kind": "file",
+          "exact_content_sha256": "cbfcfe7ddd8e8174bb19e4f4f2b6ba2b744d522e98eddc417e78e192b5d41367"
+        },
+        {
+          "surface_code": "migration_runtime",
+          "path": "data/lib/migrations.mjs",
+          "kind": "file",
+          "exact_content_sha256": "f66661b069d8f148c9748fc898ddababa0268a9c1e3bb218af971330f17c9190"
+        },
+        {
+          "surface_code": "migration_runtime",
+          "path": "data/scripts/migrate.mjs",
+          "kind": "file",
+          "exact_content_sha256": "22c78305c5b1895bad6baf46d1c3accf00547de992e62a0aa87fa00300e8a0eb"
+        },
+        {
+          "surface_code": "migrations",
+          "path": "data/migrations/001_schema.sql",
+          "kind": "file",
+          "exact_content_sha256": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094"
+        },
+        {
+          "surface_code": "migrations",
+          "path": "data/migrations/002_reference_data.sql",
+          "kind": "file",
+          "exact_content_sha256": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923"
+        },
+        {
+          "surface_code": "migrations",
+          "path": "data/migrations/003_seed_eu_core.sql",
+          "kind": "file",
+          "exact_content_sha256": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700"
+        },
+        {
+          "surface_code": "migrations",
+          "path": "data/migrations/004_tranche_1a_foundations.sql",
+          "kind": "file",
+          "exact_content_sha256": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2"
+        },
+        {
+          "surface_code": "migrations",
+          "path": "data/migrations/005_tranche_2a_source_quarantine.sql",
+          "kind": "file",
+          "exact_content_sha256": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+        }
+      ]
+    },
+    "custody_leaf": {
+      "selector_code": "current_leaf_for_exact_artifact_and_copy_with_dual_time_bounds",
+      "event_time_bound_code": "occurred_at_and_recorded_at_lte_adapter_selected_custody_evaluated_at",
+      "knowledge_bound_code": "evidence_bundle_sequence_lte_known_through_bundle_sequence",
+      "leaf_resolution_code": "one_root_one_successor_per_predecessor_same_artifact_copy_then_no_qualifying_successor",
+      "eligible_event_kind_codes": [
+        "placed",
+        "relocated",
+        "restored"
+      ],
+      "ineligible_event_kind_codes": [
+        "restricted",
+        "quarantined",
+        "tombstoned"
+      ],
+      "output_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "custody_class_code",
+        "custody_event_code",
+        "event_kind_code",
+        "evidence_bundle",
+        "occurred_at",
+        "predecessor_custody_event_code",
+        "reason",
+        "recorded_at",
+        "recorded_by_principal_code",
+        "repository_eligibility_declaration"
+      ],
+      "artifact_fields": [
+        "byte_layer_code",
+        "byte_length",
+        "hash_algorithm_code",
+        "sha256"
+      ],
+      "evidence_bundle_fields": [
+        "bundle_digest_sha256",
+        "bundle_id",
+        "bundle_sequence"
+      ],
+      "repository_declaration_fields": [
+        "declared_at",
+        "declared_by_principal_code",
+        "no_sensitive_data_declared",
+        "permanent_history_acknowledged",
+        "redistribution_eligible_declared",
+        "size_eligible_declared"
+      ],
+      "null_encoding_code": "explicit_json_null",
+      "canonical_container_code": "single_json_object_not_array"
+    }
+  },
+  "digest_bindings": [
+    {
+      "binding_code": "runtime.self",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "runtime.domain",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_domain_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_runtime_domain_marker_bytes_v1",
+      "resolver_code": "protected_runtime_domain_marker_v1"
+    },
+    {
+      "binding_code": "runtime.catalog",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/contract_catalog_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_contract_file_bytes_v1",
+      "resolver_code": "repository_contract_catalog_v1"
+    },
+    {
+      "binding_code": "runtime.evidence-schema",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/evidence_bundle_contract/schema_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_contract_file_bytes_v1",
+      "resolver_code": "repository_evidence_bundle_schema_v1"
+    },
+    {
+      "binding_code": "runtime.migrations",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/migration_hashes/*/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_migration_file_bytes_v1",
+      "resolver_code": "repository_migration_by_name_v1"
+    },
+    {
+      "binding_code": "runtime.executables",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/component_releases/*/executable_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_component_executable_by_role_v1"
+    },
+    {
+      "binding_code": "runtime.locks",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/component_releases/*/dependency_lock_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_dependency_lock_bytes_v1",
+      "resolver_code": "protected_dependency_lock_by_role_v1"
+    },
+    {
+      "binding_code": "runtime.complete-schema",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/database_contract/complete_schema_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "sqlite_complete_schema_inventory_v1",
+      "resolver_code": "sqlite_complete_schema_projection_v1"
+    },
+    {
+      "binding_code": "runtime.legacy-schema",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/database_contract/legacy_schema_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "sqlite_legacy_schema_inventory_v1",
+      "resolver_code": "sqlite_legacy_schema_projection_v1"
+    },
+    {
+      "binding_code": "runtime.inventory",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/database_contract/exact_object_inventory_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "sqlite_object_inventory_v1",
+      "resolver_code": "sqlite_object_inventory_projection_v1"
+    },
+    {
+      "binding_code": "runtime.surfaces",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/database_contract/prohibited_surfaces_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "prohibited_surfaces_v1",
+      "resolver_code": "prohibited_surfaces_projection_v1"
+    },
+    {
+      "binding_code": "runtime.profiles",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/operational_profiles/*/profile_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_operational_profile_bytes_v1",
+      "resolver_code": "protected_operational_profile_v1"
+    },
+    {
+      "binding_code": "runtime.scanner-builds",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/scanner_policy/required_scanners/*/build_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_scanner_executable_by_scanner_v1"
+    },
+    {
+      "binding_code": "runtime.scanner-rules",
+      "schema_file": "runtime-profile-v1.schema.json",
+      "json_pointer_patterns": [
+        "/scanner_policy/required_scanners/*/rules_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_scanner_rules_bytes_v1",
+      "resolver_code": "protected_scanner_rules_by_scanner_v1"
+    },
+    {
+      "binding_code": "bindings.self",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "bindings.runtime",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "bindings.domain",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_domain_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_runtime_domain_marker_bytes_v1",
+      "resolver_code": "protected_runtime_domain_marker_v1"
+    },
+    {
+      "binding_code": "bindings.executables",
+      "schema_file": "identity-bindings-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bindings/*/executable_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_component_executable_by_role_v1"
+    },
+    {
+      "binding_code": "handoff.self",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "handoff.runtime",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "handoff.bindings",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "handoff.build",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/collector_build_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_component_executable_by_role_v1"
+    },
+    {
+      "binding_code": "handoff.profile",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/collection_profile_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_collection_profile_bytes_v1",
+      "resolver_code": "protected_collection_profile_v1"
+    },
+    {
+      "binding_code": "handoff.fingerprint",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/request_fingerprint_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_retrieval_request_fingerprint_v1",
+      "resolver_code": "retrieval_request_projection_from_manifest_v1"
+    },
+    {
+      "binding_code": "handoff.artifact",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/artifact/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_artifact_bytes_v1",
+      "resolver_code": "artifact_bytes_by_identity_v1"
+    },
+    {
+      "binding_code": "handoff.bundle",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bundle/bundle_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_evidence_bundle_v1",
+      "resolver_code": "evidence_bundle_by_tuple_v1"
+    },
+    {
+      "binding_code": "handoff.state-record",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/target_logical_state/state_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "logical_state_seal_record_by_reference_v1"
+    },
+    {
+      "binding_code": "handoff.state",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/target_logical_state/logical_state_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "logical_state_payload_by_reference_v1"
+    },
+    {
+      "binding_code": "handoff.records",
+      "schema_file": "collector-handoff-v1.schema.json",
+      "json_pointer_patterns": [
+        "/collector_handoffs/*/record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_explicit_reference_v1"
+    },
+    {
+      "binding_code": "bootstrap.self",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "bootstrap.runtime",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "bootstrap.bindings",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "bootstrap.bundles",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bootstrap_bundle/bundle_digest_sha256",
+        "/accepted_bootstrap_bundle/bundle_digest_sha256",
+        "/target_bundle/bundle_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_evidence_bundle_v1",
+      "resolver_code": "evidence_bundle_by_tuple_v1"
+    },
+    {
+      "binding_code": "bootstrap.state-records",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/accepted_logical_state/state_seal_record_digest_sha256",
+        "/verified_canonical_logical_state/state_seal_record_digest_sha256",
+        "/observed_logical_state/state_seal_record_digest_sha256",
+        "/target_empty_logical_state/state_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "logical_state_seal_record_by_reference_v1"
+    },
+    {
+      "binding_code": "bootstrap.states",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/accepted_logical_state/logical_state_sha256",
+        "/verified_canonical_logical_state/logical_state_sha256",
+        "/observed_logical_state/logical_state_sha256",
+        "/target_empty_logical_state/logical_state_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "logical_state_payload_by_reference_v1"
+    },
+    {
+      "binding_code": "bootstrap.rosters",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/expected_principal_roster_sha256",
+        "/principal_roster_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_principal_roster_v1",
+      "resolver_code": "principal_roster_from_referenced_state_v1"
+    },
+    {
+      "binding_code": "bootstrap.importer",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/importer_release_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_component_executable_by_role_v1"
+    },
+    {
+      "binding_code": "bootstrap.transitions",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/permit_issuance_record_digest_sha256",
+        "/permit_spent_transition_record_digest_sha256",
+        "/previous_transition_record_digest_sha256",
+        "/recovery_permit_record_digest_sha256",
+        "/replay_certificate/record_digest_sha256",
+        "/source_recovery_journal_event_record_digest_sha256",
+        "/completion_journal_head_record_digest_sha256",
+        "/source_authorization_record_digest_sha256",
+        "/source_terminal_transition_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "bootstrap.receipt",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/accepted_receipt_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "sqlite_receipt_row_v1",
+      "resolver_code": "receipt_row_by_bundle_tuple_v1"
+    },
+    {
+      "binding_code": "bootstrap.verified-canonical-receipt",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/verified_canonical_receipt_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "sqlite_receipt_row_v1",
+      "resolver_code": "receipt_row_by_referenced_logical_state_v1"
+    },
+    {
+      "binding_code": "bootstrap.incident",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/incident_record_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_incident_record_bytes_v1",
+      "resolver_code": "protected_incident_record_v1"
+    },
+    {
+      "binding_code": "bootstrap.repair",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/repair_plan_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_repair_plan_bytes_v1",
+      "resolver_code": "protected_repair_plan_v1"
+    },
+    {
+      "binding_code": "bootstrap.restore",
+      "schema_file": "bootstrap-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/restore_plan_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_restore_plan_bytes_v1",
+      "resolver_code": "protected_restore_plan_v1"
+    },
+    {
+      "binding_code": "clearance.self",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "clearance.artifact",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/artifact/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_artifact_bytes_v1",
+      "resolver_code": "artifact_bytes_by_identity_v1"
+    },
+    {
+      "binding_code": "clearance.runtime",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "clearance.bindings",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "clearance.operational-profile",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/clearance_operational_profile_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_operational_profile_bytes_v1",
+      "resolver_code": "protected_operational_profile_v1"
+    },
+    {
+      "binding_code": "clearance.scope",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/clearance_scope_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_clearance_scope_v1",
+      "resolver_code": "same_clearance_decision_scope_projection_v1"
+    },
+    {
+      "binding_code": "clearance.support",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/supporting_record_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_clearance_support_bytes_v1",
+      "resolver_code": "protected_clearance_support_record_v1"
+    },
+    {
+      "binding_code": "clearance.builds",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/scanner_results/*/scanner_build_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_scanner_executable_by_scanner_v1"
+    },
+    {
+      "binding_code": "clearance.rules",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/scanner_results/*/rules_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_scanner_rules_bytes_v1",
+      "resolver_code": "protected_scanner_rules_by_scanner_v1"
+    },
+    {
+      "binding_code": "clearance.results",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/scanner_results/*/result_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_scanner_result_bytes_v1",
+      "resolver_code": "protected_scanner_result_record_v1"
+    },
+    {
+      "binding_code": "clearance.transitions",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/decision_record_digest_sha256",
+        "/previous_transition_record_digest_sha256",
+        "/replacement_clearance_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "custody.self",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "custody.runtime",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "custody.request",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/request_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_request_record_by_operation_request_v1"
+    },
+    {
+      "binding_code": "custody.artifact",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/artifact/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_artifact_bytes_v1",
+      "resolver_code": "artifact_bytes_by_identity_v1"
+    },
+    {
+      "binding_code": "custody.capability-records",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/source_handle_token/capability_sha256",
+        "/payload/preparation_token/capability_sha256",
+        "/payload/sealed_capability_token/capability_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_capability_issuance_by_digest_v1"
+    },
+    {
+      "binding_code": "custody.capability-runtimes",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/source_handle_token/runtime_profile_record_digest_sha256",
+        "/payload/preparation_token/runtime_profile_record_digest_sha256",
+        "/payload/sealed_capability_token/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "custody.capability-bindings",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/source_handle_token/identity_bindings_record_digest_sha256",
+        "/payload/preparation_token/identity_bindings_record_digest_sha256",
+        "/payload/sealed_capability_token/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "custody.capability-artifacts",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/source_handle_token/artifact/sha256",
+        "/payload/preparation_token/artifact/sha256",
+        "/payload/sealed_capability_token/artifact/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_artifact_bytes_v1",
+      "resolver_code": "artifact_bytes_by_identity_v1"
+    },
+    {
+      "binding_code": "custody.receipt",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/durability_receipt_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_custody_durability_receipt_bytes_v1",
+      "resolver_code": "protected_custody_durability_receipt_v1"
+    },
+    {
+      "binding_code": "capability-control.self",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "capability-control.runtime",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "capability-control.bindings",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "capability-control.artifact",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/artifact/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_artifact_bytes_v1",
+      "resolver_code": "artifact_bytes_by_identity_v1"
+    },
+    {
+      "binding_code": "capability-control.request",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/basis_request_record_digest_sha256",
+        "/request_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_request_record_by_operation_request_v1"
+    },
+    {
+      "binding_code": "capability-control.source-capability",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/source_capability_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_capability_issuance_by_digest_v1"
+    },
+    {
+      "binding_code": "capability-control.clearance",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/clearance_decision_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "capability-control.clearance-scope",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/clearance_scope_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_clearance_scope_v1",
+      "resolver_code": "same_clearance_decision_scope_projection_v1"
+    },
+    {
+      "binding_code": "capability-control.custody-leaf",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/custody_leaf_projection_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_custody_leaf_projection_v1",
+      "resolver_code": "custody_leaf_by_exact_bitemporal_projection_v1"
+    },
+    {
+      "binding_code": "capability-control.issuance",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/capability_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_capability_issuance_by_digest_v1"
+    },
+    {
+      "binding_code": "capability-control.previous",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/previous_transition_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "custody_capability_control_by_digest_v1"
+    },
+    {
+      "binding_code": "capability-control.response",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/response_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "state.self",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "state.logical",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/logical_state_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "same_record_state_payload_v1"
+    },
+    {
+      "binding_code": "state.runtime",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "state.catalog",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/contract_catalog_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_contract_file_bytes_v1",
+      "resolver_code": "repository_contract_catalog_v1"
+    },
+    {
+      "binding_code": "state.bundle",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/receipt_head/bundle_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_evidence_bundle_v1",
+      "resolver_code": "evidence_bundle_by_tuple_v1"
+    },
+    {
+      "binding_code": "state.receipt",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/receipt_head/receipt_row_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "sqlite_receipt_row_v1",
+      "resolver_code": "receipt_row_by_bundle_tuple_v1"
+    },
+    {
+      "binding_code": "state.migrations",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/migration_hashes/*/sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_migration_file_bytes_v1",
+      "resolver_code": "repository_migration_by_name_v1"
+    },
+    {
+      "binding_code": "state.complete-schema",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/complete_schema_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "sqlite_complete_schema_inventory_v1",
+      "resolver_code": "sqlite_complete_schema_projection_v1"
+    },
+    {
+      "binding_code": "state.legacy-schema",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/legacy_schema_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "sqlite_legacy_schema_inventory_v1",
+      "resolver_code": "sqlite_legacy_schema_projection_v1"
+    },
+    {
+      "binding_code": "state.rows",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/legacy_rows/*/rows_sha256",
+        "/state_payload/atlas_tables/*/rows_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "sqlite_table_rows_v1",
+      "resolver_code": "sqlite_table_projection_by_sibling_table_code_v1"
+    },
+    {
+      "binding_code": "state.roster",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/principal_roster_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_principal_roster_v1",
+      "resolver_code": "same_state_payload_principal_roster_v1"
+    },
+    {
+      "binding_code": "state.graph",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/receipt_dependency_graph_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "receipt_dependency_graph_v1",
+      "resolver_code": "accepted_receipt_graph_from_retained_manifests_v1"
+    },
+    {
+      "binding_code": "state.surfaces",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/prohibited_surfaces_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "prohibited_surfaces_v1",
+      "resolver_code": "prohibited_surfaces_projection_v1"
+    },
+    {
+      "binding_code": "state.prior",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/state_payload/prior_logical_state_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "prior_logical_state_payload_by_digest_v1"
+    },
+    {
+      "binding_code": "state.ref-records",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/candidate_logical_state/state_seal_record_digest_sha256",
+        "/expected_prior_logical_state/state_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "logical_state_seal_record_by_reference_v1"
+    },
+    {
+      "binding_code": "state.refs",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/candidate_logical_state/logical_state_sha256",
+        "/expected_prior_logical_state/logical_state_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "logical_state_payload_by_reference_v1"
+    },
+    {
+      "binding_code": "state.file",
+      "schema_file": "logical-state-seal-v1.schema.json",
+      "json_pointer_patterns": [
+        "/file_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "exact_candidate_database_bytes_v1",
+      "resolver_code": "candidate_database_by_operation_v1"
+    },
+    {
+      "binding_code": "journal.self",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/record_digest_sha256"
+      ],
+      "digest_role_code": "defines",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "same_contract_object_omit_self_digest_v1"
+    },
+    {
+      "binding_code": "journal.previous",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/previous_event_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "previous_journal_record_by_sequence_v1"
+    },
+    {
+      "binding_code": "journal.component",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/component_executable_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_executable_bytes_v1",
+      "resolver_code": "protected_component_executable_by_role_v1"
+    },
+    {
+      "binding_code": "journal.runtime",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/runtime_profile_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "runtime_profile_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "journal.bindings",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/identity_bindings_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "identity_binding_record_by_active_input_v1"
+    },
+    {
+      "binding_code": "journal.authorization",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/authorization_permit_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "journal.bundle",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bundle/bundle_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_evidence_bundle_v1",
+      "resolver_code": "evidence_bundle_by_tuple_v1"
+    },
+    {
+      "binding_code": "journal.state-records",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/target_logical_state/state_seal_record_digest_sha256",
+        "/observed_logical_state/state_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "logical_state_seal_record_by_reference_v1"
+    },
+    {
+      "binding_code": "journal.states",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/target_logical_state/logical_state_sha256",
+        "/observed_logical_state/logical_state_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_logical_state_payload_v1",
+      "resolver_code": "logical_state_payload_by_reference_v1"
+    },
+    {
+      "binding_code": "journal.file",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/candidate_file_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_candidate_database_bytes_v1",
+      "resolver_code": "candidate_database_by_operation_v1"
+    },
+    {
+      "binding_code": "journal.backup",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/backup_inventory_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "exact_backup_inventory_bytes_v1",
+      "resolver_code": "protected_backup_inventory_v1"
+    },
+    {
+      "binding_code": "result.bundle",
+      "schema_file": "importer-result-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bundle_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_evidence_bundle_v1",
+      "resolver_code": "evidence_bundle_by_tuple_v1"
+    },
+    {
+      "binding_code": "custody.clearance-decision",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/clearance_decision_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "custody.clearance-scope",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/clearance_scope_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_clearance_scope_v1",
+      "resolver_code": "same_clearance_decision_scope_projection_v1"
+    },
+    {
+      "binding_code": "custody.custody-leaf",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/custody_leaf_projection_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_custody_leaf_projection_v1",
+      "resolver_code": "custody_leaf_by_exact_bitemporal_projection_v1"
+    },
+    {
+      "binding_code": "result.recovery-permit",
+      "schema_file": "importer-result-v1.schema.json",
+      "json_pointer_patterns": [
+        "/recovery_permit_record_digest_sha256",
+        "/recovery_terminal_transition_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "custody.handoff",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/collector_handoff_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "capability-control.handoff",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/collector_handoff_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "journal.bundle-seal",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/authorization_bundle_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "custody.bundle-seal",
+      "schema_file": "custody-adapter-message-v1.schema.json",
+      "json_pointer_patterns": [
+        "/payload/bundle_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "capability-control.bundle-seal",
+      "schema_file": "custody-capability-control-v1.schema.json",
+      "json_pointer_patterns": [
+        "/grant_scope/bundle_seal_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "journal.prepromotion-authorization",
+      "schema_file": "operation-journal-event-v1.schema.json",
+      "json_pointer_patterns": [
+        "/prepromotion_authorization_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "clearance.prepromotion-records",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/bundle_seal_record_digest_sha256",
+        "/collector_handoff_record_digest_sha256",
+        "/candidate_file_seal_record_digest_sha256",
+        "/clearance_decision_record_digest_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_contract_record_v1",
+      "resolver_code": "contract_record_by_digest_and_context_v1"
+    },
+    {
+      "binding_code": "clearance.prepromotion-scope",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/source_clearance_scope_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_clearance_scope_v1",
+      "resolver_code": "same_clearance_decision_scope_projection_v1"
+    },
+    {
+      "binding_code": "clearance.prepromotion-custody-leaf",
+      "schema_file": "clearance-record-v1.schema.json",
+      "json_pointer_patterns": [
+        "/custody_leaf_projection_sha256"
+      ],
+      "digest_role_code": "references",
+      "payload_profile_code": "canonical_custody_leaf_projection_v1",
+      "resolver_code": "custody_leaf_by_exact_bitemporal_projection_v1"
+    }
+  ]
+}
