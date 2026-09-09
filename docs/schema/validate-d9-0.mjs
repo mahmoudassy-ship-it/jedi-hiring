@@ -98,7 +98,9 @@ const pilotBundleShape = {
   candidate_occurrences_exact: 0,
   required_dependencies_for_document_exact: 1,
 }
-const frozenClassificationDigest = '6dff0288aa76baef2dcaeaed6ce5c810da25b1aa198f9664ee71622e0610ae4b'
+const frozenClassificationDigest = '8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef'
+const frozenLogicalHandleSemanticDigest = '68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e'
+const frozenOperationHandleScopeSemanticDigest = '9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e'
 const frozenDigestProfileSemanticDigest = '17f4bbed6d2a2080f58da9866bb7c3218a6f2f5ec9d48700e288bbcb1b9ecba7'
 const frozenDigestBindingSemanticDigest = '108143e8f7556d46bd34ecd2e88955edf668f11bbeb523ac224c556cac9c83fd'
 const frozenFieldRegistrySemanticDigest = '06a28a30e4de63d8ec4035b41e37c843b57d54280efde9da39961a5a7436ff74'
@@ -500,7 +502,8 @@ function fixtureMap(validFixtures) {
 
 function schemaErrorOverrides(value) {
   const version = value?.format_version ?? value?.result_version
-  if (version !== undefined && version !== '1.0.0') fail('schema', 'INCOMPATIBLE_CONTRACT_VERSION', 'contract version is not supported')
+  const supportedVersion = value?.format === 'jedi-atlas-runtime-profile' ? '1.0.1' : '1.0.0'
+  if (version !== undefined && version !== supportedVersion) fail('schema', 'INCOMPATIBLE_CONTRACT_VERSION', 'contract version is not supported')
   try { assertSemanticPaths(value) } catch (error) {
     if (error instanceof ContractError) fail('schema', 'INPUT_PATH_INVALID', error.message)
     throw error
@@ -554,7 +557,7 @@ function assertRuntimeProfile(value, catalogRawSha, classification) {
   if (value.contract_catalog_sha256 !== catalogRawSha) fail('semantic', 'RUNTIME_PROFILE_MISMATCH', 'runtime profile does not pin the contract catalog bytes')
   if (value.evidence_bundle_contract.schema_sha256 !== rawFileSha256(path.join(here, 'tranche-2a-evidence-bundle-v1.schema.json'))) fail('semantic', 'RUNTIME_PROFILE_MISMATCH', 'runtime profile pins the wrong evidence-bundle schema')
   if (canonical(value.limits) !== canonical(pilotLimits) || canonical(value.pilot_bundle_shape) !== canonical(pilotBundleShape)) fail('semantic', 'RUNTIME_PROFILE_MISMATCH', 'runtime profile limits or pilot shape differ from the frozen constants')
-  const expectedSlots = ['backup_adapter', 'candidate_database', 'canonical_query', 'clearance_register', 'custody_adapter', 'custody_capability_store', 'handoff_registry', 'operation_journal', 'permit_control_store', 'recovery_database', 'reviewed_root', 'staging_root']
+  const expectedSlots = ['backup_adapter', 'candidate_database', 'canonical_generation_directory', 'canonical_query', 'clearance_register', 'custody_adapter', 'custody_capability_store', 'handoff_registry', 'operation_journal', 'permit_control_store', 'recovery_database', 'reviewed_root', 'staging_root']
   assertExactOrder(value.logical_handle_slots.map((item) => item.slot_code), expectedSlots, 'semantic', 'RUNTIME_PROFILE_MISMATCH', 'logical handle slot')
   assertExactOrder(value.scanner_policy.required_scanners.map((item) => item.scanner_code), ['malware', 'personal_data', 'secrets'], 'semantic', 'RUNTIME_PROFILE_MISMATCH', 'required scanner')
   assertExactOrder(value.component_releases.map((item) => item.runtime_role_code), componentReleaseRoles, 'semantic', 'RUNTIME_PROFILE_MISMATCH', 'component release')
@@ -2370,7 +2373,7 @@ function assertClassificationRegistry(classification) {
   const exact = [
     'format', 'format_version', 'outcomes', 'canonical_effects', 'stages',
     'retryability_classes', 'recovery_classes', 'journal_event_kinds',
-    'operation_modes', 'runtime_role_binding_rules', 'logical_handle_slot_rules',
+    'operation_modes', 'runtime_role_binding_rules', 'logical_handle_slot_rules', 'operation_handle_scope_policy', 'operation_handle_scope_rules',
     'custody_capability_rules', 'custody_capability_policy', 'custody_clearance_revalidation_policy', 'pilot_custody_purpose_rules',
     'custody_capability_transition_rules',
     'permit_transition_rules', 'permit_claim_policy', 'bootstrap_permit_policy', 'permit_scope_execution_rules', 'recovery_permit_policy', 'bootstrap_distinct_human_roles', 'post_promotion_completion_permit_policy', 'post_promotion_source_error_rules', 'clearance_context_binding_policy', 'clearance_decision_rules',
@@ -2380,7 +2383,7 @@ function assertClassificationRegistry(classification) {
     'record_digest_sha256',
   ]
   if (canonical(Object.keys(classification).toSorted()) !== canonical(exact.toSorted())) fail('classification', 'REGISTRY_INVALID', 'classification registry has unknown or missing fields')
-  if (classification.format !== 'jedi-atlas-d90-classifications' || classification.format_version !== '1.0.0') fail('classification', 'REGISTRY_INVALID', 'classification registry identity is invalid')
+  if (classification.format !== 'jedi-atlas-d90-classifications' || classification.format_version !== '1.0.1') fail('classification', 'REGISTRY_INVALID', 'classification registry identity is invalid')
   for (const [key, values] of Object.entries({ outcomes: classification.outcomes, canonical_effects: classification.canonical_effects, stages: classification.stages, retryability_classes: classification.retryability_classes, recovery_classes: classification.recovery_classes, journal_event_kinds: classification.journal_event_kinds, operation_modes: classification.operation_modes })) {
     if (!Array.isArray(values) || values.length === 0 || values.some((value) => typeof value !== 'string' || !/^[a-z][a-z0-9_]*$/u.test(value))) fail('classification', 'REGISTRY_INVALID', `${key} is not a closed stable-code list`)
     unique(values, 'classification', 'REGISTRY_INVALID', key)
@@ -2396,19 +2399,163 @@ function assertClassificationRegistry(classification) {
   const expectedHandles = [
     { slot_code: 'backup_adapter', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'fixed_function_client' }] },
     { slot_code: 'candidate_database', recipients: [{ runtime_role_code: 'cloner_promoter', access_code: 'create_and_transfer' }, { runtime_role_code: 'database_writer', access_code: 'write_fixed_function' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }] },
+    { slot_code: 'canonical_generation_directory', recipients: [{ runtime_role_code: 'cloner_promoter', access_code: 'clone_fixed_source_and_atomic_target_generation' }] },
     { slot_code: 'canonical_query', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }, { runtime_role_code: 'custody_adapter', access_code: 'read_only' }] },
-    { slot_code: 'clearance_register', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'custody_adapter', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }, { runtime_role_code: 'trusted_launcher', access_code: 'read_only' }, { runtime_role_code: 'cloner_promoter', access_code: 'read_only' }, { runtime_role_code: 'clearance_broker', access_code: 'write_fixed_function' }] },
+    { slot_code: 'clearance_register', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'custody_adapter', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }, { runtime_role_code: 'trusted_launcher', access_code: 'read_only' }, { runtime_role_code: 'cloner_promoter', access_code: 'read_only' }, { runtime_role_code: 'clearance_broker', access_code: 'append_clearance_decision_only' }, { runtime_role_code: 'clearance_broker', access_code: 'append_prepromotion_authorization_only' }] },
     { slot_code: 'custody_adapter', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'fixed_function_client' }] },
     { slot_code: 'custody_capability_store', recipients: [{ runtime_role_code: 'custody_adapter', access_code: 'write_fixed_function' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }] },
-    { slot_code: 'handoff_registry', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'custody_adapter', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }] },
+    { slot_code: 'handoff_registry', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'custody_adapter', access_code: 'read_only' }, { runtime_role_code: 'handoff_broker', access_code: 'append_collector_handoff_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }, { runtime_role_code: 'trusted_launcher', access_code: 'append_bundle_seal_only' }] },
     { slot_code: 'operation_journal', recipients: [{ runtime_role_code: 'journal_broker', access_code: 'append_intended' }] },
     { slot_code: 'permit_control_store', recipients: [{ runtime_role_code: 'trusted_launcher', access_code: 'write_fixed_function' }, { runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }] },
     { slot_code: 'recovery_database', recipients: [{ runtime_role_code: 'database_writer', access_code: 'write_fixed_function' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }] },
-    { slot_code: 'reviewed_root', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }] },
+    { slot_code: 'reviewed_root', recipients: [{ runtime_role_code: 'bundle_importer', access_code: 'read_only' }, { runtime_role_code: 'independent_verifier', access_code: 'read_only' }, { runtime_role_code: 'trusted_launcher', access_code: 'read_only' }] },
     { slot_code: 'staging_root', recipients: [{ runtime_role_code: 'custody_adapter', access_code: 'read_only' }] },
   ]
   if (canonical(classification.logical_handle_slot_rules) !== canonical(expectedHandles)) fail('classification', 'REGISTRY_INVALID', 'logical handle recipient matrix differs from the frozen least-privilege matrix')
-  for (const slot of classification.logical_handle_slot_rules) unique(slot.recipients.map((item) => item.runtime_role_code), 'classification', 'REGISTRY_INVALID', `${slot.slot_code} recipient role`)
+  if (sha256(Buffer.from(canonical(classification.logical_handle_slot_rules), 'utf8')) !== frozenLogicalHandleSemanticDigest) fail('classification', 'REGISTRY_INVALID', 'logical handle recipient matrix semantic fingerprint differs')
+  for (const slot of classification.logical_handle_slot_rules) unique(slot.recipients.map((item) => `${item.runtime_role_code}|${item.access_code}`), 'classification', 'REGISTRY_INVALID', `${slot.slot_code} recipient/access grant`)
+  const handleKey = (item) => `${item.slot_code}|${item.runtime_role_code}|${item.access_code}`
+  const globalHandleGrants = expectedHandles.flatMap((slot) => slot.recipients.map((recipient) => ({ slot_code: slot.slot_code, ...recipient }))).toSorted((left, right) => handleKey(left) < handleKey(right) ? -1 : handleKey(left) > handleKey(right) ? 1 : 0)
+  const expectedScopeDefinitions = [
+    { operation_scope_code: 'accepted_bootstrap_no_op', operation_mode_code: 'no_op_verification', bundle_kind_code: 'principal_bootstrap', source_authorization_code: 'accepted_receipt', permit_kind_code: null, permit_scope_code: null, required: [
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'reviewed_root|bundle_importer|read_only',
+      'reviewed_root|independent_verifier|read_only',
+    ] },
+    { operation_scope_code: 'accepted_document_no_op', operation_mode_code: 'no_op_verification', bundle_kind_code: 'single_document', source_authorization_code: 'accepted_receipt', permit_kind_code: null, permit_scope_code: null, required: [
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|custody_adapter|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'clearance_register|bundle_importer|read_only',
+      'clearance_register|custody_adapter|read_only',
+      'clearance_register|independent_verifier|read_only',
+      'custody_adapter|bundle_importer|fixed_function_client',
+      'custody_capability_store|custody_adapter|write_fixed_function',
+      'custody_capability_store|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'reviewed_root|bundle_importer|read_only',
+      'reviewed_root|independent_verifier|read_only',
+    ] },
+    { operation_scope_code: 'bootstrap_first_acceptance', operation_mode_code: 'bootstrap', bundle_kind_code: 'principal_bootstrap', source_authorization_code: 'bootstrap_permit_and_zero_handoff_bundle_seal', permit_kind_code: 'bootstrap', permit_scope_code: 'canonical_first_acceptance_only', required: [
+      'backup_adapter|bundle_importer|fixed_function_client',
+      'candidate_database|cloner_promoter|create_and_transfer',
+      'candidate_database|database_writer|write_fixed_function',
+      'candidate_database|independent_verifier|read_only',
+      'canonical_generation_directory|cloner_promoter|clone_fixed_source_and_atomic_target_generation',
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'handoff_registry|bundle_importer|read_only',
+      'handoff_registry|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'permit_control_store|bundle_importer|read_only',
+      'permit_control_store|independent_verifier|read_only',
+      'permit_control_store|trusted_launcher|write_fixed_function',
+      'reviewed_root|bundle_importer|read_only',
+      'reviewed_root|independent_verifier|read_only',
+    ] },
+    { operation_scope_code: 'exact_bootstrap_reconstruction', operation_mode_code: 'recovery', bundle_kind_code: 'principal_bootstrap', source_authorization_code: 'recovery_permit_and_replay_certificate', permit_kind_code: 'recovery', permit_scope_code: 'exact_bootstrap_reconstruction_only', required: [
+      'backup_adapter|bundle_importer|fixed_function_client',
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'permit_control_store|bundle_importer|read_only',
+      'permit_control_store|independent_verifier|read_only',
+      'permit_control_store|trusted_launcher|write_fixed_function',
+      'recovery_database|database_writer|write_fixed_function',
+      'recovery_database|independent_verifier|read_only',
+      'reviewed_root|bundle_importer|read_only',
+      'reviewed_root|independent_verifier|read_only',
+    ] },
+    { operation_scope_code: 'ordinary_document_import', operation_mode_code: 'document_import', bundle_kind_code: 'single_document', source_authorization_code: 'single_document_bundle_seal', permit_kind_code: null, permit_scope_code: null, required: [
+      'backup_adapter|bundle_importer|fixed_function_client',
+      'candidate_database|cloner_promoter|create_and_transfer',
+      'candidate_database|database_writer|write_fixed_function',
+      'candidate_database|independent_verifier|read_only',
+      'canonical_generation_directory|cloner_promoter|clone_fixed_source_and_atomic_target_generation',
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|custody_adapter|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'clearance_register|bundle_importer|read_only',
+      'clearance_register|clearance_broker|append_prepromotion_authorization_only',
+      'clearance_register|cloner_promoter|read_only',
+      'clearance_register|custody_adapter|read_only',
+      'clearance_register|independent_verifier|read_only',
+      'clearance_register|trusted_launcher|read_only',
+      'custody_adapter|bundle_importer|fixed_function_client',
+      'custody_capability_store|custody_adapter|write_fixed_function',
+      'custody_capability_store|independent_verifier|read_only',
+      'handoff_registry|bundle_importer|read_only',
+      'handoff_registry|custody_adapter|read_only',
+      'handoff_registry|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'reviewed_root|bundle_importer|read_only',
+      'reviewed_root|independent_verifier|read_only',
+      'staging_root|custody_adapter|read_only',
+    ] },
+    { operation_scope_code: 'post_promotion_completion_bootstrap', operation_mode_code: 'recovery', bundle_kind_code: 'principal_bootstrap', source_authorization_code: 'post_promotion_completion_permit_and_bootstrap_transition', permit_kind_code: 'post_promotion_completion', permit_scope_code: 'noncanonical_completion_only', required: [
+      'backup_adapter|bundle_importer|fixed_function_client',
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'permit_control_store|bundle_importer|read_only',
+      'permit_control_store|independent_verifier|read_only',
+      'permit_control_store|trusted_launcher|write_fixed_function',
+    ] },
+    { operation_scope_code: 'post_promotion_completion_document', operation_mode_code: 'recovery', bundle_kind_code: 'single_document', source_authorization_code: 'post_promotion_completion_permit_and_document_bundle_seal', permit_kind_code: 'post_promotion_completion', permit_scope_code: 'noncanonical_completion_only', required: [
+      'backup_adapter|bundle_importer|fixed_function_client',
+      'canonical_query|bundle_importer|read_only',
+      'canonical_query|independent_verifier|read_only',
+      'handoff_registry|bundle_importer|read_only',
+      'handoff_registry|independent_verifier|read_only',
+      'operation_journal|journal_broker|append_intended',
+      'permit_control_store|bundle_importer|read_only',
+      'permit_control_store|independent_verifier|read_only',
+      'permit_control_store|trusted_launcher|write_fixed_function',
+    ] },
+  ]
+  const grantByKey = new Map(globalHandleGrants.map((item) => [handleKey(item), item]))
+  const expectedOperationRules = expectedScopeDefinitions.map(({ required, ...definition }) => {
+    const requiredSet = new Set(required)
+    if (requiredSet.size !== required.length || required.some((key) => !grantByKey.has(key))) fail('classification', 'REGISTRY_INVALID', `validator has an invalid expected handle set for ${definition.operation_scope_code}`)
+    return {
+      ...definition,
+      required_handle_grants: required.map((key) => structuredClone(grantByKey.get(key))),
+      forbidden_handle_grants: globalHandleGrants.filter((item) => !requiredSet.has(handleKey(item))),
+    }
+  })
+  unique(expectedOperationRules.map((rule) => rule.operation_scope_code), 'classification', 'REGISTRY_INVALID', 'operation handle scope code')
+  unique(expectedOperationRules.map((rule) => canonical(operationHandleSelector(rule))), 'classification', 'REGISTRY_INVALID', 'operation handle verified selector')
+  const expectedHandlePolicy = {
+    grant_universe_code: 'runtime_profile_logical_handle_recipient_triples',
+    operation_grant_policy_code: 'exact_required_set_only',
+    forbidden_set_policy_code: 'exact_global_complement',
+    selector_input_policy_code: 'derive_from_verified_operation_context_only',
+    selector_fields: ['operation_mode_code', 'bundle_kind_code', 'source_authorization_code', 'permit_kind_code', 'permit_scope_code'],
+    selector_cardinality_code: 'exactly_one_match',
+    caller_scope_code_policy_code: 'forbidden',
+    unmatched_scope_policy_code: 'reject_before_handle_issue',
+    service_owned_handle_policy_code: 'must_appear_in_global_matrix',
+    scope_exit_policy_code: 'close_or_broker_revoke_then_terminate_if_unconfirmed',
+  }
+  if (canonical(classification.operation_handle_scope_policy) !== canonical(expectedHandlePolicy)) fail('classification', 'REGISTRY_INVALID', 'operation handle policy differs from the frozen fail-closed policy')
+  if (canonical(classification.operation_handle_scope_rules) !== canonical(expectedOperationRules)) fail('classification', 'REGISTRY_INVALID', 'operation handle required/forbidden matrix differs from the frozen least-privilege partition')
+  if (sha256(Buffer.from(canonical(classification.operation_handle_scope_rules), 'utf8')) !== frozenOperationHandleScopeSemanticDigest) fail('classification', 'REGISTRY_INVALID', 'operation handle scope semantic fingerprint differs')
+  const operationScopeKeys = ['operation_scope_code', 'operation_mode_code', 'bundle_kind_code', 'source_authorization_code', 'permit_kind_code', 'permit_scope_code', 'required_handle_grants', 'forbidden_handle_grants']
+  for (const rule of classification.operation_handle_scope_rules) {
+    assertExactKeys(rule, operationScopeKeys, 'classification', 'REGISTRY_INVALID', 'operation handle scope')
+    const requiredKeys = rule.required_handle_grants.map(handleKey)
+    const forbiddenKeys = rule.forbidden_handle_grants.map(handleKey)
+    assertExactOrder(requiredKeys, requiredKeys.toSorted(), 'classification', 'REGISTRY_INVALID', `${rule.operation_scope_code} required handle grant`)
+    assertExactOrder(forbiddenKeys, forbiddenKeys.toSorted(), 'classification', 'REGISTRY_INVALID', `${rule.operation_scope_code} forbidden handle grant`)
+    unique([...requiredKeys, ...forbiddenKeys], 'classification', 'REGISTRY_INVALID', `${rule.operation_scope_code} handle partition`)
+    if (canonical([...requiredKeys, ...forbiddenKeys].toSorted()) !== canonical([...grantByKey.keys()].toSorted())) fail('classification', 'REGISTRY_INVALID', `${rule.operation_scope_code} does not partition the global handle universe`)
+    for (const item of rule.required_handle_grants) {
+      const binding = classification.runtime_role_binding_rules.find((candidate) => candidate.runtime_role_code === item.runtime_role_code)
+      if (!binding?.allowed_operation_modes.includes(rule.operation_mode_code)) fail('classification', 'REGISTRY_INVALID', `${rule.operation_scope_code} grants a handle to a role outside its operation mode`)
+    }
+  }
   const expectedCapabilityKinds = ['source_handle', 'preparation', 'sealed_custody_access']
   assertExactOrder(classification.custody_capability_rules.map((rule) => rule.capability_kind_code), expectedCapabilityKinds, 'classification', 'REGISTRY_INVALID', 'custody capability rule')
   for (const rule of classification.custody_capability_rules) {
@@ -2460,6 +2607,8 @@ function assertClassificationRegistry(classification) {
     if (!['bootstrap', 'recovery', 'post_promotion_completion'].includes(rule.permit_kind_code) || !['canonical_first_acceptance_only', 'exact_bootstrap_reconstruction_only', 'noncanonical_completion_only'].includes(rule.scope_code) || !['one_atomic_promotion', 'denied'].includes(rule.canonical_write_code) || rule.allowed_canonical_effect_codes.some((code) => !classification.canonical_effects.includes(code)) || rule.allowed_journal_event_kind_codes.some((code) => !classification.journal_event_kinds.includes(code)) || rule.allowed_stage_codes.some((code) => !classification.stages.includes(code)) || rule.allowed_origin_runtime_role_codes.some((code) => !classification.runtime_role_binding_rules.some((binding) => binding.runtime_role_code === code && binding.principal_kind_code === 'service')) || rule.allowed_handle_slot_codes.some((code) => !classification.logical_handle_slot_rules.some((slot) => slot.slot_code === code))) fail('classification', 'REGISTRY_INVALID', 'permit execution scope contains an unknown or unsafe value')
     for (const key of ['allowed_canonical_effect_codes', 'allowed_journal_event_kind_codes', 'allowed_stage_codes', 'allowed_origin_runtime_role_codes', 'allowed_handle_slot_codes']) unique(rule[key], 'classification', 'REGISTRY_INVALID', `${rule.scope_code}/${key}`)
     if (rule.canonical_write_code === 'denied' && rule.allowed_canonical_effect_codes.includes('promoted_verified')) fail('classification', 'REGISTRY_INVALID', 'noncanonical permit scope claims canonical promotion')
+    const expectedSlots = [...new Set(expectedOperationRules.filter((operation) => operation.permit_kind_code === rule.permit_kind_code && operation.permit_scope_code === rule.scope_code).flatMap((operation) => operation.required_handle_grants.map((item) => item.slot_code)))].toSorted()
+    if (canonical(rule.allowed_handle_slot_codes) !== canonical(expectedSlots)) fail('classification', 'REGISTRY_INVALID', `${rule.scope_code} does not equal the slot union of its exact operation grants`)
   }
   const expectedRecoveredAuthorization = [
     { bundle_kind_code: 'principal_bootstrap', permit_kind_code: 'recovery', terminal_transition_code: 'verified_effect', count_policy_code: 'known' },
@@ -2695,7 +2844,7 @@ function assertClassificationRegistry(classification) {
   ].toSorted()
   if (canonical(expandedResultKeys.toSorted()) !== canonical(expectedResultKeys)) fail('classification', 'REGISTRY_INVALID', 'result rules do not define the exact frozen outcome/mode/bundle matrix')
   assertDigest(classification)
-  if (classification.record_digest_sha256 !== frozenClassificationDigest) fail('classification', 'REGISTRY_INVALID', 'classification semantics differ from the frozen v1 digest')
+  if (classification.record_digest_sha256 !== frozenClassificationDigest) fail('classification', 'REGISTRY_INVALID', 'classification semantics differ from the proposed D9.0.1 digest')
 }
 
 function assertExactKeys(value, expected, layer, code, label) {
@@ -2710,8 +2859,16 @@ function assertCatalogSchemaBytes(catalog, schemaFile, bytes) {
 }
 
 function assertCatalog(catalog, schemaEntries, classification, fieldRegistry, digestProfiles) {
-  assertExactKeys(catalog, ['format', 'format_version', 'hash_profile', 'catalog_self_digest', 'instance_policy', 'schemas', 'classifications', 'field_registry', 'digest_profiles'], 'catalog', 'CATALOG_INVALID', 'contract catalog')
-  if (catalog.format !== 'jedi-atlas-d90-contract-catalog' || catalog.format_version !== '1.0.0' || catalog.hash_profile !== 'sha256-over-exact-file-bytes' || catalog.catalog_self_digest !== 'not_present_to_avoid_self_reference') fail('catalog', 'CATALOG_INVALID', 'contract catalog identity is invalid')
+  assertExactKeys(catalog, ['format', 'format_version', 'correction_lineage', 'hash_profile', 'catalog_self_digest', 'instance_policy', 'schemas', 'classifications', 'field_registry', 'digest_profiles'], 'catalog', 'CATALOG_INVALID', 'contract catalog')
+  if (catalog.format !== 'jedi-atlas-d90-contract-catalog' || catalog.format_version !== '1.0.1' || catalog.hash_profile !== 'sha256-over-exact-file-bytes' || catalog.catalog_self_digest !== 'not_present_to_avoid_self_reference') fail('catalog', 'CATALOG_INVALID', 'contract catalog identity is invalid')
+  const correctionLineage = {
+    revision_code: 'd9_0_1_permit_handle_scope',
+    supersedes_approved_commit: '320b2d6969ede88796c44e652f6422f73e7fe4fe',
+    supersedes_contract_catalog_sha256: 'd9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2',
+    supersedes_contract_root_fingerprint_sha256: '9779d0e024714cd3885fe4e412781a95e0a9396020373f4a3a376b9405e331cf',
+    supersedes_classification_record_digest_sha256: '6dff0288aa76baef2dcaeaed6ce5c810da25b1aa198f9664ee71622e0610ae4b',
+  }
+  if (canonical(catalog.correction_lineage) !== canonical(correctionLineage)) fail('catalog', 'CATALOG_INVALID', 'catalog correction lineage does not pin the approved D9.0 predecessor')
   assertExactKeys(catalog.instance_policy, ['repository_contents', 'real_contract_instances', 'credentials_permitted', 'operational_authorization_created'], 'catalog', 'CATALOG_INVALID', 'catalog instance policy')
   if (catalog.instance_policy.repository_contents !== 'schemas_and_synthetic_fixtures_only' || catalog.instance_policy.real_contract_instances !== 'protected_operational_storage_outside_git_and_atlas_sqlite' || catalog.instance_policy.credentials_permitted !== false || catalog.instance_policy.operational_authorization_created !== false) fail('catalog', 'CATALOG_INVALID', 'catalog claims unsupported contents, storage, credentials, or operational authorization')
   unique(catalog.schemas.map((entry) => entry.schema_file), 'catalog', 'CATALOG_INVALID', 'catalog schema file')
@@ -2723,7 +2880,8 @@ function assertCatalog(catalog, schemaEntries, classification, fieldRegistry, di
       ? ['schema_role', 'schema_file', 'schema_id', 'raw_sha256']
       : ['schema_role', 'schema_file', 'schema_id', 'contract_format', 'contract_version', 'raw_sha256']
     assertExactKeys(entry, keys, 'catalog', 'CATALOG_INVALID', 'schema catalog entry')
-    if (!['shared_definitions', 'top_level_contract', 'protected_operational_helper'].includes(entry.schema_role) || (entry.schema_role !== 'shared_definitions' && entry.contract_version !== '1.0.0')) fail('catalog', 'CATALOG_INVALID', 'invalid schema role or contract version')
+    const expectedVersion = entry.schema_file === 'runtime-profile-v1.schema.json' ? '1.0.1' : '1.0.0'
+    if (!['shared_definitions', 'top_level_contract', 'protected_operational_helper'].includes(entry.schema_role) || (entry.schema_role !== 'shared_definitions' && entry.contract_version !== expectedVersion)) fail('catalog', 'CATALOG_INVALID', 'invalid schema role or contract version')
     const pair = schemaEntries.find(([file]) => file === entry.schema_file)
     if (!pair || entry.schema_id !== pair[1].$id) fail('catalog', 'CATALOG_INVALID', `schema identity drifted for ${entry.schema_file}`)
     assertCatalogSchemaBytes(catalog, entry.schema_file, fs.readFileSync(path.join(contractRoot, entry.schema_file)))
@@ -2735,7 +2893,8 @@ function assertCatalog(catalog, schemaEntries, classification, fieldRegistry, di
   ]) {
     const entry = catalog[key]
     assertExactKeys(entry, ['file', 'format', 'format_version', 'raw_sha256'], 'catalog', 'CATALOG_INVALID', key)
-    if (entry.file !== expectedFile || entry.format !== expectedValue.format || entry.format_version !== '1.0.0' || entry.raw_sha256 !== rawFileSha256(path.join(contractRoot, expectedFile))) fail('catalog', 'CATALOG_INVALID', `${key} does not pin exact bytes and identity`)
+    const expectedVersion = key === 'classifications' ? '1.0.1' : '1.0.0'
+    if (entry.file !== expectedFile || entry.format !== expectedValue.format || entry.format_version !== expectedVersion || entry.raw_sha256 !== rawFileSha256(path.join(contractRoot, expectedFile))) fail('catalog', 'CATALOG_INVALID', `${key} does not pin exact bytes and identity`)
   }
 }
 
@@ -3105,7 +3264,7 @@ function assertFixtureEnvelope(value, kind) {
   const expectedFormat = kind === 'valid' ? 'jedi-atlas-d90-valid-fixtures' : 'jedi-atlas-d90-invalid-fixtures'
   const collection = kind === 'valid' ? 'fixtures' : 'cases'
   assertExactKeys(value, ['fixture_format', 'fixture_version', collection], 'fixture', 'FIXTURE_INVALID', `${kind} fixture envelope`)
-  if (value.fixture_format !== expectedFormat || value.fixture_version !== '1.0.0' || !Array.isArray(value[collection])) fail('fixture', 'FIXTURE_INVALID', `${kind} fixture identity is invalid`)
+  if (value.fixture_format !== expectedFormat || value.fixture_version !== '1.0.1' || !Array.isArray(value[collection])) fail('fixture', 'FIXTURE_INVALID', `${kind} fixture identity is invalid`)
 }
 
 const frozenPayloadVectorProfileAssignments = [
@@ -3148,10 +3307,15 @@ function assertPayloadVectorProfileAssignments(golden) {
   if (canonical(actual) !== canonical(frozenPayloadVectorProfileAssignments)) fail('golden', 'GOLDEN_INVALID', 'payload-vector labels or profile assignments differ from the independently frozen mapping')
 }
 
-function assertGoldenVectors(golden, fixtures, digestProfiles) {
-  assertExactKeys(golden, ['fixture_format', 'fixture_version', 'micro_vectors', 'complete_manifest_vector', 'complete_document_manifest_vector', 'payload_vectors', 'contract_vectors', 'raw_file_hashes'], 'golden', 'GOLDEN_INVALID', 'golden-vector envelope')
-  if (golden.fixture_format !== 'jedi-atlas-d90-golden-vectors' || golden.fixture_version !== '1.0.0') fail('golden', 'GOLDEN_INVALID', 'golden-vector identity is invalid')
+function assertGoldenVectors(golden, fixtures, digestProfiles, classification) {
+  assertExactKeys(golden, ['fixture_format', 'fixture_version', 'micro_vectors', 'complete_manifest_vector', 'complete_document_manifest_vector', 'payload_vectors', 'contract_vectors', 'handle_scope_vectors', 'raw_file_hashes'], 'golden', 'GOLDEN_INVALID', 'golden-vector envelope')
+  if (golden.fixture_format !== 'jedi-atlas-d90-golden-vectors' || golden.fixture_version !== '1.0.1') fail('golden', 'GOLDEN_INVALID', 'golden-vector identity is invalid')
   unique(golden.micro_vectors.map((item) => item.vector_code), 'golden', 'GOLDEN_INVALID', 'micro vector')
+  const expectedHandleScopeVectors = [
+    { vector_code: 'global-logical-handle-recipient-matrix-v1.0.1', canonical_utf8_sha256: frozenLogicalHandleSemanticDigest },
+    { vector_code: 'operation-handle-required-forbidden-partitions-v1.0.1', canonical_utf8_sha256: frozenOperationHandleScopeSemanticDigest },
+  ]
+  if (canonical(golden.handle_scope_vectors) !== canonical(expectedHandleScopeVectors) || golden.handle_scope_vectors[0].canonical_utf8_sha256 !== sha256(Buffer.from(canonical(classification.logical_handle_slot_rules), 'utf8')) || golden.handle_scope_vectors[1].canonical_utf8_sha256 !== sha256(Buffer.from(canonical(classification.operation_handle_scope_rules), 'utf8'))) fail('golden', 'GOLDEN_INVALID', 'handle-scope golden semantic fingerprints differ')
   const expectedMicroVectors = ['utf16-key-order-astral-before-bmp-private-use', 'unicode-is-not-normalized', 'arrays-and-nulls-preserve-order', 'exclude-only-top-level-self-digest', 'insignificant-whitespace-and-crlf', 'configuration-object-hash', 'object-key-order']
   assertExactOrder(golden.micro_vectors.map((item) => item.vector_code), expectedMicroVectors, 'golden', 'GOLDEN_INVALID', 'micro vector')
   for (const vector of golden.micro_vectors) {
@@ -3544,6 +3708,100 @@ function assertDeterministicOrderMutations(baseFixtures, registry, classificatio
   return cases.map(([label]) => label)
 }
 
+const operationHandleSelectorKeys = ['operation_mode_code', 'bundle_kind_code', 'source_authorization_code', 'permit_kind_code', 'permit_scope_code']
+
+function operationHandleSelector(rule) {
+  return Object.fromEntries(operationHandleSelectorKeys.map((key) => [key, rule[key]]))
+}
+
+function deriveOperationHandleScope(classification, verifiedSelector) {
+  assertExactKeys(verifiedSelector, operationHandleSelectorKeys, 'handles', 'HANDLE_SCOPE_INVALID', 'verified operation-handle selector')
+  const rules = classification.operation_handle_scope_rules.filter((rule) => operationHandleSelectorKeys.every((key) => rule[key] === verifiedSelector[key]))
+  if (rules.length !== 1) fail('handles', 'HANDLE_SCOPE_INVALID', 'verified operation facts do not select exactly one operation-handle scope')
+  return rules[0]
+}
+
+function assertExactOperationHandleIssuance(classification, verifiedSelector, issuedGrants) {
+  const rule = deriveOperationHandleScope(classification, verifiedSelector)
+  const handleKey = (item) => `${item.slot_code}|${item.runtime_role_code}|${item.access_code}`
+  const globalKeys = new Set(classification.logical_handle_slot_rules.flatMap((slot) => slot.recipients.map((recipient) => handleKey({ slot_code: slot.slot_code, ...recipient }))))
+  const keys = issuedGrants.map((item) => {
+    assertExactKeys(item, ['slot_code', 'runtime_role_code', 'access_code'], 'handles', 'HANDLE_SCOPE_INVALID', 'issued logical handle')
+    return handleKey(item)
+  })
+  unique(keys, 'handles', 'HANDLE_SCOPE_INVALID', 'issued logical handle')
+  if (keys.some((key) => !globalKeys.has(key))) fail('handles', 'HANDLE_SCOPE_INVALID', 'issued handle is outside the global role/slot/access ceiling')
+  const required = rule.required_handle_grants.map(handleKey)
+  const forbidden = new Set(rule.forbidden_handle_grants.map(handleKey))
+  if (keys.some((key) => forbidden.has(key)) || canonical(keys) !== canonical(required)) fail('handles', 'HANDLE_SCOPE_INVALID', `issued handle set is not exact for ${rule.operation_scope_code}`)
+}
+
+function assertOperationHandleMutationMatrix(classification) {
+  let baselineSets = 0
+  let missingRequiredRejected = 0
+  let unauthorizedAdditionalRejected = 0
+  let slotSubstitutionsRejected = 0
+  let wrongRecipientsRejected = 0
+  let wrongAccessRejected = 0
+  let alternateGlobalGrantSubstitutionsRejected = 0
+  let crossScopeSubstitutionsRejected = 0
+  let selectorFieldSubstitutionsRejected = 0
+  let callerSelectedScopeCodesRejected = 0
+  for (const [scopeIndex, rule] of classification.operation_handle_scope_rules.entries()) {
+    const exact = structuredClone(rule.required_handle_grants)
+    const selector = operationHandleSelector(rule)
+    assertExactOperationHandleIssuance(classification, selector, exact)
+    baselineSets += 1
+    for (let index = 0; index < exact.length; index += 1) {
+      const missing = exact.filter((_, itemIndex) => itemIndex !== index)
+      assert.throws(() => assertExactOperationHandleIssuance(classification, selector, missing), /HANDLE_SCOPE_INVALID/)
+      missingRequiredRejected += 1
+
+      const changedSlot = structuredClone(exact)
+      changedSlot[index].slot_code = classification.logical_handle_slot_rules.find((slot) => slot.slot_code !== changedSlot[index].slot_code).slot_code
+      assert.throws(() => assertExactOperationHandleIssuance(classification, selector, changedSlot), /HANDLE_SCOPE_INVALID/)
+      slotSubstitutionsRejected += 1
+
+      const wrongRecipient = structuredClone(exact)
+      wrongRecipient[index].runtime_role_code = wrongRecipient[index].runtime_role_code === 'trusted_launcher' ? 'bundle_importer' : 'trusted_launcher'
+      assert.throws(() => assertExactOperationHandleIssuance(classification, selector, wrongRecipient), /HANDLE_SCOPE_INVALID/)
+      wrongRecipientsRejected += 1
+
+      const wrongAccess = structuredClone(exact)
+      wrongAccess[index].access_code = wrongAccess[index].access_code === 'read_only' ? 'write_fixed_function' : 'read_only'
+      assert.throws(() => assertExactOperationHandleIssuance(classification, selector, wrongAccess), /HANDLE_SCOPE_INVALID/)
+      wrongAccessRejected += 1
+
+      const alternates = classification.logical_handle_slot_rules
+        .flatMap((slot) => slot.recipients.map((recipient) => ({ slot_code: slot.slot_code, ...recipient })))
+        .filter((candidate) => candidate.slot_code === exact[index].slot_code && `${candidate.runtime_role_code}|${candidate.access_code}` !== `${exact[index].runtime_role_code}|${exact[index].access_code}`)
+      for (const alternate of alternates) {
+        const substituted = structuredClone(exact)
+        substituted[index] = structuredClone(alternate)
+        assert.throws(() => assertExactOperationHandleIssuance(classification, selector, substituted), /HANDLE_SCOPE_INVALID/)
+        alternateGlobalGrantSubstitutionsRejected += 1
+      }
+    }
+    for (const forbidden of rule.forbidden_handle_grants) {
+      assert.throws(() => assertExactOperationHandleIssuance(classification, selector, [...structuredClone(exact), structuredClone(forbidden)]), /HANDLE_SCOPE_INVALID/)
+      unauthorizedAdditionalRejected += 1
+    }
+    const other = classification.operation_handle_scope_rules[(scopeIndex + 1) % classification.operation_handle_scope_rules.length]
+    assert.throws(() => assertExactOperationHandleIssuance(classification, selector, structuredClone(other.required_handle_grants)), /HANDLE_SCOPE_INVALID/)
+    crossScopeSubstitutionsRejected += 1
+    for (const key of operationHandleSelectorKeys) {
+      const changed = structuredClone(selector)
+      const candidateValues = classification.operation_handle_scope_rules.map((item) => item[key]).filter((value) => value !== changed[key])
+      changed[key] = candidateValues[0] ?? (changed[key] === null ? 'synthetic.invalid' : null)
+      assert.throws(() => assertExactOperationHandleIssuance(classification, changed, exact), /HANDLE_SCOPE_INVALID/)
+      selectorFieldSubstitutionsRejected += 1
+    }
+    assert.throws(() => assertExactOperationHandleIssuance(classification, { ...selector, operation_scope_code: other.operation_scope_code }, exact), /HANDLE_SCOPE_INVALID/)
+    callerSelectedScopeCodesRejected += 1
+  }
+  return { baselineSets, missingRequiredRejected, unauthorizedAdditionalRejected, slotSubstitutionsRejected, wrongRecipientsRejected, wrongAccessRejected, alternateGlobalGrantSubstitutionsRejected, crossScopeSubstitutionsRejected, selectorFieldSubstitutionsRejected, callerSelectedScopeCodesRejected }
+}
+
 function assertRegistryMutationMatrix({ classification, fieldRegistry, digestProfiles, registry, fieldSchemaNames, digestSchemaNames }) {
   const cases = []
   const mutatedProducer = structuredClone(fieldRegistry)
@@ -3645,6 +3903,17 @@ function assertRegistryMutationMatrix({ classification, fieldRegistry, digestPro
   for (const [label, mutate] of [
     ['changed-role-endpoint-mode-matrix', (value) => { value.runtime_role_binding_rules.find((rule) => rule.runtime_role_code === 'journal_broker').ipc_endpoint_code = 'ipc.importer' }],
     ['changed-logical-handle-recipient-matrix', (value) => { value.logical_handle_slot_rules.find((rule) => rule.slot_code === 'operation_journal').recipients[0].runtime_role_code = 'bundle_importer' }],
+    ['missing-required-operation-handle', (value) => { value.operation_handle_scope_rules.find((rule) => rule.operation_scope_code === 'bootstrap_first_acceptance').required_handle_grants.pop() }],
+    ['added-forbidden-operation-handle', (value) => { const rule = value.operation_handle_scope_rules.find((item) => item.operation_scope_code === 'accepted_bootstrap_no_op'); rule.required_handle_grants.push(rule.forbidden_handle_grants.shift()) }],
+    ['substituted-operation-handle-slot', (value) => { value.operation_handle_scope_rules.find((rule) => rule.operation_scope_code === 'exact_bootstrap_reconstruction').required_handle_grants[0].slot_code = 'candidate_database' }],
+    ['wrong-operation-handle-recipient', (value) => { value.operation_handle_scope_rules.find((rule) => rule.operation_scope_code === 'ordinary_document_import').required_handle_grants[0].runtime_role_code = 'trusted_launcher' }],
+    ['changed-operation-scope-selector-policy', (value) => { value.operation_handle_scope_policy.selector_input_policy_code = 'caller_selected' }],
+    ['duplicate-operation-scope-selector', (value) => {
+      const source = value.operation_handle_scope_rules[0]
+      const target = value.operation_handle_scope_rules.at(-1)
+      for (const key of operationHandleSelectorKeys) target[key] = source[key]
+    }],
+    ['changed-permit-handle-slot-union', (value) => { value.permit_scope_execution_rules.find((rule) => rule.permit_kind_code === 'bootstrap').allowed_handle_slot_codes.pop() }],
     ['changed-custody-capability-lifetime', (value) => { value.custody_capability_rules.find((rule) => rule.capability_kind_code === 'source_handle').lifetime_ms_max += 1 }],
     ['changed-custody-capability-transition', (value) => { value.custody_capability_transition_rules.find((rule) => rule.capability_kind_code === 'source_handle').consumer_operation_code = 'open_custody' }],
     ['changed-pilot-custody-purpose', (value) => { value.pilot_custody_purpose_rules[0].allowed_purpose_codes.push('processing') }],
@@ -4649,6 +4918,9 @@ function assertSchemaMutationMatrix(schemaEntries, registry, fixtures, catalog, 
   }
   expectCanonicalRejectMutantAccept('version-substitution', (value) => { value.format_version = '1.1.0'; return value }, (schema) => {
     schema.properties.format_version.const = '1.1.0'
+  })
+  expectCanonicalRejectMutantAccept('stale-version-downgrade', (value) => { value.format_version = '1.0.0'; return value }, (schema) => {
+    schema.properties.format_version.const = '1.0.0'
   })
   const unsupported = schemaEntries.map(([name, schema]) => [name, structuredClone(schema)])
   unsupported.find(([name]) => name === 'runtime-profile-v1.schema.json')[1].unevaluatedProperties = false
@@ -5851,7 +6123,7 @@ assertResourceLimits(runtime, {
   manifestFiles: contractRootInventory.manifestFiles,
   artifactFiles: contractRootInventory.artifactFiles,
 }, fixtures)
-const goldenCoverage = assertGoldenVectors(goldenVectors, fixtures, digestProfiles)
+const goldenCoverage = assertGoldenVectors(goldenVectors, fixtures, digestProfiles, classification)
 const sensitivity = assertDigestSensitivity(fixtures)
 const invalidCases = assertInvalidFixtures(invalidFixtureEnvelope, fixtures, schemaRegistry, classification, rawFileSha256(catalogPath))
 const trustBoundaryMutations = assertTrustBoundaryMutations(fixtures, schemaRegistry, classification, rawFileSha256(catalogPath))
@@ -5865,6 +6137,7 @@ const registryMutations = assertRegistryMutationMatrix({
   fieldSchemaNames: schemaNames,
   digestSchemaNames: [...instanceSchemaFiles, ...protectedHelperSchemaFiles],
 })
+const operationHandleMutations = assertOperationHandleMutationMatrix(classification)
 const stateMatrices = assertGeneratedStateMatrices(fixtures, schemaRegistry, classification)
 const schemaMutations = assertSchemaMutationMatrix(schemaEntries, schemaRegistry, fixtures, catalog, classification, fieldRegistry, digestProfiles)
 assertRawLexicalAndCanonicalMutations()
@@ -5889,6 +6162,7 @@ console.log(JSON.stringify({
     complete_manifest_vectors: 2,
     nested_payload_vectors: goldenVectors.payload_vectors.length,
     contract_vectors: goldenVectors.contract_vectors.length,
+    handle_scope_vectors: goldenVectors.handle_scope_vectors.length,
     raw_file_hashes: goldenVectors.raw_file_hashes.length,
   },
   valid_contract_fixtures: fixtures.size,
@@ -5897,6 +6171,7 @@ console.log(JSON.stringify({
   clearance_context_mutations: clearanceContextMutations,
   deterministic_order_mutations_rejected: deterministicOrderMutations,
   registry_mutations_rejected: registryMutations,
+  operation_handle_scope_mutations: operationHandleMutations,
   exhaustive_state_matrices: stateMatrices,
   schema_mutations_rejected: schemaMutations,
   canonical_leaf_mutations: sensitivity.scalarMutations,

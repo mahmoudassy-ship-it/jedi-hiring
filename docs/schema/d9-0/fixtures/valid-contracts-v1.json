@@ -1,18 +1,18 @@
 {
   "fixture_format": "jedi-atlas-d90-valid-fixtures",
-  "fixture_version": "1.0.0",
+  "fixture_version": "1.0.1",
   "fixtures": [
     {
       "fixture_code": "runtime_profile",
       "schema_file": "runtime-profile-v1.schema.json",
       "value": {
         "format": "jedi-atlas-runtime-profile",
-        "format_version": "1.0.0",
+        "format_version": "1.0.1",
         "record_code": "synthetic.runtime-profile-001",
         "profile_code": "pilot_local_restricted_v1",
         "profile_generation": 1,
         "issued_at": "2030-01-01T00:00:00.000Z",
-        "contract_catalog_sha256": "d9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2",
+        "contract_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
         "evidence_bundle_contract": {
           "format": "jedi-atlas-evidence-bundle",
           "format_version": "1.0.0",
@@ -68,6 +68,15 @@
             ]
           },
           {
+            "slot_code": "canonical_generation_directory",
+            "recipients": [
+              {
+                "runtime_role_code": "cloner_promoter",
+                "access_code": "clone_fixed_source_and_atomic_target_generation"
+              }
+            ]
+          },
+          {
             "slot_code": "canonical_query",
             "recipients": [
               {
@@ -109,7 +118,11 @@
               },
               {
                 "runtime_role_code": "clearance_broker",
-                "access_code": "write_fixed_function"
+                "access_code": "append_clearance_decision_only"
+              },
+              {
+                "runtime_role_code": "clearance_broker",
+                "access_code": "append_prepromotion_authorization_only"
               }
             ]
           },
@@ -147,8 +160,16 @@
                 "access_code": "read_only"
               },
               {
+                "runtime_role_code": "handoff_broker",
+                "access_code": "append_collector_handoff_only"
+              },
+              {
                 "runtime_role_code": "independent_verifier",
                 "access_code": "read_only"
+              },
+              {
+                "runtime_role_code": "trusted_launcher",
+                "access_code": "append_bundle_seal_only"
               }
             ]
           },
@@ -196,6 +217,14 @@
             "recipients": [
               {
                 "runtime_role_code": "bundle_importer",
+                "access_code": "read_only"
+              },
+              {
+                "runtime_role_code": "independent_verifier",
+                "access_code": "read_only"
+              },
+              {
+                "runtime_role_code": "trusted_launcher",
                 "access_code": "read_only"
               }
             ]
@@ -296,7 +325,7 @@
           "backup_required": true
         },
         "processor_policy_code": "disabled",
-        "record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "runtime_domain_sha256": "9090909090909090909090909090909090909090909090909090909090909090",
         "component_releases": [
           {
@@ -405,7 +434,7 @@
           }
         ],
         "write_surface_policy": {
-          "canonical_database_access_code": "no_handle_except_atomic_promoter",
+          "canonical_database_access_code": "fixed_source_clone_and_atomic_generation_only",
           "candidate_insert_tables": [
             "atlas_artifact_custody_events",
             "atlas_artifacts",
@@ -445,7 +474,7 @@
         "record_code": "synthetic.identity-bindings-001",
         "binding_set_code": "synthetic.pilot-bindings",
         "binding_generation": 1,
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "issued_at": "2030-01-01T00:01:00.000Z",
         "expires_at": "2030-01-02T00:01:00.000Z",
         "bindings": [
@@ -774,7 +803,7 @@
             "valid_until": "2030-01-02T00:01:00.000Z"
           }
         ],
-        "record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "runtime_domain_sha256": "9090909090909090909090909090909090909090909090909090909090909090"
       }
     },
@@ -788,8 +817,8 @@
         "record_code": "synthetic.state-empty",
         "state_payload": {
           "canonical_lineage_code": "synthetic.pilot-lineage",
-          "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-          "contract_catalog_sha256": "d9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2",
+          "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+          "contract_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
           "receipt_head": null,
           "migration_hashes": [
             {
@@ -955,10 +984,10 @@
           "prior_logical_state_sha256": null,
           "principal_roster_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
         },
-        "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a",
+        "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea",
         "produced_by_binding_code": "binding.verifier",
         "produced_at": "2030-01-01T00:02:00.000Z",
-        "record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d"
+        "record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2"
       }
     },
     {
@@ -971,8 +1000,8 @@
         "record_code": "synthetic.state-bootstrap",
         "state_payload": {
           "canonical_lineage_code": "synthetic.pilot-lineage",
-          "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-          "contract_catalog_sha256": "d9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2",
+          "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+          "contract_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
           "receipt_head": {
             "bundle_id": "synthetic.bootstrap-bundle",
             "bundle_sequence": 1,
@@ -1169,13 +1198,13 @@
           ],
           "receipt_dependency_graph_sha256": "9235371b560ce66f0af106cac76d1e987bcca8ea2b7e0f0dbbad575cb70898c5",
           "prohibited_surfaces_sha256": "69d812ce6d942341ee8f13960b3dc8ca9246f9dff4b1cfa1166bdb8ed531ff00",
-          "prior_logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a",
+          "prior_logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea",
           "principal_roster_sha256": "39b8763f307c3ff8e3b50c458657c7454a5cbdafebfeb0a4b66c7c00b16ead36"
         },
-        "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b",
+        "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2",
         "produced_by_binding_code": "binding.verifier",
         "produced_at": "2030-01-01T00:05:25.000Z",
-        "record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d"
+        "record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289"
       }
     },
     {
@@ -1186,8 +1215,8 @@
         "format_version": "1.0.0",
         "record_kind_code": "collector_handoff",
         "record_code": "synthetic.handoff-001",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "collector_binding_code": "binding.collector",
         "collector_principal_code": "synthetic.collector",
         "collector_software_code": "synthetic.collector-build",
@@ -1209,7 +1238,7 @@
         "collection_completed_at": "2030-01-01T00:05:15.000Z",
         "handoff_recorded_at": "2030-01-01T00:05:16.000Z",
         "expires_at": "2030-01-01T01:05:16.000Z",
-        "record_digest_sha256": "44813740560e0e5f93cc249d77ba890610638ddeb93020985e82d646b5f3ec35"
+        "record_digest_sha256": "b69db922779eb116a42607169d90d9cf34216f821917e4d0b707a8d8a80b0d2a"
       }
     },
     {
@@ -1228,21 +1257,21 @@
         },
         "manifest_path": "manifests/synthetic-bootstrap.json",
         "reviewed_git_commit": "3636363636363636363636363636363636363636",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "submitter_binding_code": "binding.submitter",
         "importer_binding_code": "binding.importer",
         "launcher_binding_code": "binding.launcher",
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "collector_handoffs": [],
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "sealed_at": "2030-01-01T00:04:30.000Z",
         "expires_at": "2030-01-01T01:04:30.000Z",
-        "record_digest_sha256": "2f62d5dfa7261260177fa27992672521e635f8f81afeb3cda063adec84875862",
+        "record_digest_sha256": "77d08f02d87d5f2dba61193d245aff9f981f307501f6f6a6228f2faba37bccde",
         "operation_id": "synthetic.operation-bootstrap"
       }
     },
@@ -1262,28 +1291,28 @@
         },
         "manifest_path": "manifests/synthetic-bundle-002.json",
         "reviewed_git_commit": "3333333333333333333333333333333333333333",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "submitter_binding_code": "binding.submitter",
         "importer_binding_code": "binding.importer",
         "launcher_binding_code": "binding.launcher",
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "collector_handoffs": [
           {
             "format": "jedi-atlas-collector-handoff",
             "format_version": "1.0.0",
             "record_code": "synthetic.handoff-001",
-            "record_digest_sha256": "44813740560e0e5f93cc249d77ba890610638ddeb93020985e82d646b5f3ec35"
+            "record_digest_sha256": "b69db922779eb116a42607169d90d9cf34216f821917e4d0b707a8d8a80b0d2a"
           }
         ],
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sealed_at": "2030-01-01T00:07:00.000Z",
         "expires_at": "2030-01-01T01:07:00.000Z",
-        "record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "operation_id": "synthetic.operation-document-002"
       }
     },
@@ -1299,8 +1328,8 @@
         "canonical_lineage_code": "synthetic.pilot-lineage",
         "target_empty_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "bootstrap_bundle": {
           "bundle_id": "synthetic.bootstrap-bundle",
@@ -1310,8 +1339,8 @@
         "manifest_path": "manifests/synthetic-bootstrap.json",
         "reviewed_git_commit": "3636363636363636363636363636363636363636",
         "expected_principal_roster_sha256": "39b8763f307c3ff8e3b50c458657c7454a5cbdafebfeb0a4b66c7c00b16ead36",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "importer_release_sha256": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
         "submitter_binding_code": "binding.submitter",
         "witness_binding_code": "binding.witness",
@@ -1321,7 +1350,7 @@
         "issued_at": "2030-01-01T00:05:00.000Z",
         "not_before": "2030-01-01T00:05:00.000Z",
         "expires_at": "2030-01-01T01:05:00.000Z",
-        "record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "permit_kind_code": "bootstrap",
         "importer_binding_code": "binding.importer"
       }
@@ -1335,21 +1364,21 @@
         "record_kind_code": "permit_transition",
         "record_code": "synthetic.permit-transition-001",
         "permit_code": "synthetic.bootstrap-permit",
-        "permit_issuance_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "permit_issuance_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:05:01.000Z",
         "reason_code": "operation_claimed",
-        "record_digest_sha256": "0f60a2ad08be230ceb1c2ed28e1757ff0f3597a0590c53a7a9d46900aa8f3391",
+        "record_digest_sha256": "fa78a4437430373d50795dc19f92d8634f77fba9c05fa968e92cfbf2c9fa7fb4",
         "permit_kind_code": "bootstrap",
         "from_state_code": "ready",
         "to_state_code": "in_progress",
@@ -1369,21 +1398,21 @@
         "record_kind_code": "permit_transition",
         "record_code": "synthetic.permit-transition-002",
         "permit_code": "synthetic.bootstrap-permit",
-        "permit_issuance_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "permit_issuance_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "transition_sequence": 2,
-        "previous_transition_record_digest_sha256": "0f60a2ad08be230ceb1c2ed28e1757ff0f3597a0590c53a7a9d46900aa8f3391",
+        "previous_transition_record_digest_sha256": "fa78a4437430373d50795dc19f92d8634f77fba9c05fa968e92cfbf2c9fa7fb4",
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:06:00.000Z",
         "reason_code": "canonical_receipt_verified",
-        "record_digest_sha256": "c9b25dcb2b5a21c55dc870e6cade366e53ddee4c7ae4a282c02e484845fb1849",
+        "record_digest_sha256": "39dea55acd22e3d8510646da1f022c74741bbde4a494583ad89ba1e1d96c58cc",
         "permit_kind_code": "bootstrap",
         "from_state_code": "in_progress",
         "to_state_code": "spent",
@@ -1404,7 +1433,7 @@
         "record_code": "synthetic.replay-certificate-001",
         "certificate_code": "synthetic.bootstrap-replay",
         "permit_code": "synthetic.bootstrap-permit",
-        "permit_spent_transition_record_digest_sha256": "c9b25dcb2b5a21c55dc870e6cade366e53ddee4c7ae4a282c02e484845fb1849",
+        "permit_spent_transition_record_digest_sha256": "39dea55acd22e3d8510646da1f022c74741bbde4a494583ad89ba1e1d96c58cc",
         "canonical_lineage_code": "synthetic.pilot-lineage",
         "accepted_bootstrap_bundle": {
           "bundle_id": "synthetic.bootstrap-bundle",
@@ -1414,8 +1443,8 @@
         "accepted_receipt_sha256": "e44ea206c00ecaa5ce3418d1d1cf86157c57c06c90635e3c4b10a8ca395d5ae0",
         "accepted_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "principal_roster_sha256": "39b8763f307c3ff8e3b50c458657c7454a5cbdafebfeb0a4b66c7c00b16ead36",
         "target_database_class_code": "disposable_recovery_only",
@@ -1423,7 +1452,7 @@
         "witness_binding_code": "binding.witness",
         "issued_at": "2030-01-01T00:06:01.000Z",
         "expires_at": "2030-12-31T00:06:01.000Z",
-        "record_digest_sha256": "7667e3c693cd48295a3ff3d99d62b2a631d2dda153e5d8a87651f002b37613b2"
+        "record_digest_sha256": "5a3ca936d5415b761e6e569dbf0de9d2ae940b76ec3a3d8e0cbd316f6a682cc0"
       }
     },
     {
@@ -1448,7 +1477,7 @@
           "format": "jedi-atlas-bootstrap-control",
           "format_version": "1.0.0",
           "record_code": "synthetic.replay-certificate-001",
-          "record_digest_sha256": "7667e3c693cd48295a3ff3d99d62b2a631d2dda153e5d8a87651f002b37613b2"
+          "record_digest_sha256": "5a3ca936d5415b761e6e569dbf0de9d2ae940b76ec3a3d8e0cbd316f6a682cc0"
         },
         "accepted_bootstrap_bundle": {
           "bundle_id": "synthetic.bootstrap-bundle",
@@ -1457,16 +1486,16 @@
         },
         "accepted_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "target_empty_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "importer_release_sha256": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
         "importer_binding_code": "binding.importer",
         "operator_binding_code": "binding.recovery-operator",
@@ -1475,7 +1504,7 @@
         "issued_at": "2030-01-01T00:06:02.000Z",
         "not_before": "2030-01-01T00:06:02.000Z",
         "expires_at": "2030-01-01T00:21:02.000Z",
-        "record_digest_sha256": "ccdf01b0d63efb44a5f57ef603777ff3015500ebd2a51e257754753c2e0b0c7a"
+        "record_digest_sha256": "7ec65b1bd1c8ca3ef8cf8f8e3491149072632b51c5d6054c342d02b583131107"
       }
     },
     {
@@ -1488,7 +1517,7 @@
         "record_code": "synthetic.recovery-transition-001",
         "permit_kind_code": "recovery",
         "permit_code": "synthetic.recovery-permit",
-        "permit_issuance_record_digest_sha256": "ccdf01b0d63efb44a5f57ef603777ff3015500ebd2a51e257754753c2e0b0c7a",
+        "permit_issuance_record_digest_sha256": "7ec65b1bd1c8ca3ef8cf8f8e3491149072632b51c5d6054c342d02b583131107",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "from_state_code": "ready",
@@ -1498,15 +1527,15 @@
         "operation_nonce": "4545454545454545454545454545454545454545454545454545454545454545",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:06:02.000Z",
         "reason_code": "operation_claimed",
-        "record_digest_sha256": "a29a741a83725e2b1b975960ada4ef51a9b86a07e6ae73c8c6d340c7d7429850",
+        "record_digest_sha256": "b783fba9d16d7070829e32d77b264a31470cf805b118d958e0923c0b8092f35b",
         "completion_journal_head_record_digest_sha256": null,
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:06:02.000Z"
@@ -1522,9 +1551,9 @@
         "record_code": "synthetic.recovery-transition-002",
         "permit_kind_code": "recovery",
         "permit_code": "synthetic.recovery-permit",
-        "permit_issuance_record_digest_sha256": "ccdf01b0d63efb44a5f57ef603777ff3015500ebd2a51e257754753c2e0b0c7a",
+        "permit_issuance_record_digest_sha256": "7ec65b1bd1c8ca3ef8cf8f8e3491149072632b51c5d6054c342d02b583131107",
         "transition_sequence": 2,
-        "previous_transition_record_digest_sha256": "a29a741a83725e2b1b975960ada4ef51a9b86a07e6ae73c8c6d340c7d7429850",
+        "previous_transition_record_digest_sha256": "b783fba9d16d7070829e32d77b264a31470cf805b118d958e0923c0b8092f35b",
         "from_state_code": "in_progress",
         "to_state_code": "spent",
         "transition_code": "verified_effect",
@@ -1532,15 +1561,15 @@
         "operation_nonce": "4545454545454545454545454545454545454545454545454545454545454545",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:06:04.000Z",
         "reason_code": "canonical_receipt_verified",
-        "record_digest_sha256": "7c5ea81c4d01cd65518477b7d052339c2051b68583ab4d0caf787701b566068e",
+        "record_digest_sha256": "3f0ff773194ffbfba970da57b2222208532db63abfc683f8ebec11d54db42789",
         "completion_journal_head_record_digest_sha256": null,
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:06:04.000Z"
@@ -1561,7 +1590,7 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.importer",
         "recipient_binding_code": "binding.custody-adapter",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "request_record_digest_sha256": null,
         "created_at": "2030-01-01T00:07:00.000Z",
         "ancillary_descriptors": [],
@@ -1584,11 +1613,11 @@
           "clearance_decision_record_digest_sha256": null,
           "clearance_scope_sha256": null,
           "custody_leaf_projection_sha256": null,
-          "collector_handoff_record_digest_sha256": "44813740560e0e5f93cc249d77ba890610638ddeb93020985e82d646b5f3ec35",
+          "collector_handoff_record_digest_sha256": "b69db922779eb116a42607169d90d9cf34216f821917e4d0b707a8d8a80b0d2a",
           "staging_snapshot_code": "synthetic.staging-snapshot-001",
-          "bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a"
+          "bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11"
         },
-        "record_digest_sha256": "dbe1a24d1ea9a73451c45c80d14657c802ad5b677f2f6fc158aefd0eebf30c2d"
+        "record_digest_sha256": "217dc0dfa87549d1da4fc36626c2de96e49bf6864046a73e4f05ca385a717b7c"
       }
     },
     {
@@ -1606,8 +1635,8 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.custody-adapter",
         "recipient_binding_code": "binding.importer",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "request_record_digest_sha256": "dbe1a24d1ea9a73451c45c80d14657c802ad5b677f2f6fc158aefd0eebf30c2d",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "request_record_digest_sha256": "217dc0dfa87549d1da4fc36626c2de96e49bf6864046a73e4f05ca385a717b7c",
         "created_at": "2030-01-01T00:07:01.000Z",
         "ancillary_descriptors": [
           {
@@ -1628,14 +1657,14 @@
           },
           "source_handle_token": {
             "capability_kind_code": "source_handle",
-            "capability_sha256": "4060b676bf82a66546b78c628ac8e699d384817f46eb5705728bafcc3a7ea778",
+            "capability_sha256": "fc94bca8e55b10bfc0556e0ce4bd2a9c46ab253c4307cc1c9662a7145dd3b716",
             "issued_by_binding_code": "binding.custody-adapter",
             "requester_binding_code": "binding.importer",
             "adapter_binding_code": "binding.custody-adapter",
             "operation_id": "synthetic.operation-document-002",
             "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-            "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-            "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+            "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+            "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
             "artifact": {
               "byte_layer_code": "retrieved_body",
               "hash_algorithm_code": "sha256",
@@ -1665,9 +1694,9 @@
           "custody_leaf_projection_sha256": null,
           "collector_handoff_record_digest_sha256": null,
           "staging_snapshot_code": null,
-          "bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a"
+          "bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11"
         },
-        "record_digest_sha256": "89a77a8e512c655a2c6b2aa16a4bf8502c4ae4889a7ae3489f50c8adc6b9cd72"
+        "record_digest_sha256": "3a3bce7969870fed52d45f136617a45f5b5e5684f04a8610fb852d74d5060f2c"
       }
     },
     {
@@ -1684,8 +1713,8 @@
         "adapter_binding_code": "binding.custody-adapter",
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "artifact": {
           "byte_layer_code": "retrieved_body",
           "hash_algorithm_code": "sha256",
@@ -1698,18 +1727,18 @@
         "replay_policy_code": "single_consume_prepare",
         "grant_scope": {
           "scope_kind_code": "source_handle",
-          "basis_request_record_digest_sha256": "dbe1a24d1ea9a73451c45c80d14657c802ad5b677f2f6fc158aefd0eebf30c2d",
+          "basis_request_record_digest_sha256": "217dc0dfa87549d1da4fc36626c2de96e49bf6864046a73e4f05ca385a717b7c",
           "staging_root_slot_code": "staging_root",
           "relative_path": "objects/sha256/c7/c76da313046a10971896c921d6bfaf00383159f10e5f1fa6d11f86f6276fc173",
           "descriptor_role_code": "staged_source",
           "staged_source_descriptor_ordinal": 1,
-          "collector_handoff_record_digest_sha256": "44813740560e0e5f93cc249d77ba890610638ddeb93020985e82d646b5f3ec35",
+          "collector_handoff_record_digest_sha256": "b69db922779eb116a42607169d90d9cf34216f821917e4d0b707a8d8a80b0d2a",
           "staging_snapshot_code": "synthetic.staging-snapshot-001",
-          "bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a"
+          "bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11"
         },
         "issued_at": "2030-01-01T00:07:01.000Z",
         "expires_at": "2030-01-01T00:07:31.000Z",
-        "record_digest_sha256": "4060b676bf82a66546b78c628ac8e699d384817f46eb5705728bafcc3a7ea778"
+        "record_digest_sha256": "fc94bca8e55b10bfc0556e0ce4bd2a9c46ab253c4307cc1c9662a7145dd3b716"
       }
     },
     {
@@ -1731,8 +1760,8 @@
         "capture_context_code": "synthetic.bundle-002.retrieval-001",
         "supporting_record_code": "synthetic.rights-note",
         "supporting_record_sha256": "3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "clearance_operational_profile_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
         "clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
         "retention_scope_code": "pilot_only",
@@ -1786,7 +1815,7 @@
         "limitations": [
           "This technical admission is not a legal-rights determination."
         ],
-        "record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9"
+        "record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025"
       }
     },
     {
@@ -1798,7 +1827,7 @@
         "record_kind_code": "clearance_transition",
         "record_code": "synthetic.clearance-transition-001",
         "clearance_code": "synthetic.artifact-clearance",
-        "decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+        "decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
         "previous_transition_record_digest_sha256": null,
         "transition_sequence": 1,
         "state_code": "revoked",
@@ -1806,7 +1835,7 @@
         "recorded_by_binding_code": "binding.clearance-broker",
         "occurred_at": "2030-01-01T00:09:00.000Z",
         "reason_code": "operator_withdrawal",
-        "record_digest_sha256": "03a724428de435a14b01174cd6fd0e604fc7ddca95af259902a46764fd74d4e4"
+        "record_digest_sha256": "db1a4a9c073814e04408b97a7237e4da4764923fd7175e5620e4ff8604669cb0"
       }
     },
     {
@@ -1821,13 +1850,13 @@
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "expected_prior_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "candidate_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "file_byte_length": 4096,
@@ -1838,7 +1867,7 @@
         "produced_by_binding_code": "binding.verifier",
         "produced_at": "2030-01-01T00:05:31.000Z",
         "expires_at": "2030-01-01T00:20:31.000Z",
-        "record_digest_sha256": "d081116394407de7a5f8426c8465d8652d451a684c914ad8fbe1aa2d27f9b748"
+        "record_digest_sha256": "6800e771a1288584e14a0bf3d6c4f1ea7e95436e0cb1a388068faf072bc993dc"
       }
     },
     {
@@ -1855,7 +1884,7 @@
         "event_kind_code": "operation_started",
         "stage_code": "startup",
         "component_binding_code": "binding.launcher",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "bundle": {
           "bundle_id": "synthetic.bootstrap-bundle",
           "bundle_sequence": 1,
@@ -1863,8 +1892,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -1892,13 +1921,13 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:02.000Z",
-        "record_digest_sha256": "fa0856b9f32ea05c664890805e90b19c32f4c6ccf9fe4547ead267074222b4bc",
+        "record_digest_sha256": "be30e3c7947a4a1eacb4d8c29c822e285b66028f8e666ab7fd9bc2406415cced",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "component_executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
         "recorded_by_binding_code": "binding.journal-broker",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "operation_mode_code": "bootstrap",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:05:02.000Z"
@@ -1914,11 +1943,11 @@
         "journal_code": "synthetic.pilot-journal",
         "operation_id": "synthetic.operation-bootstrap",
         "event_sequence": 8,
-        "previous_event_record_digest_sha256": "069542a96f9bed2f9f89d115fc70a91dedbc86909f00f4f37ddf430378b5d606",
+        "previous_event_record_digest_sha256": "4172cce867dd0ff64bdb8db9a94a1d7af8923b797fe95e8d6e4adc3ef98b2b8b",
         "event_kind_code": "operation_completed",
         "stage_code": "completion",
         "component_binding_code": "binding.importer",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "bundle": {
           "bundle_id": "synthetic.bootstrap-bundle",
           "bundle_sequence": 1,
@@ -1926,13 +1955,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "promoted_verified",
         "result_outcome_code": "imported",
@@ -1959,13 +1988,13 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:59.000Z",
-        "record_digest_sha256": "c197f76757b5f60dac49959226cbabe923275478baeea67e3ea445a26e84936f",
+        "record_digest_sha256": "7be55aace2bffee90a68bd91c46d355dd8672de96c417a1a8b9d46ababaab249",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "component_executable_sha256": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
         "recorded_by_binding_code": "binding.journal-broker",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "operation_mode_code": "bootstrap",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:05:59.000Z"
@@ -2073,7 +2102,7 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.importer",
         "recipient_binding_code": "binding.custody-adapter",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "request_record_digest_sha256": null,
         "created_at": "2030-01-01T00:07:02.000Z",
         "ancillary_descriptors": [
@@ -2095,14 +2124,14 @@
           },
           "source_handle_token": {
             "capability_kind_code": "source_handle",
-            "capability_sha256": "4060b676bf82a66546b78c628ac8e699d384817f46eb5705728bafcc3a7ea778",
+            "capability_sha256": "fc94bca8e55b10bfc0556e0ce4bd2a9c46ab253c4307cc1c9662a7145dd3b716",
             "issued_by_binding_code": "binding.custody-adapter",
             "requester_binding_code": "binding.importer",
             "adapter_binding_code": "binding.custody-adapter",
             "operation_id": "synthetic.operation-document-002",
             "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-            "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-            "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+            "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+            "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
             "artifact": {
               "byte_layer_code": "retrieved_body",
               "hash_algorithm_code": "sha256",
@@ -2134,7 +2163,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "3511383acc88f3b4f9a7944acdd8b1634061369a5f80e50d0ce34f664254be52"
+        "record_digest_sha256": "1c493e1e09ba841c43db8760097eb9fcebd46a26d71c0668a7bf612056c088fb"
       }
     },
     {
@@ -2152,8 +2181,8 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.custody-adapter",
         "recipient_binding_code": "binding.importer",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "request_record_digest_sha256": "3511383acc88f3b4f9a7944acdd8b1634061369a5f80e50d0ce34f664254be52",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "request_record_digest_sha256": "1c493e1e09ba841c43db8760097eb9fcebd46a26d71c0668a7bf612056c088fb",
         "created_at": "2030-01-01T00:07:03.000Z",
         "ancillary_descriptors": [],
         "payload": {
@@ -2163,14 +2192,14 @@
           "source_handle_token": null,
           "preparation_token": {
             "capability_kind_code": "preparation",
-            "capability_sha256": "0ba7d6f2f82d116665e1e4176941262f1b542be092057935439e321d3409887c",
+            "capability_sha256": "aca50e752b76cb9b11b088a13de7f10283d8901a9b4054ae1a29821db4af58de",
             "issued_by_binding_code": "binding.custody-adapter",
             "requester_binding_code": "binding.importer",
             "adapter_binding_code": "binding.custody-adapter",
             "operation_id": "synthetic.operation-document-002",
             "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-            "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-            "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+            "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+            "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
             "artifact": {
               "byte_layer_code": "retrieved_body",
               "hash_algorithm_code": "sha256",
@@ -2203,7 +2232,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "a79f23570517d1b23cceead409d825ed765c7fa6e419c668c3d1cf5f88205c96"
+        "record_digest_sha256": "6472e62907bfaf89402e398997a1eacd660b3b510ed1f7566ab1c44445b71c36"
       }
     },
     {
@@ -2220,8 +2249,8 @@
         "adapter_binding_code": "binding.custody-adapter",
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "artifact": {
           "byte_layer_code": "retrieved_body",
           "hash_algorithm_code": "sha256",
@@ -2236,13 +2265,13 @@
         "replay_policy_code": "ordered_verify_then_publish_or_abandon",
         "grant_scope": {
           "scope_kind_code": "preparation",
-          "basis_request_record_digest_sha256": "3511383acc88f3b4f9a7944acdd8b1634061369a5f80e50d0ce34f664254be52",
-          "source_capability_record_digest_sha256": "4060b676bf82a66546b78c628ac8e699d384817f46eb5705728bafcc3a7ea778",
+          "basis_request_record_digest_sha256": "1c493e1e09ba841c43db8760097eb9fcebd46a26d71c0668a7bf612056c088fb",
+          "source_capability_record_digest_sha256": "fc94bca8e55b10bfc0556e0ce4bd2a9c46ab253c4307cc1c9662a7145dd3b716",
           "pending_object_code": "synthetic.pending-object-001"
         },
         "issued_at": "2030-01-01T00:07:03.000Z",
         "expires_at": "2030-01-01T00:22:03.000Z",
-        "record_digest_sha256": "0ba7d6f2f82d116665e1e4176941262f1b542be092057935439e321d3409887c"
+        "record_digest_sha256": "aca50e752b76cb9b11b088a13de7f10283d8901a9b4054ae1a29821db4af58de"
       }
     },
     {
@@ -2254,18 +2283,18 @@
         "record_kind_code": "capability_transition",
         "record_code": "synthetic.capability-source-consumed-fixed",
         "capability_kind_code": "source_handle",
-        "capability_record_digest_sha256": "4060b676bf82a66546b78c628ac8e699d384817f46eb5705728bafcc3a7ea778",
+        "capability_record_digest_sha256": "fc94bca8e55b10bfc0556e0ce4bd2a9c46ab253c4307cc1c9662a7145dd3b716",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "from_state_code": "ready",
         "to_state_code": "consumed",
         "transition_code": "consumer_succeeded",
-        "request_record_digest_sha256": "3511383acc88f3b4f9a7944acdd8b1634061369a5f80e50d0ce34f664254be52",
+        "request_record_digest_sha256": "1c493e1e09ba841c43db8760097eb9fcebd46a26d71c0668a7bf612056c088fb",
         "response_record_digest_sha256": null,
         "recorded_by_binding_code": "binding.custody-adapter",
         "occurred_at": "2030-01-01T00:07:02.500Z",
         "reason_code": "request_claimed",
-        "record_digest_sha256": "c81c547e0f3027d9e0bdf363eafaec8bfd6b6867bf8bba14381f1931fa5466f8"
+        "record_digest_sha256": "22e82066e2b3969a117aa72d2c601ff75f7ffc8daa62fefbb2539e7fc5c3f321"
       }
     },
     {
@@ -2283,7 +2312,7 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.importer",
         "recipient_binding_code": "binding.custody-adapter",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "request_record_digest_sha256": null,
         "created_at": "2030-01-01T00:08:02.000Z",
         "ancillary_descriptors": [],
@@ -2304,7 +2333,7 @@
           "purpose_code": "integrity",
           "custody_evaluated_at": null,
           "known_through_bundle_sequence": null,
-          "clearance_decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+          "clearance_decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
           "clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
           "custody_leaf_projection_sha256": null,
           "sealed_capability_token": null,
@@ -2315,7 +2344,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "5a9be57c36c5571cd373a55808339e0d0b842178a7f258f4e24d6b25ee2f9343"
+        "record_digest_sha256": "a4aa3ac37659f9b34bf53e5b7bed1524745668abe009b5d8d33cd0a454c9b8a1"
       }
     },
     {
@@ -2333,8 +2362,8 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.custody-adapter",
         "recipient_binding_code": "binding.importer",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "request_record_digest_sha256": "5a9be57c36c5571cd373a55808339e0d0b842178a7f258f4e24d6b25ee2f9343",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "request_record_digest_sha256": "a4aa3ac37659f9b34bf53e5b7bed1524745668abe009b5d8d33cd0a454c9b8a1",
         "created_at": "2030-01-01T00:08:03.000Z",
         "ancillary_descriptors": [],
         "payload": {
@@ -2354,19 +2383,19 @@
           "purpose_code": "integrity",
           "custody_evaluated_at": "2030-01-01T00:08:03.000Z",
           "known_through_bundle_sequence": 2,
-          "clearance_decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+          "clearance_decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
           "clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
           "custody_leaf_projection_sha256": "25a5681e404a7fcc6f981703cad88a564fd07acffb7603d692f9aa04040013ae",
           "sealed_capability_token": {
             "capability_kind_code": "sealed_custody_access",
-            "capability_sha256": "191e396a9eb920d901ade6be6903d888b501d27f1a5821764bbf7bca0a74d4b9",
+            "capability_sha256": "3c8219ac927c508932daf7db5b50eecfebb144ac8f0e8b9ac155c159327dee2b",
             "issued_by_binding_code": "binding.custody-adapter",
             "requester_binding_code": "binding.importer",
             "adapter_binding_code": "binding.custody-adapter",
             "operation_id": "synthetic.operation-document-002",
             "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-            "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-            "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+            "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+            "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
             "artifact": {
               "byte_layer_code": "retrieved_body",
               "hash_algorithm_code": "sha256",
@@ -2387,7 +2416,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "71ed4fa35ebde490dd8449bdf540f476f00e9382c94346977c4ea0a16dee6a59"
+        "record_digest_sha256": "89590d47dfd67f08bc1e8cca38c171cd7269ea45d61a9b6dfa3a9cc4b8d475d2"
       }
     },
     {
@@ -2404,8 +2433,8 @@
         "adapter_binding_code": "binding.custody-adapter",
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "artifact": {
           "byte_layer_code": "retrieved_body",
           "hash_algorithm_code": "sha256",
@@ -2418,8 +2447,8 @@
         "replay_policy_code": "single_consume_open_custody",
         "grant_scope": {
           "scope_kind_code": "sealed_custody_access",
-          "basis_request_record_digest_sha256": "5a9be57c36c5571cd373a55808339e0d0b842178a7f258f4e24d6b25ee2f9343",
-          "clearance_decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+          "basis_request_record_digest_sha256": "a4aa3ac37659f9b34bf53e5b7bed1524745668abe009b5d8d33cd0a454c9b8a1",
+          "clearance_decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
           "clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
           "custody_leaf_projection_sha256": "25a5681e404a7fcc6f981703cad88a564fd07acffb7603d692f9aa04040013ae",
           "backend_code": "pilot_local_cas_v1",
@@ -2431,7 +2460,7 @@
         },
         "issued_at": "2030-01-01T00:08:03.000Z",
         "expires_at": "2030-01-01T00:08:33.000Z",
-        "record_digest_sha256": "191e396a9eb920d901ade6be6903d888b501d27f1a5821764bbf7bca0a74d4b9"
+        "record_digest_sha256": "3c8219ac927c508932daf7db5b50eecfebb144ac8f0e8b9ac155c159327dee2b"
       }
     },
     {
@@ -2449,7 +2478,7 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.importer",
         "recipient_binding_code": "binding.custody-adapter",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
         "request_record_digest_sha256": null,
         "created_at": "2030-01-01T00:08:04.000Z",
         "ancillary_descriptors": [],
@@ -2475,14 +2504,14 @@
           "custody_leaf_projection_sha256": null,
           "sealed_capability_token": {
             "capability_kind_code": "sealed_custody_access",
-            "capability_sha256": "191e396a9eb920d901ade6be6903d888b501d27f1a5821764bbf7bca0a74d4b9",
+            "capability_sha256": "3c8219ac927c508932daf7db5b50eecfebb144ac8f0e8b9ac155c159327dee2b",
             "issued_by_binding_code": "binding.custody-adapter",
             "requester_binding_code": "binding.importer",
             "adapter_binding_code": "binding.custody-adapter",
             "operation_id": "synthetic.operation-document-002",
             "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-            "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-            "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+            "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+            "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
             "artifact": {
               "byte_layer_code": "retrieved_body",
               "hash_algorithm_code": "sha256",
@@ -2503,7 +2532,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "20bd4597007472a5a964083ec8eeaf12fb28f8226a8643991c573aacb0ea73f8"
+        "record_digest_sha256": "92f4383509b14206e0313446ce44fe25d36253923880dc3f88a5ecce1e9b0d9c"
       }
     },
     {
@@ -2521,8 +2550,8 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "sender_binding_code": "binding.custody-adapter",
         "recipient_binding_code": "binding.importer",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "request_record_digest_sha256": "20bd4597007472a5a964083ec8eeaf12fb28f8226a8643991c573aacb0ea73f8",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "request_record_digest_sha256": "92f4383509b14206e0313446ce44fe25d36253923880dc3f88a5ecce1e9b0d9c",
         "created_at": "2030-01-01T00:08:05.000Z",
         "ancillary_descriptors": [
           {
@@ -2549,7 +2578,7 @@
           "purpose_code": "integrity",
           "custody_evaluated_at": "2030-01-01T00:08:05.000Z",
           "known_through_bundle_sequence": 2,
-          "clearance_decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+          "clearance_decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
           "clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
           "custody_leaf_projection_sha256": "25a5681e404a7fcc6f981703cad88a564fd07acffb7603d692f9aa04040013ae",
           "sealed_capability_token": null,
@@ -2560,7 +2589,7 @@
           "staging_snapshot_code": null,
           "bundle_seal_record_digest_sha256": null
         },
-        "record_digest_sha256": "a75bad285b493b3b6c306edbb78fff6d01e5ee9860912f0fb7012f6dbe1fa253"
+        "record_digest_sha256": "f2af67471c164a45ede6ae77d292c123e275b4098e9d3c6835d75c95baef1ec6"
       }
     },
     {
@@ -2572,18 +2601,18 @@
         "record_kind_code": "capability_transition",
         "record_code": "synthetic.capability-sealed-consumed-fixed",
         "capability_kind_code": "sealed_custody_access",
-        "capability_record_digest_sha256": "191e396a9eb920d901ade6be6903d888b501d27f1a5821764bbf7bca0a74d4b9",
+        "capability_record_digest_sha256": "3c8219ac927c508932daf7db5b50eecfebb144ac8f0e8b9ac155c159327dee2b",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "from_state_code": "ready",
         "to_state_code": "consumed",
         "transition_code": "consumer_succeeded",
-        "request_record_digest_sha256": "20bd4597007472a5a964083ec8eeaf12fb28f8226a8643991c573aacb0ea73f8",
+        "request_record_digest_sha256": "92f4383509b14206e0313446ce44fe25d36253923880dc3f88a5ecce1e9b0d9c",
         "response_record_digest_sha256": null,
         "recorded_by_binding_code": "binding.custody-adapter",
         "occurred_at": "2030-01-01T00:08:04.500Z",
         "reason_code": "request_claimed",
-        "record_digest_sha256": "a9534bf4b200c1cc8d91d6595ff63d267e971b49d528416f24dcef7ccdf3a09b"
+        "record_digest_sha256": "27c786f283f39631369c2ef85f46153babf47e01cffa13669a487571ecec4f13"
       }
     },
     {
@@ -2605,7 +2634,7 @@
           "bundle_sequence": 2,
           "bundle_digest_sha256": "2273ab881df419197add1b749671571d35779b4768eca2b90a946341b4cac152"
         },
-        "source_recovery_journal_event_record_digest_sha256": "b0b15145aa4b0150fe04381caa657f5e223beb2e9ae070be58c66805e70381c2",
+        "source_recovery_journal_event_record_digest_sha256": "df7ce2f30a7ecfe4689506ab4b11a8ac556265fce13ab28bfebb0154dad0218b",
         "incident_record_sha256": "4848484848484848484848484848484848484848484848484848484848484848",
         "repair_plan_sha256": "c6b86c3d01dd40c0b79192aefb1de5ae5b4aadffb7825d9320aa29474ac75d9f",
         "allowed_actions": [
@@ -2614,8 +2643,8 @@
         ],
         "canonical_write_code": "denied",
         "allowed_canonical_effect_code": "none_verified",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "importer_binding_code": "binding.importer",
         "operator_binding_code": "binding.recovery-operator",
         "witness_binding_code": "binding.witness",
@@ -2623,15 +2652,15 @@
         "issued_at": "2030-01-01T00:10:00.000Z",
         "not_before": "2030-01-01T00:10:00.000Z",
         "expires_at": "2030-01-01T00:25:00.000Z",
-        "record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "verified_canonical_receipt_sha256": "f1fe1460873000e7f84f9cb66f07ee4caeaa758435a96c244222f040b38a5d83",
         "verified_canonical_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "target_bundle_kind_code": "single_document",
-        "source_authorization_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "source_authorization_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "source_terminal_transition_record_digest_sha256": null
       }
     },
@@ -2678,8 +2707,8 @@
         "error": null,
         "operation_mode_code": "recovery",
         "bundle_kind_code": "single_document",
-        "recovery_permit_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
-        "recovery_terminal_transition_record_digest_sha256": "2a5fe5a4a663e1695e2b38369b69ef4d62f2cea4e1b5b637cf87bfa39b295653"
+        "recovery_permit_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
+        "recovery_terminal_transition_record_digest_sha256": "17d8dde4c436d48530b45581df65277e5694d96ac8da3f8e6a3b8c7b97f3bbe2"
       }
     },
     {
@@ -2692,7 +2721,7 @@
         "record_code": "synthetic.post-promotion-completion-transition-001",
         "permit_kind_code": "post_promotion_completion",
         "permit_code": "synthetic.post-promotion-completion-permit-001",
-        "permit_issuance_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "permit_issuance_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "from_state_code": "ready",
@@ -2702,15 +2731,15 @@
         "operation_nonce": "4646464646464646464646464646464646464646464646464646464646464646",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:10:00.000Z",
         "reason_code": "operation_claimed",
-        "record_digest_sha256": "c83b326971267da831373c6a0bcf2883dff61ec41bbb8e362f054d7c478f6441",
+        "record_digest_sha256": "fc6fafcd61989d60fbbe0291d1eb01d38487f29621f181531d12bb8960c44531",
         "completion_journal_head_record_digest_sha256": null,
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:10:00.000Z"
@@ -2726,9 +2755,9 @@
         "record_code": "synthetic.post-promotion-completion-transition-002",
         "permit_kind_code": "post_promotion_completion",
         "permit_code": "synthetic.post-promotion-completion-permit-001",
-        "permit_issuance_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "permit_issuance_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "transition_sequence": 2,
-        "previous_transition_record_digest_sha256": "c83b326971267da831373c6a0bcf2883dff61ec41bbb8e362f054d7c478f6441",
+        "previous_transition_record_digest_sha256": "fc6fafcd61989d60fbbe0291d1eb01d38487f29621f181531d12bb8960c44531",
         "from_state_code": "in_progress",
         "to_state_code": "spent",
         "transition_code": "no_effect_verified",
@@ -2736,16 +2765,16 @@
         "operation_nonce": "4646464646464646464646464646464646464646464646464646464646464646",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "independent_verifier",
         "recorded_by_binding_code": "binding.verifier",
         "occurred_at": "2030-01-01T00:10:02.001Z",
         "reason_code": "no_effect_verified",
-        "record_digest_sha256": "2a5fe5a4a663e1695e2b38369b69ef4d62f2cea4e1b5b637cf87bfa39b295653",
-        "completion_journal_head_record_digest_sha256": "6f40559acc697305688f2adbbf6c1b5dcb67e6eeed4d3903159865bee39560a7",
+        "record_digest_sha256": "17d8dde4c436d48530b45581df65277e5694d96ac8da3f8e6a3b8c7b97f3bbe2",
+        "completion_journal_head_record_digest_sha256": "f863f6551f4a832b180424d1c6f95f3f43e31fe62fbc9fdc341b6866bfc1faa3",
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:10:02.001Z"
       }
@@ -2760,8 +2789,8 @@
         "record_code": "synthetic.state-document-002",
         "state_payload": {
           "canonical_lineage_code": "synthetic.pilot-lineage",
-          "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-          "contract_catalog_sha256": "d9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2",
+          "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+          "contract_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
           "receipt_head": {
             "bundle_id": "synthetic.bundle-002",
             "bundle_sequence": 2,
@@ -2958,13 +2987,13 @@
           ],
           "receipt_dependency_graph_sha256": "1321a2e15618b035eb6195442dea475fe59e8786f8d7f4c40ffa7efa75a8e197",
           "prohibited_surfaces_sha256": "69d812ce6d942341ee8f13960b3dc8ca9246f9dff4b1cfa1166bdb8ed531ff00",
-          "prior_logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b",
+          "prior_logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2",
           "principal_roster_sha256": "39b8763f307c3ff8e3b50c458657c7454a5cbdafebfeb0a4b66c7c00b16ead36"
         },
-        "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3",
+        "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11",
         "produced_by_binding_code": "binding.verifier",
         "produced_at": "2030-01-01T00:08:30.000Z",
-        "record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52"
+        "record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479"
       }
     },
     {
@@ -2985,8 +3014,8 @@
         "component_binding_code": "binding.launcher",
         "component_executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -2995,8 +3024,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3024,8 +3053,8 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:07:01.000Z",
-        "record_digest_sha256": "5126e93ad0cb53993e977c996338ea9a6066dce58cd1cd8036c1e4ba8e620f10",
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "record_digest_sha256": "6c59ea4ae2d69cd7cf2588bd274f36ed748d137c75a0c02d784fba44d602384d",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:07:01.000Z"
       }
@@ -3042,14 +3071,14 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 7,
-        "previous_event_record_digest_sha256": "5bcee8516f1efc72f88a0637879657d4684a7ed6b117ebeda11dbe4a7a92b139",
+        "previous_event_record_digest_sha256": "07778730b4880b2d9565f4e11205886a987646543256c8cbe5d3f9f27e2ae592",
         "event_kind_code": "recovery_required",
         "stage_code": "post_promotion_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -3058,13 +3087,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "canonical_effect_code": "possibly_promoted",
         "result_outcome_code": "recovery_required",
@@ -3077,8 +3106,8 @@
         "candidate_file_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "backup_inventory_sha256": "4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c",
         "event_at": "2030-01-01T00:09:01.000Z",
-        "record_digest_sha256": "b0b15145aa4b0150fe04381caa657f5e223beb2e9ae070be58c66805e70381c2",
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "record_digest_sha256": "df7ce2f30a7ecfe4689506ab4b11a8ac556265fce13ab28bfebb0154dad0218b",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:09:01.000Z"
       }
@@ -3101,9 +3130,9 @@
         "component_binding_code": "binding.launcher",
         "component_executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
           "bundle_sequence": 2,
@@ -3111,8 +3140,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3140,7 +3169,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:10:01.100Z",
-        "record_digest_sha256": "97ce083f1d645dda5961668cbac723deae4a357eac645264041ce992b23788c2",
+        "record_digest_sha256": "2f171e0c835cd6ac249b86944f9e52197fc919babe3c460a4b59c1ec4efbe695",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:10:01.100Z"
@@ -3158,15 +3187,15 @@
         "operation_id": "synthetic.operation-recovery-completion-001",
         "operation_nonce": "4646464646464646464646464646464646464646464646464646464646464646",
         "event_sequence": 3,
-        "previous_event_record_digest_sha256": "d431a49d3514a0fcc20076d763fa4de76513e3577a18c9cd6761f922e5e20053",
+        "previous_event_record_digest_sha256": "8613d86aca5bdd26e6f0e8cf9e78ed01d3e19cd39c1003f894c8672391451913",
         "event_kind_code": "operation_completed",
         "stage_code": "completion",
         "component_binding_code": "binding.importer",
         "component_executable_sha256": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
           "bundle_sequence": 2,
@@ -3174,13 +3203,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "canonical_effect_code": "none_verified",
         "result_outcome_code": "recovered",
@@ -3207,7 +3236,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": "4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a",
         "event_at": "2030-01-01T00:10:02.000Z",
-        "record_digest_sha256": "6f40559acc697305688f2adbbf6c1b5dcb67e6eeed4d3903159865bee39560a7",
+        "record_digest_sha256": "f863f6551f4a832b180424d1c6f95f3f43e31fe62fbc9fdc341b6866bfc1faa3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "persisted_at": "2030-01-01T00:10:02.000Z"
@@ -3225,13 +3254,13 @@
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "expected_prior_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "candidate_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "file_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "file_byte_length": 8192,
@@ -3242,7 +3271,7 @@
         "produced_by_binding_code": "binding.verifier",
         "produced_at": "2030-01-01T00:08:31.000Z",
         "expires_at": "2030-01-01T00:23:31.000Z",
-        "record_digest_sha256": "afeff8e0f6b3beaaa9da54c91474a4caec412c6c6e2448001b84d8e2ba89f3a7"
+        "record_digest_sha256": "f66640487250b24422e9713f7d8b7ef19122c460371a5cb2dce119de3719c5d5"
       }
     },
     {
@@ -3257,15 +3286,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 2,
-        "previous_event_record_digest_sha256": "fa0856b9f32ea05c664890805e90b19c32f4c6ccf9fe4547ead267074222b4bc",
+        "previous_event_record_digest_sha256": "be30e3c7947a4a1eacb4d8c29c822e285b66028f8e666ab7fd9bc2406415cced",
         "event_kind_code": "candidate_committed",
         "stage_code": "database_transaction",
         "component_binding_code": "binding.database-writer",
         "component_executable_sha256": "0909090909090909090909090909090909090909090909090909090909090909",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3275,8 +3304,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3304,7 +3333,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:20.000Z",
-        "record_digest_sha256": "b7387b7852e96b4f2fe720776d355fd963aacbea736d18b45701f3d78fac6dee",
+        "record_digest_sha256": "4c7a92e8480e518849315654e5ad9609d7f0bc1af96e8d3bf67d947d54eaf81b",
         "persisted_at": "2030-01-01T00:05:20.000Z"
       }
     },
@@ -3320,15 +3349,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 3,
-        "previous_event_record_digest_sha256": "b7387b7852e96b4f2fe720776d355fd963aacbea736d18b45701f3d78fac6dee",
+        "previous_event_record_digest_sha256": "4c7a92e8480e518849315654e5ad9609d7f0bc1af96e8d3bf67d947d54eaf81b",
         "event_kind_code": "candidate_sealed",
         "stage_code": "independent_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3338,13 +3367,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "none_verified",
         "result_outcome_code": null,
@@ -3371,7 +3400,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:31.000Z",
-        "record_digest_sha256": "3e4aa7946c37d1230327f46d8bc883a952c8a2f81d001abfd3353bf4264cdf21",
+        "record_digest_sha256": "1bcf7d6f9a8563f832c706a8ef0729ebcee2db50fc40b85c820f91b39f4e9ace",
         "persisted_at": "2030-01-01T00:05:31.000Z"
       }
     },
@@ -3387,15 +3416,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 4,
-        "previous_event_record_digest_sha256": "3e4aa7946c37d1230327f46d8bc883a952c8a2f81d001abfd3353bf4264cdf21",
+        "previous_event_record_digest_sha256": "1bcf7d6f9a8563f832c706a8ef0729ebcee2db50fc40b85c820f91b39f4e9ace",
         "event_kind_code": "stage_succeeded",
         "stage_code": "prior_backup",
         "component_binding_code": "binding.backup-adapter",
         "component_executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3405,8 +3434,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3420,7 +3449,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:35.000Z",
-        "record_digest_sha256": "5523bf9703025cee9c5662d5f9fdd96dde771bc38ad2d8e8f300dc0de0731bbb",
+        "record_digest_sha256": "4de6cf53aa2309b6fdfc72d298cd009413215d8f2e51795bb1f470589926bdbd",
         "persisted_at": "2030-01-01T00:05:35.000Z"
       }
     },
@@ -3436,15 +3465,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 5,
-        "previous_event_record_digest_sha256": "5523bf9703025cee9c5662d5f9fdd96dde771bc38ad2d8e8f300dc0de0731bbb",
+        "previous_event_record_digest_sha256": "4de6cf53aa2309b6fdfc72d298cd009413215d8f2e51795bb1f470589926bdbd",
         "event_kind_code": "promotion_started",
         "stage_code": "promotion",
         "component_binding_code": "binding.cloner-promoter",
         "component_executable_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3454,8 +3483,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3469,7 +3498,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:40.000Z",
-        "record_digest_sha256": "dd3e96070123e70ec7dddc8329f424eb99e6b3ab18c7ecd82a88f5922ec43d0f",
+        "record_digest_sha256": "5ed97e572463ec77353019d6a00dcff9d0de9c18c80ad7baea4d6dc60031b312",
         "persisted_at": "2030-01-01T00:05:40.000Z"
       }
     },
@@ -3485,15 +3514,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 6,
-        "previous_event_record_digest_sha256": "dd3e96070123e70ec7dddc8329f424eb99e6b3ab18c7ecd82a88f5922ec43d0f",
+        "previous_event_record_digest_sha256": "5ed97e572463ec77353019d6a00dcff9d0de9c18c80ad7baea4d6dc60031b312",
         "event_kind_code": "promotion_observed",
         "stage_code": "post_promotion_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3503,13 +3532,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "promoted_verified",
         "result_outcome_code": null,
@@ -3536,7 +3565,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:45.000Z",
-        "record_digest_sha256": "3a7c40f184bb87b9220358ce4e4b21ddad925c23024e2d05f111439816753bf8",
+        "record_digest_sha256": "6666f18b4ac8e2e96ebe06fe9a0c4cc62e5a53e2833565e73c6bd690bfe7b32d",
         "persisted_at": "2030-01-01T00:05:45.000Z"
       }
     },
@@ -3552,15 +3581,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 7,
-        "previous_event_record_digest_sha256": "3a7c40f184bb87b9220358ce4e4b21ddad925c23024e2d05f111439816753bf8",
+        "previous_event_record_digest_sha256": "6666f18b4ac8e2e96ebe06fe9a0c4cc62e5a53e2833565e73c6bd690bfe7b32d",
         "event_kind_code": "stage_succeeded",
         "stage_code": "final_backup",
         "component_binding_code": "binding.backup-adapter",
         "component_executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3570,8 +3599,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3585,7 +3614,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:50.000Z",
-        "record_digest_sha256": "069542a96f9bed2f9f89d115fc70a91dedbc86909f00f4f37ddf430378b5d606",
+        "record_digest_sha256": "4172cce867dd0ff64bdb8db9a94a1d7af8923b797fe95e8d6e4adc3ef98b2b8b",
         "persisted_at": "2030-01-01T00:05:50.000Z"
       }
     },
@@ -3601,16 +3630,16 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 2,
-        "previous_event_record_digest_sha256": "5126e93ad0cb53993e977c996338ea9a6066dce58cd1cd8036c1e4ba8e620f10",
+        "previous_event_record_digest_sha256": "6c59ea4ae2d69cd7cf2588bd274f36ed748d137c75a0c02d784fba44d602384d",
         "event_kind_code": "custody_object_durable",
         "stage_code": "custody_prepare",
         "component_binding_code": "binding.custody-adapter",
         "component_executable_sha256": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -3619,8 +3648,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3648,7 +3677,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:07:20.000Z",
-        "record_digest_sha256": "9e1c1dd627471554ff9a06823f1598fe89ac76f0b3635fa2cc12c4d027c8b6f4",
+        "record_digest_sha256": "f123d232b2370fafbc51753cc6bb5d3d00171b4b40b778439fc277d858c5d60a",
         "persisted_at": "2030-01-01T00:07:20.000Z"
       }
     },
@@ -3664,16 +3693,16 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 3,
-        "previous_event_record_digest_sha256": "9e1c1dd627471554ff9a06823f1598fe89ac76f0b3635fa2cc12c4d027c8b6f4",
+        "previous_event_record_digest_sha256": "f123d232b2370fafbc51753cc6bb5d3d00171b4b40b778439fc277d858c5d60a",
         "event_kind_code": "candidate_committed",
         "stage_code": "database_transaction",
         "component_binding_code": "binding.database-writer",
         "component_executable_sha256": "0909090909090909090909090909090909090909090909090909090909090909",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -3682,8 +3711,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3711,7 +3740,7 @@
         "candidate_file_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:08:20.000Z",
-        "record_digest_sha256": "178c621f014795840f6a1a130b5c29720f6745f6b3fa2a29c9f08920df849990",
+        "record_digest_sha256": "1aa3f5415cb01f2d19dcdf689f392c1d501d5ec5f019a1cd44c44e5da4a1b77b",
         "persisted_at": "2030-01-01T00:08:20.000Z"
       }
     },
@@ -3727,16 +3756,16 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 4,
-        "previous_event_record_digest_sha256": "178c621f014795840f6a1a130b5c29720f6745f6b3fa2a29c9f08920df849990",
+        "previous_event_record_digest_sha256": "1aa3f5415cb01f2d19dcdf689f392c1d501d5ec5f019a1cd44c44e5da4a1b77b",
         "event_kind_code": "candidate_sealed",
         "stage_code": "independent_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -3745,13 +3774,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "canonical_effect_code": "none_verified",
         "result_outcome_code": null,
@@ -3778,7 +3807,7 @@
         "candidate_file_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:08:31.000Z",
-        "record_digest_sha256": "7dbec62bc2a8cd327aafe3a5d5355c2f9cef087d52ad2d96ca42d33a0358726d",
+        "record_digest_sha256": "d29d83c9533a3c2abde4aeed6a6255bfbdc4844fe28b99a09838171b8f06b0fb",
         "persisted_at": "2030-01-01T00:08:31.000Z"
       }
     },
@@ -3794,16 +3823,16 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 5,
-        "previous_event_record_digest_sha256": "7dbec62bc2a8cd327aafe3a5d5355c2f9cef087d52ad2d96ca42d33a0358726d",
+        "previous_event_record_digest_sha256": "d29d83c9533a3c2abde4aeed6a6255bfbdc4844fe28b99a09838171b8f06b0fb",
         "event_kind_code": "stage_succeeded",
         "stage_code": "prior_backup",
         "component_binding_code": "binding.backup-adapter",
         "component_executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
@@ -3812,8 +3841,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3827,7 +3856,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:08:35.000Z",
-        "record_digest_sha256": "71e061547ee0c8d2708c348752a5b33d68fe51de9af64a192700f12002cec8f6",
+        "record_digest_sha256": "8532ebb011da133fcc38df61240b04669a4d6270e3234f879d144f5dbbcd9e31",
         "persisted_at": "2030-01-01T00:08:35.000Z"
       }
     },
@@ -3843,17 +3872,17 @@
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
         "event_sequence": 6,
-        "previous_event_record_digest_sha256": "71e061547ee0c8d2708c348752a5b33d68fe51de9af64a192700f12002cec8f6",
+        "previous_event_record_digest_sha256": "8532ebb011da133fcc38df61240b04669a4d6270e3234f879d144f5dbbcd9e31",
         "event_kind_code": "promotion_started",
         "stage_code": "promotion",
         "component_binding_code": "binding.cloner-promoter",
         "component_executable_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "authorization_permit_record_digest_sha256": null,
-        "authorization_bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
-        "prepromotion_authorization_record_digest_sha256": "a0c8d577a9f707efbfca304157b61972f45abb32fc7268ec15e2938dd63b0aa5",
+        "authorization_bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
+        "prepromotion_authorization_record_digest_sha256": "9f12e1657fbc6f8d6e33fa28824b5ec18cb0cc52892ebac7df2dff5701536b55",
         "bundle": {
           "bundle_id": "synthetic.bundle-002",
           "bundle_sequence": 2,
@@ -3861,8 +3890,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3876,7 +3905,7 @@
         "candidate_file_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "backup_inventory_sha256": "4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c",
         "event_at": "2030-01-01T00:08:50.000Z",
-        "record_digest_sha256": "5bcee8516f1efc72f88a0637879657d4684a7ed6b117ebeda11dbe4a7a92b139",
+        "record_digest_sha256": "07778730b4880b2d9565f4e11205886a987646543256c8cbe5d3f9f27e2ae592",
         "persisted_at": "2030-01-01T00:08:50.000Z"
       }
     },
@@ -3898,9 +3927,9 @@
         "component_binding_code": "binding.launcher",
         "component_executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3910,8 +3939,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -3939,7 +3968,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:02.000Z",
-        "record_digest_sha256": "5ad8b014674ede9d94d545e12682f9443fc29f3ab02ebadce1f7715b2dd7888d",
+        "record_digest_sha256": "ece80ef7acfd86e931f2eb6661e6f5200f0141c32849b473e4ef241d677b6217",
         "persisted_at": "2030-01-01T00:05:02.000Z"
       }
     },
@@ -3955,15 +3984,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 2,
-        "previous_event_record_digest_sha256": "5ad8b014674ede9d94d545e12682f9443fc29f3ab02ebadce1f7715b2dd7888d",
+        "previous_event_record_digest_sha256": "ece80ef7acfd86e931f2eb6661e6f5200f0141c32849b473e4ef241d677b6217",
         "event_kind_code": "candidate_committed",
         "stage_code": "database_transaction",
         "component_binding_code": "binding.database-writer",
         "component_executable_sha256": "0909090909090909090909090909090909090909090909090909090909090909",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -3973,8 +4002,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4002,7 +4031,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:20.000Z",
-        "record_digest_sha256": "bb5b998856074cf51091bb80f32b5cf64c39a50613fb894820cdadbfef6bfbf3",
+        "record_digest_sha256": "5f1cfce2f801661594641d224d36143c592676e39bc485b7a6d4c28ac51020bf",
         "persisted_at": "2030-01-01T00:05:20.000Z"
       }
     },
@@ -4018,15 +4047,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 3,
-        "previous_event_record_digest_sha256": "bb5b998856074cf51091bb80f32b5cf64c39a50613fb894820cdadbfef6bfbf3",
+        "previous_event_record_digest_sha256": "5f1cfce2f801661594641d224d36143c592676e39bc485b7a6d4c28ac51020bf",
         "event_kind_code": "candidate_sealed",
         "stage_code": "independent_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4036,13 +4065,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "none_verified",
         "result_outcome_code": null,
@@ -4069,7 +4098,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:31.000Z",
-        "record_digest_sha256": "b4e6e45f059adde1858a17de905709ac5aa9df8b0daf5d3be6fd05b4fb0a9c99",
+        "record_digest_sha256": "a08e3c1e87c761628de440cab4d761ccef42628062b3aadaa3585e35268e3894",
         "persisted_at": "2030-01-01T00:05:31.000Z"
       }
     },
@@ -4085,15 +4114,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 4,
-        "previous_event_record_digest_sha256": "b4e6e45f059adde1858a17de905709ac5aa9df8b0daf5d3be6fd05b4fb0a9c99",
+        "previous_event_record_digest_sha256": "a08e3c1e87c761628de440cab4d761ccef42628062b3aadaa3585e35268e3894",
         "event_kind_code": "stage_succeeded",
         "stage_code": "prior_backup",
         "component_binding_code": "binding.backup-adapter",
         "component_executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4103,8 +4132,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4118,7 +4147,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:05:35.000Z",
-        "record_digest_sha256": "787a90228e6902e3827b37700b83f57d73e23001a295e8edd420b529d6d58c2b",
+        "record_digest_sha256": "2b00b91424c8f34e916d9804aa649a522436a98623992b92d7c322c555e5ae69",
         "persisted_at": "2030-01-01T00:05:35.000Z"
       }
     },
@@ -4134,15 +4163,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 5,
-        "previous_event_record_digest_sha256": "787a90228e6902e3827b37700b83f57d73e23001a295e8edd420b529d6d58c2b",
+        "previous_event_record_digest_sha256": "2b00b91424c8f34e916d9804aa649a522436a98623992b92d7c322c555e5ae69",
         "event_kind_code": "promotion_started",
         "stage_code": "promotion",
         "component_binding_code": "binding.cloner-promoter",
         "component_executable_sha256": "0707070707070707070707070707070707070707070707070707070707070707",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4152,8 +4181,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4167,7 +4196,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:40.000Z",
-        "record_digest_sha256": "18068d1c7c112c3f1c0a3fcee2cb4b3f365d3c6887ed4cd065ee482fb4b9295c",
+        "record_digest_sha256": "c6360837ec3d3ec668e968a14644f84688512fca34a1b09a07ace2a2ed0af200",
         "persisted_at": "2030-01-01T00:05:40.000Z"
       }
     },
@@ -4183,15 +4212,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 6,
-        "previous_event_record_digest_sha256": "18068d1c7c112c3f1c0a3fcee2cb4b3f365d3c6887ed4cd065ee482fb4b9295c",
+        "previous_event_record_digest_sha256": "c6360837ec3d3ec668e968a14644f84688512fca34a1b09a07ace2a2ed0af200",
         "event_kind_code": "promotion_observed",
         "stage_code": "post_promotion_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4201,13 +4230,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "promoted_verified",
         "result_outcome_code": null,
@@ -4234,7 +4263,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:45.000Z",
-        "record_digest_sha256": "087792310fc3ae5562ba85a599fec8a6f746cd064e4cee6e585c0337dfd6dbce",
+        "record_digest_sha256": "15fda167325ef9acc5d4a4c35c08042f6bda5a2ee726905bbe9795ba8dbf6c9b",
         "persisted_at": "2030-01-01T00:05:45.000Z"
       }
     },
@@ -4250,15 +4279,15 @@
         "operation_id": "synthetic.operation-bootstrap",
         "operation_nonce": "3838383838383838383838383838383838383838383838383838383838383838",
         "event_sequence": 7,
-        "previous_event_record_digest_sha256": "087792310fc3ae5562ba85a599fec8a6f746cd064e4cee6e585c0337dfd6dbce",
+        "previous_event_record_digest_sha256": "15fda167325ef9acc5d4a4c35c08042f6bda5a2ee726905bbe9795ba8dbf6c9b",
         "event_kind_code": "recovery_required",
         "stage_code": "final_backup",
         "component_binding_code": "binding.backup-adapter",
         "component_executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4268,13 +4297,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-empty",
-          "state_seal_record_digest_sha256": "59ae4298e96a6e13b8b7d629b56d034eb4ed6fa0fa4cc3abde1958c954ad821d",
-          "logical_state_sha256": "8c5e1c04ca731c83c3860165c39ba9207a1f0e0f102734cc1d7526552d65840a"
+          "state_seal_record_digest_sha256": "2532b3c68cebd7820d7d09bbef4f2a3fd4cdeae7b3fcd8b948245b8eb099b2a2",
+          "logical_state_sha256": "cd262612babb72b5769ea178c8ad91110f85944b98fc9e2d29ca13979a9b3cea"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "promoted_verified",
         "result_outcome_code": "recovery_required",
@@ -4287,7 +4316,7 @@
         "candidate_file_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
         "backup_inventory_sha256": "4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b",
         "event_at": "2030-01-01T00:05:56.000Z",
-        "record_digest_sha256": "48a3b15f1e19d37144a117adf038c5e108ba34a4c588004bebfe3f0c3ddf7345",
+        "record_digest_sha256": "a54753036813e231b41fe420be2bbd212a9babc55443a691db81b40108624a33",
         "persisted_at": "2030-01-01T00:05:56.000Z"
       }
     },
@@ -4310,7 +4339,7 @@
           "bundle_sequence": 1,
           "bundle_digest_sha256": "327c4ce915f9ca9b69193ccb86c89a1d11a2395d36f7088ae256fa228e566875"
         },
-        "source_recovery_journal_event_record_digest_sha256": "48a3b15f1e19d37144a117adf038c5e108ba34a4c588004bebfe3f0c3ddf7345",
+        "source_recovery_journal_event_record_digest_sha256": "a54753036813e231b41fe420be2bbd212a9babc55443a691db81b40108624a33",
         "incident_record_sha256": "5151515151515151515151515151515151515151515151515151515151515151",
         "repair_plan_sha256": "5252525252525252525252525252525252525252525252525252525252525252",
         "allowed_actions": [
@@ -4319,8 +4348,8 @@
         ],
         "canonical_write_code": "denied",
         "allowed_canonical_effect_code": "none_verified",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
         "importer_binding_code": "binding.importer",
         "operator_binding_code": "binding.recovery-operator",
         "witness_binding_code": "binding.witness",
@@ -4328,16 +4357,16 @@
         "issued_at": "2030-01-01T00:06:05.000Z",
         "not_before": "2030-01-01T00:06:05.000Z",
         "expires_at": "2030-01-01T00:21:05.000Z",
-        "record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "verified_canonical_receipt_sha256": "e44ea206c00ecaa5ce3418d1d1cf86157c57c06c90635e3c4b10a8ca395d5ae0",
         "verified_canonical_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "target_bundle_kind_code": "principal_bootstrap",
-        "source_authorization_record_digest_sha256": "92b9d58fb64b4ff174bea20e3cfbdaa0f9e7d23a1c83f683cbd621960c1136ce",
-        "source_terminal_transition_record_digest_sha256": "c9b25dcb2b5a21c55dc870e6cade366e53ddee4c7ae4a282c02e484845fb1849"
+        "source_authorization_record_digest_sha256": "991fce76862582d2acd4ea2201548be61e425067ec271c28dc437015acc61ba3",
+        "source_terminal_transition_record_digest_sha256": "39dea55acd22e3d8510646da1f022c74741bbde4a494583ad89ba1e1d96c58cc"
       }
     },
     {
@@ -4350,7 +4379,7 @@
         "record_code": "synthetic.post-promotion-bootstrap-completion-transition-001",
         "permit_kind_code": "post_promotion_completion",
         "permit_code": "synthetic.post-promotion-bootstrap-completion-permit-001",
-        "permit_issuance_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "permit_issuance_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "transition_sequence": 1,
         "previous_transition_record_digest_sha256": null,
         "from_state_code": "ready",
@@ -4360,15 +4389,15 @@
         "operation_nonce": "4949494949494949494949494949494949494949494949494949494949494949",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "trusted_launcher",
         "recorded_by_binding_code": "binding.launcher",
         "occurred_at": "2030-01-01T00:06:05.000Z",
         "reason_code": "operation_claimed",
-        "record_digest_sha256": "a069a338d2466da33fbd2dd0a49e6bd7bed53318e8797e323669a284c078d380",
+        "record_digest_sha256": "bf0bc83bd7015e7c273970acd0f64c2fbef85eb9df7b59897b8730c2d9c62e12",
         "completion_journal_head_record_digest_sha256": null,
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:06:05.000Z"
@@ -4384,9 +4413,9 @@
         "record_code": "synthetic.post-promotion-bootstrap-completion-transition-002",
         "permit_kind_code": "post_promotion_completion",
         "permit_code": "synthetic.post-promotion-bootstrap-completion-permit-001",
-        "permit_issuance_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "permit_issuance_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "transition_sequence": 2,
-        "previous_transition_record_digest_sha256": "a069a338d2466da33fbd2dd0a49e6bd7bed53318e8797e323669a284c078d380",
+        "previous_transition_record_digest_sha256": "bf0bc83bd7015e7c273970acd0f64c2fbef85eb9df7b59897b8730c2d9c62e12",
         "from_state_code": "in_progress",
         "to_state_code": "spent",
         "transition_code": "no_effect_verified",
@@ -4394,16 +4423,16 @@
         "operation_nonce": "4949494949494949494949494949494949494949494949494949494949494949",
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "recovery_permit_record_digest_sha256": null,
         "recorded_by_runtime_role_code": "independent_verifier",
         "recorded_by_binding_code": "binding.verifier",
         "occurred_at": "2030-01-01T00:06:08.000Z",
         "reason_code": "no_effect_verified",
-        "record_digest_sha256": "51b440a87aaac5f833343484c924982b6866d0e982ebe06985d1bb7d3d64d2e7",
-        "completion_journal_head_record_digest_sha256": "515e057ffca2cd6380530c094ac7163d3d4d8aaec61760fa334bc033db876ad6",
+        "record_digest_sha256": "f9dcbda78e15cb20443dcca52fe04697070c83ec63dea4f79ee4c8a672012b4e",
+        "completion_journal_head_record_digest_sha256": "fda19d9242019ec561276fc31065b96b7a703e5f911e662de91081ecd05b283e",
         "persisted_by_binding_code": "binding.launcher",
         "persisted_at": "2030-01-01T00:06:08.000Z"
       }
@@ -4426,9 +4455,9 @@
         "component_binding_code": "binding.launcher",
         "component_executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4438,8 +4467,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4467,7 +4496,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:06:05.100Z",
-        "record_digest_sha256": "3595c283221d90b979becfcbb43f88dec4528b4d4f216054bbf74f2a6f6e5ebf",
+        "record_digest_sha256": "48b77b26fdecb084446cce3145681971e123285b8f97e62133d35e3d1ecc9be8",
         "persisted_at": "2030-01-01T00:06:05.100Z"
       }
     },
@@ -4483,15 +4512,15 @@
         "operation_id": "synthetic.operation-bootstrap-completion-001",
         "operation_nonce": "4949494949494949494949494949494949494949494949494949494949494949",
         "event_sequence": 2,
-        "previous_event_record_digest_sha256": "3595c283221d90b979becfcbb43f88dec4528b4d4f216054bbf74f2a6f6e5ebf",
+        "previous_event_record_digest_sha256": "48b77b26fdecb084446cce3145681971e123285b8f97e62133d35e3d1ecc9be8",
         "event_kind_code": "stage_succeeded",
         "stage_code": "independent_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4501,8 +4530,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4516,7 +4545,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:06:06.000Z",
-        "record_digest_sha256": "612e58d932f11e4d5673646aa0d4e57bc1df9734e67a482d95181e3067955a62",
+        "record_digest_sha256": "49be94e5f55dfd26e4f9496e5e87623cea30e894c5b8dcd3bbea9c1728dc93eb",
         "persisted_at": "2030-01-01T00:06:06.000Z"
       }
     },
@@ -4532,15 +4561,15 @@
         "operation_id": "synthetic.operation-bootstrap-completion-001",
         "operation_nonce": "4949494949494949494949494949494949494949494949494949494949494949",
         "event_sequence": 3,
-        "previous_event_record_digest_sha256": "612e58d932f11e4d5673646aa0d4e57bc1df9734e67a482d95181e3067955a62",
+        "previous_event_record_digest_sha256": "49be94e5f55dfd26e4f9496e5e87623cea30e894c5b8dcd3bbea9c1728dc93eb",
         "event_kind_code": "operation_completed",
         "stage_code": "completion",
         "component_binding_code": "binding.importer",
         "component_executable_sha256": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4550,13 +4579,13 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "observed_logical_state": {
           "state_seal_code": "synthetic.state-bootstrap",
-          "state_seal_record_digest_sha256": "bd33f8073e9fe812c7ce5a6eca102c08596cdd49524b8c83c48ba7bea85a1c1d",
-          "logical_state_sha256": "d1b6703c7a022b1c4cb74c5b13781b7fd24d1ab4f915813b1c50f4c01bc3090b"
+          "state_seal_record_digest_sha256": "9e111d4504447a985cba04d2f128b055e2a1ed5516e606a1e8906386c4917289",
+          "logical_state_sha256": "5a49456b0384ff1bcad9d64d5f3d302ab13c9067fc4dfeac79ba03ad9bcf69b2"
         },
         "canonical_effect_code": "none_verified",
         "result_outcome_code": "recovered",
@@ -4583,7 +4612,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": "5353535353535353535353535353535353535353535353535353535353535353",
         "event_at": "2030-01-01T00:06:07.000Z",
-        "record_digest_sha256": "515e057ffca2cd6380530c094ac7163d3d4d8aaec61760fa334bc033db876ad6",
+        "record_digest_sha256": "fda19d9242019ec561276fc31065b96b7a703e5f911e662de91081ecd05b283e",
         "persisted_at": "2030-01-01T00:06:07.000Z"
       }
     },
@@ -4630,8 +4659,8 @@
         "error": null,
         "operation_mode_code": "recovery",
         "bundle_kind_code": "principal_bootstrap",
-        "recovery_permit_record_digest_sha256": "deba7179861e4be34585e987dbe60ce695b48aff86b7842fa54f694f1a0eabab",
-        "recovery_terminal_transition_record_digest_sha256": "51b440a87aaac5f833343484c924982b6866d0e982ebe06985d1bb7d3d64d2e7"
+        "recovery_permit_record_digest_sha256": "18e19158d08708c8f1804138307daecf74fa6c95371b20517ccce47716ae115c",
+        "recovery_terminal_transition_record_digest_sha256": "f9dcbda78e15cb20443dcca52fe04697070c83ec63dea4f79ee4c8a672012b4e"
       }
     },
     {
@@ -4644,12 +4673,12 @@
         "record_code": "synthetic.prepromotion-authorization-002",
         "operation_id": "synthetic.operation-document-002",
         "operation_nonce": "3434343434343434343434343434343434343434343434343434343434343434",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "bundle_seal_record_digest_sha256": "93466ac0edf02dda5932efe7803ba87955ebd17ed322f181337bd5d54d930b0a",
-        "collector_handoff_record_digest_sha256": "44813740560e0e5f93cc249d77ba890610638ddeb93020985e82d646b5f3ec35",
-        "candidate_file_seal_record_digest_sha256": "afeff8e0f6b3beaaa9da54c91474a4caec412c6c6e2448001b84d8e2ba89f3a7",
-        "clearance_decision_record_digest_sha256": "54a4f6621b1dbb6e8e2a4bd30cb5b59a458b898ad91637332906c6f5837878d9",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "bundle_seal_record_digest_sha256": "c721447a3b885d20ba44b0bea80baec3d60c74f4906d0cd2235b6b94d94c8f11",
+        "collector_handoff_record_digest_sha256": "b69db922779eb116a42607169d90d9cf34216f821917e4d0b707a8d8a80b0d2a",
+        "candidate_file_seal_record_digest_sha256": "f66640487250b24422e9713f7d8b7ef19122c460371a5cb2dce119de3719c5d5",
+        "clearance_decision_record_digest_sha256": "09ec76ef684fd574396922249943ed7f35fae75c098e96992952f19622556025",
         "source_clearance_scope_sha256": "f8a1e60d4e726ff3a76f4937d64c21bd0c5b2465934b23b79e7a4f004afbd3c5",
         "artifact": {
           "byte_layer_code": "retrieved_body",
@@ -4663,7 +4692,7 @@
         "persisted_by_binding_code": "binding.clearance-broker",
         "evaluated_at": "2030-01-01T00:08:40.000Z",
         "expires_at": "2030-01-01T00:09:40.000Z",
-        "record_digest_sha256": "a0c8d577a9f707efbfca304157b61972f45abb32fc7268ec15e2938dd63b0aa5",
+        "record_digest_sha256": "9f12e1657fbc6f8d6e33fa28824b5ec18cb0cc52892ebac7df2dff5701536b55",
         "persisted_at": "2030-01-01T00:08:40.001Z"
       }
     },
@@ -4679,15 +4708,15 @@
         "operation_id": "synthetic.operation-recovery-completion-001",
         "operation_nonce": "4646464646464646464646464646464646464646464646464646464646464646",
         "event_sequence": 2,
-        "previous_event_record_digest_sha256": "97ce083f1d645dda5961668cbac723deae4a357eac645264041ce992b23788c2",
+        "previous_event_record_digest_sha256": "2f171e0c835cd6ac249b86944f9e52197fc919babe3c460a4b59c1ec4efbe695",
         "event_kind_code": "stage_succeeded",
         "stage_code": "independent_verification",
         "component_binding_code": "binding.verifier",
         "component_executable_sha256": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d",
         "recorded_by_binding_code": "binding.journal-broker",
-        "runtime_profile_record_digest_sha256": "aa9b69c11d4bd6a875a8a77b0e1b97c986809ed0bc794c6c6fcf429b8986f460",
-        "identity_bindings_record_digest_sha256": "1a7326ccbc57ab6039972efd8534f17069bb55f8d43f3b963f371c5b9b00cc8f",
-        "authorization_permit_record_digest_sha256": "d78baaf4a514fa3876976f19f78f8c4bc993bad3a7eb5dc36045b520c0a3aaa3",
+        "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+        "identity_bindings_record_digest_sha256": "ab00cff1cc0e5c48f8973263e0ca2391d5173eed03c6a942ab1612cf91085b8d",
+        "authorization_permit_record_digest_sha256": "934c2b032dedb4c960e85c75ec089b67ea7a220614f8c41308714338cd9f0193",
         "authorization_bundle_seal_record_digest_sha256": null,
         "prepromotion_authorization_record_digest_sha256": null,
         "bundle": {
@@ -4697,8 +4726,8 @@
         },
         "target_logical_state": {
           "state_seal_code": "synthetic.state-document-002",
-          "state_seal_record_digest_sha256": "c13774c22bf86972cb3f10d0bc5354fe38273af6d3c64aeb0860f718fa012c52",
-          "logical_state_sha256": "b3c90c0c7772a3aa22883c4d9bf93b4380e478a4f6778885081061ddb531c2f3"
+          "state_seal_record_digest_sha256": "faaab901521d093f21ed20cc077136aeb258b00059b402a7cd2fdd689e7e0479",
+          "logical_state_sha256": "b3d5e195655cc88a83432e8a061736806d28983b32a0cd66b8af1642a72f8e11"
         },
         "observed_logical_state": null,
         "canonical_effect_code": "none_verified",
@@ -4712,7 +4741,7 @@
         "candidate_file_sha256": null,
         "backup_inventory_sha256": null,
         "event_at": "2030-01-01T00:10:01.500Z",
-        "record_digest_sha256": "d431a49d3514a0fcc20076d763fa4de76513e3577a18c9cd6761f922e5e20053",
+        "record_digest_sha256": "8613d86aca5bdd26e6f0e8cf9e78ed01d3e19cd39c1003f894c8672391451913",
         "persisted_at": "2030-01-01T00:10:01.500Z"
       }
     }

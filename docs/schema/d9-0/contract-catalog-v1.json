@@ -1,6 +1,13 @@
 {
   "format": "jedi-atlas-d90-contract-catalog",
-  "format_version": "1.0.0",
+  "format_version": "1.0.1",
+  "correction_lineage": {
+    "revision_code": "d9_0_1_permit_handle_scope",
+    "supersedes_approved_commit": "320b2d6969ede88796c44e652f6422f73e7fe4fe",
+    "supersedes_contract_catalog_sha256": "d9c55d134b333916c951cbe25c8f28a1865552ace4070984d8c2c84c78b362f2",
+    "supersedes_contract_root_fingerprint_sha256": "9779d0e024714cd3885fe4e412781a95e0a9396020373f4a3a376b9405e331cf",
+    "supersedes_classification_record_digest_sha256": "6dff0288aa76baef2dcaeaed6ce5c810da25b1aa198f9664ee71622e0610ae4b"
+  },
   "hash_profile": "sha256-over-exact-file-bytes",
   "catalog_self_digest": "not_present_to_avoid_self_reference",
   "instance_policy": {
@@ -21,8 +28,8 @@
       "schema_file": "runtime-profile-v1.schema.json",
       "schema_id": "https://jedi-hiring.invalid/schema/d9-0/runtime-profile-v1.schema.json",
       "contract_format": "jedi-atlas-runtime-profile",
-      "contract_version": "1.0.0",
-      "raw_sha256": "841a6f1fc4d335185118f0b88deb3bd13e85cf9963623508ac3bf3840eabb955"
+      "contract_version": "1.0.1",
+      "raw_sha256": "2faf76d5ca4e7f26d8f38f12848daaabb5e376a32fece9966667be20bcd5637d"
     },
     {
       "schema_role": "top_level_contract",
@@ -100,8 +107,8 @@
   "classifications": {
     "file": "classifications-v1.json",
     "format": "jedi-atlas-d90-classifications",
-    "format_version": "1.0.0",
-    "raw_sha256": "86b9e5eb0d249927f6c29a216034c216d98f8583759113d8a646eea8b1cb4c15"
+    "format_version": "1.0.1",
+    "raw_sha256": "1cc2be24d66483898deee8fcdb6efff80eb3609acd55326aa8ad11f9a2703721"
   },
   "field_registry": {
     "file": "field-registry-v1.json",
