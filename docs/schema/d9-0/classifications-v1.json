@@ -1,6 +1,6 @@
 {
   "format": "jedi-atlas-d90-classifications",
-  "format_version": "1.0.0",
+  "format_version": "1.0.1",
   "outcomes": [
     "planned",
     "imported",
@@ -299,6 +299,15 @@
       ]
     },
     {
+      "slot_code": "canonical_generation_directory",
+      "recipients": [
+        {
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        }
+      ]
+    },
+    {
       "slot_code": "canonical_query",
       "recipients": [
         {
@@ -340,7 +349,11 @@
         },
         {
           "runtime_role_code": "clearance_broker",
-          "access_code": "write_fixed_function"
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
         }
       ]
     },
@@ -378,8 +391,16 @@
           "access_code": "read_only"
         },
         {
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
           "runtime_role_code": "independent_verifier",
           "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
         }
       ]
     },
@@ -428,6 +449,14 @@
         {
           "runtime_role_code": "bundle_importer",
           "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
         }
       ]
     },
@@ -435,6 +464,1265 @@
       "slot_code": "staging_root",
       "recipients": [
         {
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    }
+  ],
+  "operation_handle_scope_policy": {
+    "grant_universe_code": "runtime_profile_logical_handle_recipient_triples",
+    "operation_grant_policy_code": "exact_required_set_only",
+    "forbidden_set_policy_code": "exact_global_complement",
+    "selector_input_policy_code": "derive_from_verified_operation_context_only",
+    "selector_fields": [
+      "operation_mode_code",
+      "bundle_kind_code",
+      "source_authorization_code",
+      "permit_kind_code",
+      "permit_scope_code"
+    ],
+    "selector_cardinality_code": "exactly_one_match",
+    "caller_scope_code_policy_code": "forbidden",
+    "unmatched_scope_policy_code": "reject_before_handle_issue",
+    "service_owned_handle_policy_code": "must_appear_in_global_matrix",
+    "scope_exit_policy_code": "close_or_broker_revoke_then_terminate_if_unconfirmed"
+  },
+  "operation_handle_scope_rules": [
+    {
+      "operation_scope_code": "accepted_bootstrap_no_op",
+      "operation_mode_code": "no_op_verification",
+      "bundle_kind_code": "principal_bootstrap",
+      "source_authorization_code": "accepted_receipt",
+      "permit_kind_code": null,
+      "permit_scope_code": null,
+      "required_handle_grants": [
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "accepted_document_no_op",
+      "operation_mode_code": "no_op_verification",
+      "bundle_kind_code": "single_document",
+      "source_authorization_code": "accepted_receipt",
+      "permit_kind_code": null,
+      "permit_scope_code": null,
+      "required_handle_grants": [
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "bootstrap_first_acceptance",
+      "operation_mode_code": "bootstrap",
+      "bundle_kind_code": "principal_bootstrap",
+      "source_authorization_code": "bootstrap_permit_and_zero_handoff_bundle_seal",
+      "permit_kind_code": "bootstrap",
+      "permit_scope_code": "canonical_first_acceptance_only",
+      "required_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "exact_bootstrap_reconstruction",
+      "operation_mode_code": "recovery",
+      "bundle_kind_code": "principal_bootstrap",
+      "source_authorization_code": "recovery_permit_and_replay_certificate",
+      "permit_kind_code": "recovery",
+      "permit_scope_code": "exact_bootstrap_reconstruction_only",
+      "required_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "ordinary_document_import",
+      "operation_mode_code": "document_import",
+      "bundle_kind_code": "single_document",
+      "source_authorization_code": "single_document_bundle_seal",
+      "permit_kind_code": null,
+      "permit_scope_code": null,
+      "required_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "post_promotion_completion_bootstrap",
+      "operation_mode_code": "recovery",
+      "bundle_kind_code": "principal_bootstrap",
+      "source_authorization_code": "post_promotion_completion_permit_and_bootstrap_transition",
+      "permit_kind_code": "post_promotion_completion",
+      "permit_scope_code": "noncanonical_completion_only",
+      "required_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        }
+      ]
+    },
+    {
+      "operation_scope_code": "post_promotion_completion_document",
+      "operation_mode_code": "recovery",
+      "bundle_kind_code": "single_document",
+      "source_authorization_code": "post_promotion_completion_permit_and_document_bundle_seal",
+      "permit_kind_code": "post_promotion_completion",
+      "permit_scope_code": "noncanonical_completion_only",
+      "required_handle_grants": [
+        {
+          "slot_code": "backup_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "operation_journal",
+          "runtime_role_code": "journal_broker",
+          "access_code": "append_intended"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "permit_control_store",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "write_fixed_function"
+        }
+      ],
+      "forbidden_handle_grants": [
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "create_and_transfer"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "candidate_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "canonical_generation_directory",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "clone_fixed_source_and_atomic_target_generation"
+        },
+        {
+          "slot_code": "canonical_query",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_clearance_decision_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "clearance_broker",
+          "access_code": "append_prepromotion_authorization_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "cloner_promoter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "clearance_register",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "custody_adapter",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "fixed_function_client"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "custody_capability_store",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "custody_adapter",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "handoff_broker",
+          "access_code": "append_collector_handoff_only"
+        },
+        {
+          "slot_code": "handoff_registry",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "append_bundle_seal_only"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "database_writer",
+          "access_code": "write_fixed_function"
+        },
+        {
+          "slot_code": "recovery_database",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "bundle_importer",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "independent_verifier",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "reviewed_root",
+          "runtime_role_code": "trusted_launcher",
+          "access_code": "read_only"
+        },
+        {
+          "slot_code": "staging_root",
           "runtime_role_code": "custody_adapter",
           "access_code": "read_only"
         }
@@ -2330,7 +3618,7 @@
       "safe_message": "A trusted component violated the frozen contract."
     }
   ],
-  "record_digest_sha256": "6dff0288aa76baef2dcaeaed6ce5c810da25b1aa198f9664ee71622e0610ae4b",
+  "record_digest_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
   "post_promotion_completion_permit_policy": {
     "scope_code": "noncanonical_completion_only",
     "maximum_lifetime_ms": 900000,
@@ -2931,9 +4219,12 @@
       "allowed_handle_slot_codes": [
         "backup_adapter",
         "candidate_database",
+        "canonical_generation_directory",
         "canonical_query",
+        "handoff_registry",
         "operation_journal",
-        "permit_control_store"
+        "permit_control_store",
+        "reviewed_root"
       ]
     },
     {
@@ -2975,7 +4266,8 @@
         "canonical_query",
         "operation_journal",
         "permit_control_store",
-        "recovery_database"
+        "recovery_database",
+        "reviewed_root"
       ]
     },
     {
@@ -3013,6 +4305,7 @@
       "allowed_handle_slot_codes": [
         "backup_adapter",
         "canonical_query",
+        "handoff_registry",
         "operation_journal",
         "permit_control_store"
       ]

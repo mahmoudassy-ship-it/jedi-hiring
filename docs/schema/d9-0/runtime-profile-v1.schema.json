@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jedi-hiring.invalid/schema/d9-0/runtime-profile-v1.schema.json",
-  "title": "JEDI Atlas D9.0 controlled-pilot runtime profile",
+  "title": "JEDI Atlas D9.0.1 controlled-pilot runtime profile",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -30,7 +30,7 @@
   ],
   "properties": {
     "format": { "const": "jedi-atlas-runtime-profile" },
-    "format_version": { "const": "1.0.0" },
+    "format_version": { "const": "1.0.1" },
     "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
     "profile_code": { "const": "pilot_local_restricted_v1" },
     "profile_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
@@ -141,7 +141,7 @@
         "forbidden_operation_codes"
       ],
       "properties": {
-        "canonical_database_access_code": { "const": "no_handle_except_atomic_promoter" },
+        "canonical_database_access_code": { "const": "fixed_source_clone_and_atomic_generation_only" },
         "candidate_insert_tables": {
           "type": "array",
           "minItems": 10,
@@ -177,8 +177,8 @@
     },
     "logical_handle_slots": {
       "type": "array",
-      "minItems": 12,
-      "maxItems": 12,
+      "minItems": 13,
+      "maxItems": 13,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -189,6 +189,7 @@
               "reviewed_root",
               "staging_root",
               "canonical_query",
+              "canonical_generation_directory",
               "candidate_database",
               "custody_adapter",
               "custody_capability_store",
@@ -203,7 +204,7 @@
           "recipients": {
             "type": "array",
             "minItems": 1,
-            "maxItems": 6,
+            "maxItems": 7,
             "uniqueItems": true,
             "items": {
               "type": "object",
@@ -217,13 +218,14 @@
                     "cloner_promoter",
                     "custody_adapter",
                     "database_writer",
+                    "handoff_broker",
                     "independent_verifier",
                     "journal_broker",
                     "trusted_launcher"
                   ]
                 },
                 "access_code": {
-                  "enum": ["append_intended", "create_and_transfer", "fixed_function_client", "read_only", "write_fixed_function"]
+                  "enum": ["append_bundle_seal_only", "append_clearance_decision_only", "append_collector_handoff_only", "append_intended", "append_prepromotion_authorization_only", "clone_fixed_source_and_atomic_target_generation", "create_and_transfer", "fixed_function_client", "read_only", "write_fixed_function"]
                 }
               }
             }
