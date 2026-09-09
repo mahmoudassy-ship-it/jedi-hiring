@@ -1,6 +1,6 @@
-# D9.0.1 — proposed least-privilege correction to the Decision 9 contract freeze
+# D9.0.1 — approved least-privilege correction to the Decision 9 contract freeze
 
-Status: **proposed versioned correction; design-only and synthetic-only; awaiting approval**. The original D9.0 set approved at commit `320b2d6969ede88796c44e652f6422f73e7fe4fe` and fingerprint `9779d0e024714cd3885fe4e412781a95e0a9396020373f4a3a376b9405e331cf` remains preserved in Git history. This D9.0.1 patch revision explicitly supersedes that set only for runtime logical-handle identity, global recipient ceilings, permit slot unions, and exact operation-scoped handle partitions. It does not approve implementation or operational use. The contracts define messages and validation rules for later D9 work. They do not create a launcher, importer, database writer, collector, processor, scanner, custody store, credential, runtime principal, bootstrap event, evidence row, API, export, search surface, or frontend integration.
+Status: **approved at commit `58a10d43ee5fcc3121a368301b4f5a925f26a9e3`; design-only and synthetic-only**. D9.0.1 is the applicable approved contract revision for subsequent D9 implementation. The original D9.0 set approved at commit `320b2d6969ede88796c44e652f6422f73e7fe4fe` and fingerprint `9779d0e024714cd3885fe4e412781a95e0a9396020373f4a3a376b9405e331cf` remains preserved as the historical approval. D9.0.1 explicitly supersedes only the corrected D9.0 runtime-profile and handle-scope contracts: runtime logical-handle identity, global recipient ceilings, permit slot unions, and exact operation-scoped handle partitions. It does not approve implementation or operational use. The contracts define messages and validation rules for later D9 work. They do not create a launcher, importer, database writer, collector, processor, scanner, custody store, credential, runtime principal, bootstrap event, evidence row, API, export, search surface, or frontend integration.
 
 ## Purpose and fixed boundary
 
@@ -19,6 +19,15 @@ The words **must**, **must not**, **required**, and **only** below describe the 
 ## Versioned contract inventory
 
 The corrected catalog and classification registry are version `1.0.1`. The runtime-profile wire format is also `1.0.1` because its closed logical-slot and access-code vocabulary changes. Every other wire format, the field registry, and the digest-profile registry remain byte-identical at `1.0.0`; the evidence-bundle format also remains `1.0.0`. Catalog `correction_lineage` pins the approved predecessor commit, catalog SHA-256, classification semantic digest, and root fingerprint. A consumer must reject an unknown format name, version, discriminator, field, enum member, incompatible schema digest, stale catalog, or a `1.0.0` runtime profile presented to the `1.0.1` set. A future compatible or incompatible change requires a new version and its own review; implementations must not silently ignore or downgrade fields.
+
+The approval at commit `58a10d43ee5fcc3121a368301b4f5a925f26a9e3` pins these D9.0.1 fingerprints:
+
+- catalog SHA-256: `e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a`;
+- classification semantic fingerprint: `8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef`;
+- global-handle semantic fingerprint: `68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e`;
+- operation-scope semantic fingerprint: `9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e`.
+
+These are approval anchors, not runtime attestations. Any change to a pinned payload or semantic projection requires another explicit versioned correction and review.
 
 | Format | Purpose | Trusted producer | Consumers | Instance storage | Confidentiality | Canonical status |
 |---|---|---|---|---|---|---|
@@ -422,7 +431,7 @@ Mutation tests must fail when a schema is weakened, not merely when the validato
 
 ## Later implementation ownership
 
-The historical D9.0 baseline freezes approved descriptions and validation fixtures only. The current D9.0.1 runtime profile, classification registry, catalog, and dependent fixtures are a proposed versioned correction awaiting separate approval. Neither revision's presence in this repository establishes that a process sandbox, authenticated peer, append-only store, scanner, backup, custody durability, or write isolation exists:
+The historical D9.0 baseline preserves the original approved descriptions and validation fixtures. The D9.0.1 runtime profile, classification registry, catalog, and dependent fixtures are the applicable approved correction for subsequent D9 implementation, limited to the supersession boundary stated above. Neither revision's presence in this repository establishes that a process sandbox, authenticated peer, append-only store, scanner, backup, custody durability, or write isolation exists:
 
 - **D9.1** must implement launcher identity binding, active binding/handoff generation and revocation selection, IPC peer checks, immutable runtime-profile loading, handoff/seal verification, authenticated trusted-launcher append brokering, protected short-lived capability/permit state, and exact operation/permit-scoped logical-handle issuance and revocation. Its synthetic bootstrap exercise is a control-plane **no-effect** path only: it may prove selector, descriptor, permit, rollback and replay controls against stubs and disposable state, but it must not claim accepted-bundle projection parity, importer no-op verification, or execution of the real ceremony.
 - **D9.2** must implement the secure manifest opener, approved evidence canonicalizer, semantic preflight, typed plan, fixed writer, candidate clone, full projection verifier, logical seals, result generation, write-surface isolation, and complete accepted-bundle projection/no-op verification for both bundle kinds.
@@ -435,6 +444,6 @@ The historical D9.0 baseline freezes approved descriptions and validation fixtur
 
 ## Approval boundary
 
-The original approval at commit `320b2d6969ede88796c44e652f6422f73e7fe4fe` remains the immutable historical D9.0 baseline. This D9.0.1 patch is an explicit proposed successor and is not approved merely because its files or validator exist. Its catalog records the predecessor rather than silently rewriting history. Neither baseline approval nor this proposal approves any executable component, operational profile instance, principal creation, credential, rights decision, source retrieval, artifact storage, bootstrap transition, database write, evidence import, legal assertion, public exposure, or production use. Any later D9.3 durability-receipt contract extension must be separately versioned, reviewed, and approved rather than modifying either reviewed revision in place.
+The original approval at commit `320b2d6969ede88796c44e652f6422f73e7fe4fe` remains the immutable historical D9.0 baseline. D9.0.1, approved at commit `58a10d43ee5fcc3121a368301b4f5a925f26a9e3`, is its explicit versioned successor only for the corrected runtime-profile and handle-scope contracts and is the applicable revision for subsequent D9 implementation. Its catalog records the predecessor rather than silently rewriting history. Neither approval authorizes any executable component, operational profile instance, principal creation, credential, rights decision, source retrieval, artifact storage, bootstrap transition, database write, evidence import, legal assertion, public exposure, or production use. Any later D9.3 durability-receipt contract extension must be separately versioned, reviewed, and approved rather than modifying either reviewed revision in place.
 
 Until the relevant later D9 tranches are implemented, independently reviewed, and separately approved, all `atlas_*` tables remain empty and the frontend remains exclusively backed by legacy v1 data.
