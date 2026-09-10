@@ -1,6 +1,6 @@
 # D9.2 accepted-bundle verifier
 
-Status: **implementation candidate awaiting separate approval**. This boundary is synthetic and unactivated. It implements the accepted-bundle data-plane checks required by approved Decision 9 and the applicable D9.0.1 contracts, but it is not an operational importer and is not authorized to execute the real bootstrap ceremony, write the canonical Atlas database, accept real evidence, operate custody, or expose data publicly.
+Status: **approved at implementation commit `460547b7fe75a94f689dabc97fd91ee6f803934a` for the synthetic, unactivated D9.2 boundary only**. Approval covers its disposable accepted-evidence projection, no-op, rollback and reconstruction checks; it does not make the component operational or production-ready. An accepted evidence projection proves conformance to the quarantined evidence bundle and persisted representation—it does not verify legal identity, officiality, authority, currency, legal effect, or any legal proposition. This approval does not authorize real bootstrap, evidence import, canonical promotion, custody operations, credentials, legal verification, publication, API use, or frontend use. D9.3 local custody and recovery is the next separately reviewed implementation step.
 
 ## Frozen-contract audit
 
@@ -134,3 +134,5 @@ This branch does not provide a production service or callable application featur
 - explicit authorization of people, pilot document, ceremony window, and operational runbook.
 
 The implementation emits internal synthetic outcomes rather than the frozen operational importer-result contract. Emitting an operational accepted result would falsely imply the unimplemented clearance, custody, backup, journal, and promotion guarantees. Any D9.3 durability-receipt extension remains separately versioned and reviewed.
+
+The approved D9.2 implementation remains unactivated and synthetic. Its approval neither converts accepted evidence into verified legal authority nor authorizes any operational effect. D9.3 must separately design and implement local custody durability and recovery before this work can participate in a real evidence path.
