@@ -1,6 +1,6 @@
 # D9.1 — launcher and bootstrap control plane
 
-Status: **implementation candidate; pending separate approval and not operationally activated**. This branch implements the D9.1 control-plane boundary against the applicable, approved D9.0.1 contracts. It does not execute the bootstrap ceremony, create an Atlas principal, import evidence, or authorize production use.
+Status: **approved at implementation commit `79046c27dfa6923383be33a1d0aaa5a7641f5d1f` for its synthetic, unactivated control-plane boundary only**. This approval is not production readiness and does not authorize real bootstrap, evidence import, custody operations, database writing, or legal verification. D9.2 accepted-bundle projection verification is the next separately reviewed implementation step.
 
 The applicable frozen inputs remain:
 
