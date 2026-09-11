@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-3-0/common-v1.schema.json",
+  "title": "JEDI Atlas D9.3.0 shared custody and durability definitions",
+  "$defs": {
+    "custodyIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle",
+        "bundle_seal_record_digest_sha256",
+        "custody_event_code",
+        "artifact",
+        "copy_code",
+        "custody_class_code",
+        "backend_code",
+        "backend_reference"
+      ],
+      "properties": {
+        "bundle": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/bundleReference" },
+        "bundle_seal_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "custody_event_code": { "const": "placement" },
+        "artifact": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/artifactIdentity" },
+        "copy_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "custody_class_code": { "const": "restricted_store" },
+        "backend_code": { "const": "pilot_local_cas_v1" },
+        "backend_reference": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/safeBackendReference" }
+      }
+    },
+    "primaryReceiptSemantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "operation_nonce",
+        "bundle",
+        "bundle_seal_record_digest_sha256",
+        "artifact",
+        "copy_code",
+        "custody_class_code",
+        "backend_code",
+        "backend_reference",
+        "open_staged_response_record_digest_sha256",
+        "prepare_response_record_digest_sha256",
+        "verify_prepared_response_record_digest_sha256",
+        "publish_request_record_digest_sha256",
+        "source_capability_consumed_transition_digest_sha256",
+        "preparation_capability_issuance_digest_sha256",
+        "preparation_capability_verified_transition_digest_sha256",
+        "finalization_outcome_code",
+        "no_replace_disposition_code",
+        "adapter_binding_code",
+        "adapter_executable_sha256",
+        "durability_profile_code",
+        "file_data_synced",
+        "parent_directory_synced",
+        "no_replace_enforced",
+        "reopened_and_rehashed",
+        "completed_at"
+      ],
+      "properties": {
+        "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/operationNonce" },
+        "bundle": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/bundleReference" },
+        "bundle_seal_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "artifact": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/artifactIdentity" },
+        "copy_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "custody_class_code": { "const": "restricted_store" },
+        "backend_code": { "const": "pilot_local_cas_v1" },
+        "backend_reference": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/safeBackendReference" },
+        "open_staged_response_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "prepare_response_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "verify_prepared_response_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "publish_request_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "source_capability_consumed_transition_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "preparation_capability_issuance_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "preparation_capability_verified_transition_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "finalization_outcome_code": { "enum": ["published", "reused_verified"] },
+        "no_replace_disposition_code": { "enum": ["created_new", "existing_exact"] },
+        "adapter_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "adapter_executable_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "durability_profile_code": { "const": "local_posix_file_and_directory_sync_v1" },
+        "file_data_synced": { "const": true },
+        "parent_directory_synced": { "const": true },
+        "no_replace_enforced": { "const": true },
+        "reopened_and_rehashed": { "const": true },
+        "completed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+      }
+    },
+    "primaryReceiptReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "format_version", "record_code", "receipt_raw_sha256"],
+      "properties": {
+        "format": { "const": "jedi-atlas-primary-durability-receipt" },
+        "format_version": { "const": "1.0.0" },
+        "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "receipt_raw_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+      }
+    },
+    "artifactBackupReceiptReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_kind_code",
+        "receipt_contract_format",
+        "receipt_contract_version",
+        "receipt_raw_sha256",
+        "scope_profile_code",
+        "scope_sha256",
+        "backup_profile_record_digest_sha256",
+        "produced_by_binding_code",
+        "completed_at",
+        "persisted_at"
+      ],
+      "properties": {
+        "receipt_kind_code": { "const": "artifact_copy" },
+        "receipt_contract_format": { "const": "jedi-atlas-backup-durability-receipt" },
+        "receipt_contract_version": { "const": "1.0.0" },
+        "receipt_raw_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "scope_profile_code": { "const": "artifact_bundle_copy_primary_receipt_operation_nonce_v1" },
+        "scope_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "backup_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "produced_by_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "completed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+        "persisted_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+      }
+    },
+    "priorDatabaseBackupReceiptReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_kind_code", "receipt_contract_format", "receipt_contract_version", "receipt_raw_sha256", "scope_profile_code", "scope_sha256", "backup_profile_record_digest_sha256", "produced_by_binding_code", "completed_at", "persisted_at"],
+      "properties": {
+        "receipt_kind_code": { "const": "prior_database" },
+        "receipt_contract_format": { "const": "jedi-atlas-backup-durability-receipt" },
+        "receipt_contract_version": { "const": "1.0.0" },
+        "receipt_raw_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "scope_profile_code": { "const": "prior_logical_state_database_generation_operation_nonce_v1" },
+        "scope_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "backup_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "produced_by_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "completed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+        "persisted_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+      }
+    },
+    "finalBackupReceiptReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_kind_code", "receipt_contract_format", "receipt_contract_version", "receipt_raw_sha256", "scope_profile_code", "scope_sha256", "backup_profile_record_digest_sha256", "produced_by_binding_code", "completed_at", "persisted_at"],
+      "properties": {
+        "receipt_kind_code": { "const": "final_consistent_set" },
+        "receipt_contract_format": { "const": "jedi-atlas-backup-durability-receipt" },
+        "receipt_contract_version": { "const": "1.0.0" },
+        "receipt_raw_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "scope_profile_code": { "const": "resulting_logical_state_receipt_head_inventory_operation_nonce_v1" },
+        "scope_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "backup_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "produced_by_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "completed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+        "persisted_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+      }
+    },
+    "custodyExchangeReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation_code", "request_record_digest_sha256", "request_persistence_ack_record_digest_sha256", "response_record_digest_sha256", "response_persistence_ack_record_digest_sha256", "success_outcome_code"],
+      "properties": {
+        "operation_code": { "enum": ["open_staged", "prepare", "verify_prepared", "publish_no_replace", "seal_custody_access", "open_custody"] },
+        "request_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "request_persistence_ack_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "response_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "response_persistence_ack_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "success_outcome_code": { "enum": ["opened", "prepared", "verified", "published", "reused_verified", "sealed", "available"] }
+      }
+    },
+    "custodyFinalizationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "copy_code", "backend_code", "backend_reference", "exchanges", "primary_receipt", "preparation_capability_consumed_transition_digest_sha256"],
+      "properties": {
+        "artifact": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/artifactIdentity" },
+        "copy_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "backend_code": { "const": "pilot_local_cas_v1" },
+        "backend_reference": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/safeBackendReference" },
+        "exchanges": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/custodyExchangeReference" }
+        },
+        "primary_receipt": { "$ref": "#/$defs/primaryReceiptReference" },
+        "preparation_capability_consumed_transition_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+      }
+    },
+    "integrityAccessEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "copy_code", "backend_code", "backend_reference", "purpose_code", "claim_lifetime_ms", "exchanges", "primary_receipt", "sealed_capability_consumed_transition_digest_sha256", "verifier_binding_code", "verifier_executable_sha256", "semantic_producer_process", "descriptor_delivery_record_digest_sha256", "descriptor_delivery_persistence_ack_record_digest_sha256", "verifier_result_record_digest_sha256", "verifier_result_persistence_ack_record_digest_sha256", "receiver_termination_record_digest_sha256", "receiver_termination_persistence_ack_record_digest_sha256", "verifier_recomputed_artifact"],
+      "properties": {
+        "artifact": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/artifactIdentity" },
+        "copy_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "backend_code": { "const": "pilot_local_cas_v1" },
+        "backend_reference": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/safeBackendReference" },
+        "purpose_code": { "const": "integrity" },
+        "claim_lifetime_ms": { "type": "integer", "minimum": 1, "maximum": 30000 },
+        "exchanges": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/custodyExchangeReference" }
+        },
+        "primary_receipt": { "$ref": "#/$defs/primaryReceiptReference" },
+        "sealed_capability_consumed_transition_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "verifier_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "verifier_executable_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "semantic_producer_process": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["process_instance_code", "pid", "uid", "gid", "start_time_ticks", "executable_device", "executable_inode", "peer_credentials_verified", "custody_descriptor_absent", "authenticated_at"],
+          "properties": {
+            "process_instance_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+            "pid": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+            "uid": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+            "gid": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+            "start_time_ticks": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+            "executable_device": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+            "executable_inode": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+            "peer_credentials_verified": { "const": true },
+            "custody_descriptor_absent": { "const": true },
+            "authenticated_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }
+          }
+        },
+        "descriptor_delivery_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "descriptor_delivery_persistence_ack_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "verifier_result_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "verifier_result_persistence_ack_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "receiver_termination_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "receiver_termination_persistence_ack_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "verifier_recomputed_artifact": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/artifactIdentity" }
+      }
+    },
+    "brokerErrorCode": {
+      "enum": [
+        "D930_RECEIPT_STORE_REJECTED",
+        "D930_RECEIPT_STORE_UNAVAILABLE",
+        "D930_SUPPORTING_STORE_REJECTED",
+        "D930_SUPPORTING_STORE_UNAVAILABLE",
+        "D930_JOURNAL_APPEND_REJECTED",
+        "D930_JOURNAL_APPEND_UNAVAILABLE"
+      ]
+    },
+    "extendedErrorCode": {
+      "oneOf": [
+        { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/errorCode" },
+        {
+          "enum": [
+            "D930_PRIMARY_RECEIPT_MISSING",
+            "D930_PRIMARY_RECEIPT_MISMATCH",
+            "D930_BACKUP_RECEIPT_MISSING",
+            "D930_BACKUP_RECEIPT_MISMATCH",
+            "D930_DURABILITY_STATE_AMBIGUOUS",
+            "D930_JOURNAL_LINK_MISSING",
+            "D930_ACTIVE_OPERATION_BLOCKS_RECONCILIATION",
+            "D930_REFERENCES_OR_HOLDS_BLOCK_RECONCILIATION",
+            "D930_BYTES_UNAVAILABLE",
+            "D930_ORPHAN_STATE_AMBIGUOUS"
+          ]
+        }
+      ]
+    }
+  }
+}

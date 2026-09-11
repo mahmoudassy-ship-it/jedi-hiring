@@ -1,0 +1,70 @@
+{
+  "format": "jedi-atlas-d930-golden-vectors",
+  "format_version": "1.0.0",
+  "calculation_note": "Canonical strings are literal fixtures; SHA-256 values were calculated with external sha256sum rather than the validator implementation.",
+  "vectors": [
+    {
+      "vector_code": "utf16_astral_before_bmp_private",
+      "input": {
+        "": "bmp-private",
+        "😀": "astral",
+        "a": null
+      },
+      "canonical_utf8": "{\"a\":null,\"😀\":\"astral\",\"\":\"bmp-private\"}",
+      "sha256": "ec487009725b04b08d1cb81048606a7f83849c340ff7cbe2c56646f68036cca1"
+    },
+    {
+      "vector_code": "arrays_nulls_and_order",
+      "input": {
+        "z": null,
+        "arr": [
+          null,
+          true,
+          0,
+          "x"
+        ]
+      },
+      "canonical_utf8": "{\"arr\":[null,true,0,\"x\"],\"z\":null}",
+      "sha256": "0d13f0fea8be0966e1d88e724994b66307241a60e0e5830ef5bd923c7e91fda6"
+    },
+    {
+      "vector_code": "unicode_non_normalization",
+      "input": {
+        "é": "composed",
+        "é": "decomposed"
+      },
+      "canonical_utf8": "{\"é\":\"decomposed\",\"é\":\"composed\"}",
+      "sha256": "8117f7eb721338d1c046fc7a3905d1f77b7a920abc82436194992a55af52f571"
+    },
+    {
+      "vector_code": "top_level_self_digest_exclusion_only",
+      "input": {
+        "record_digest_sha256": "excluded",
+        "nested": {
+          "record_digest_sha256": "kept"
+        },
+        "a": 1
+      },
+      "excluded_top_level_field": "record_digest_sha256",
+      "canonical_utf8": "{\"a\":1,\"nested\":{\"record_digest_sha256\":\"kept\"}}",
+      "sha256": "a2c93a6fb520cc5ba0ffb1f88d3f8b3184224938e489c5ecc391f8228a0e604c"
+    },
+    {
+      "vector_code": "configuration_object_hash",
+      "input": {
+        "mode": "integrity_only",
+        "limits": {
+          "capability_lifetime_ms": 30000
+        },
+        "backend_code": "pilot_local_cas_v1"
+      },
+      "canonical_utf8": "{\"backend_code\":\"pilot_local_cas_v1\",\"limits\":{\"capability_lifetime_ms\":30000},\"mode\":\"integrity_only\"}",
+      "sha256": "54c1ad3191e2d4c0a37228a05ee30d1f860363100bc8cb1dca3ad6eb47c8c9e8"
+    }
+  ],
+  "complete_primary_receipt": {
+    "fixture_record_code": "receipt.primary.001",
+    "canonical_utf8": "{\"d930_operational_profile_record_digest_sha256\":\"9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3\",\"format\":\"jedi-atlas-primary-durability-receipt\",\"format_version\":\"1.0.0\",\"hash_algorithm_code\":\"sha256\",\"identity_bindings_record_digest_sha256\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"persisted_at\":\"2030-01-01T00:11:00.000Z\",\"persisted_by_binding_code\":\"journal.broker.synthetic\",\"persistence_request_record_digest_sha256\":\"62a5dcbb80a10f9597776387dad63e5b51e30578714fe26d7ffdc02240adc68b\",\"receipt_file_profile_code\":\"canonical_json_utf8_no_lf_v1\",\"record_code\":\"receipt.primary.001\",\"runtime_profile_record_digest_sha256\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"semantic\":{\"adapter_binding_code\":\"custody.adapter.synthetic\",\"adapter_executable_sha256\":\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"artifact\":{\"byte_layer_code\":\"retrieved_body\",\"byte_length\":16,\"hash_algorithm_code\":\"sha256\",\"sha256\":\"6666666666666666666666666666666666666666666666666666666666666666\"},\"backend_code\":\"pilot_local_cas_v1\",\"backend_reference\":\"objects/sha256/66/6666666666666666666666666666666666666666666666666666666666666666\",\"bundle\":{\"bundle_digest_sha256\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"bundle_id\":\"bundle.synthetic.001\",\"bundle_sequence\":2},\"bundle_seal_record_digest_sha256\":\"5555555555555555555555555555555555555555555555555555555555555555\",\"completed_at\":\"2030-01-01T00:10:00.000Z\",\"copy_code\":\"copy.primary.001\",\"custody_class_code\":\"restricted_store\",\"durability_profile_code\":\"local_posix_file_and_directory_sync_v1\",\"file_data_synced\":true,\"finalization_outcome_code\":\"published\",\"no_replace_disposition_code\":\"created_new\",\"no_replace_enforced\":true,\"open_staged_response_record_digest_sha256\":\"7777777777777777777777777777777777777777777777777777777777777777\",\"operation_id\":\"operation.synthetic.001\",\"operation_nonce\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"parent_directory_synced\":true,\"preparation_capability_issuance_digest_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"preparation_capability_verified_transition_digest_sha256\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"prepare_response_record_digest_sha256\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"publish_request_record_digest_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"reopened_and_rehashed\":true,\"source_capability_consumed_transition_digest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"verify_prepared_response_record_digest_sha256\":\"9999999999999999999999999999999999999999999999999999999999999999\"},\"semantic_payload_sha256\":\"9b5f964df4d9b6e2657626ead3b75716f930256ec58dfdf054d207bff781385f\"}",
+    "raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f"
+  }
+}

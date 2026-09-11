@@ -1,0 +1,121 @@
+{
+  "format": "jedi-atlas-d930-contract-catalog",
+  "format_version": "1.0.0",
+  "status_code": "design_only_contract_freeze",
+  "hash_profile": "sha256-over-exact-file-bytes",
+  "catalog_self_digest": "not_present_to_avoid_self_reference",
+  "base_contract": {
+    "d90_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d90_classification_fingerprint_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
+    "d90_global_handles_fingerprint_sha256": "68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e",
+    "d90_operation_scopes_fingerprint_sha256": "9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e"
+  },
+  "migration_sha256": {
+    "001_schema.sql": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094",
+    "002_reference_data.sql": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923",
+    "003_seed_eu_core.sql": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700",
+    "004_tranche_1a_foundations.sql": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2",
+    "005_tranche_2a_source_quarantine.sql": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+  },
+  "instance_policy": {
+    "repository_contents": "schemas_registries_and_synthetic_fixtures_only",
+    "activation_code": "forbidden_until_separate_implementation_approval",
+    "real_contract_instances": "forbidden",
+    "credentials_permitted": false,
+    "custody_or_backup_implementation_created": false,
+    "legal_authority_created": false
+  },
+  "schemas": [
+    {
+      "schema_role": "shared_definitions",
+      "schema_file": "common-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/common-v1.schema.json",
+      "raw_sha256": "7e8d479603a105b3f527c3cb4adc710de8ceca9c822b8106ec6218f18484ca10"
+    },
+    {
+      "schema_role": "unactivated_profile",
+      "schema_file": "operational-profile-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/operational-profile-v1.schema.json",
+      "contract_format": "jedi-atlas-d930-operational-profile",
+      "contract_version": "1.0.0",
+      "raw_sha256": "b5cb545291357e0e374ed930890660613aeb25db620ca6fe8e34490efbba5fa6"
+    },
+    {
+      "schema_role": "ipc_contract",
+      "schema_file": "custody-adapter-message-v2.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/custody-adapter-message-v2.schema.json",
+      "contract_format": "jedi-atlas-custody-adapter-message",
+      "contract_version": "2.0.0",
+      "raw_sha256": "87dc50d43ff53aca47c1dd620489449cdaff180b1092d3728655a6da1ee4974e"
+    },
+    {
+      "schema_role": "integrity_lifecycle_contract",
+      "schema_file": "integrity-access-lifecycle-record-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/integrity-access-lifecycle-record-v1.schema.json",
+      "contract_format": "jedi-atlas-integrity-access-lifecycle-record",
+      "contract_version": "1.0.0",
+      "raw_sha256": "414f82005e6ffda2ef2af00d8e4f98f779ddb9471a45538dd1b2ca75853e247c"
+    },
+    {
+      "schema_role": "durability_contract",
+      "schema_file": "primary-durability-receipt-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/primary-durability-receipt-v1.schema.json",
+      "contract_format": "jedi-atlas-primary-durability-receipt",
+      "contract_version": "1.0.0",
+      "raw_sha256": "bbdf6ca06cd52b4147053b1b4217312e5abbeb285c785440656ea68883af4fc8"
+    },
+    {
+      "schema_role": "ipc_contract",
+      "schema_file": "durability-receipt-broker-message-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/durability-receipt-broker-message-v1.schema.json",
+      "contract_format": "jedi-atlas-durability-receipt-broker-message",
+      "contract_version": "1.0.0",
+      "raw_sha256": "76df679bc7f63233fbcc83decc013d54235f3e72496f2efb35438896efd704c8"
+    },
+    {
+      "schema_role": "journal_semantic_contract",
+      "schema_file": "operation-journal-semantic-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/operation-journal-semantic-v1.schema.json",
+      "contract_format": "jedi-atlas-operation-journal-semantic-assertion",
+      "contract_version": "1.0.0",
+      "raw_sha256": "b412e435d832e7928f397962f67747f07ffbe492c7076ef9d933fb3abc18df8b"
+    },
+    {
+      "schema_role": "ipc_contract",
+      "schema_file": "operation-journal-broker-message-v1.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/operation-journal-broker-message-v1.schema.json",
+      "contract_format": "jedi-atlas-operation-journal-broker-message",
+      "contract_version": "1.0.0",
+      "raw_sha256": "722d28f88325ff3c00474c0beec24677d442530da259cadaaf9252ffa7d75879"
+    },
+    {
+      "schema_role": "append_only_journal_contract",
+      "schema_file": "operation-journal-event-v2.schema.json",
+      "schema_id": "https://jedi-hiring.invalid/schema/d9-3-0/operation-journal-event-v2.schema.json",
+      "contract_format": "jedi-atlas-operation-journal-event",
+      "contract_version": "2.0.0",
+      "raw_sha256": "c451542e3b4c77b02caa0184121c07368b9688b623a8a5af19b8e17bd1615e4f"
+    }
+  ],
+  "classifications": {
+    "file": "classifications-v1.json",
+    "format": "jedi-atlas-d930-classifications",
+    "format_version": "1.0.0",
+    "raw_sha256": "cbc04dad2785f9947fbe2b7e2f8fd85c2ce1da74ad05854ceba848bb52da9455",
+    "record_digest_sha256": "b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8"
+  },
+  "field_registry": {
+    "file": "field-registry-v1.json",
+    "format": "jedi-atlas-d930-field-registry",
+    "format_version": "1.0.0",
+    "raw_sha256": "1c1f42a45cf7fd632f6ac7b72697164d9598113081f4ffee972d6b5e137ce629",
+    "record_digest_sha256": "04293fb9885ed792516c04b11ef4608fd82cec9f4223be75b9fa8d9a93392a96"
+  },
+  "digest_profiles": {
+    "file": "digest-profiles-v1.json",
+    "format": "jedi-atlas-d930-digest-profiles",
+    "format_version": "1.0.0",
+    "raw_sha256": "425fd6079c0e31b034b9912fffa939f093cbf15195ccb9f871e3b6f784a3bb61",
+    "record_digest_sha256": "c8532cd78032dba55add0b9d17d6d5625aaae887c4b2bbe3fea87c286b31e920"
+  }
+}

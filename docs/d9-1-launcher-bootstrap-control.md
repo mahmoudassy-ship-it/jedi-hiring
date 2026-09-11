@@ -1,6 +1,6 @@
 # D9.1 — launcher and bootstrap control plane
 
-Status: **approved at implementation commit `79046c27dfa6923383be33a1d0aaa5a7641f5d1f` for its synthetic, unactivated control-plane boundary only**. This approval is not production readiness and does not authorize real bootstrap, evidence import, custody operations, database writing, or legal verification. The separate [synthetic, unactivated D9.2 accepted-bundle verifier](d9-2-accepted-bundle-verifier.md) is approved at implementation commit `460547b7fe75a94f689dabc97fd91ee6f803934a`; neither approval activates or joins the two boundaries. D9.3 local custody and recovery is the next separately reviewed step.
+Status: **approved at implementation commit `79046c27dfa6923383be33a1d0aaa5a7641f5d1f` for its synthetic, unactivated control-plane boundary only**. This approval is not production readiness and does not authorize real bootstrap, evidence import, custody operations, database writing, or legal verification. The separate [synthetic, unactivated D9.2 accepted-bundle verifier](d9-2-accepted-bundle-verifier.md) is approved at implementation commit `460547b7fe75a94f689dabc97fd91ee6f803934a`; neither approval activates or joins the two boundaries. The corrected design-only [D9.3.0 custody-durability contract freeze](d9-3-0-custody-durability-contracts.md) is approved at reviewed commit `89433cf058ca8f52b658ea1ce2d0391aaf44f7fe`; approval is external to its fingerprinted contracts and creates no runtime. D9.3.1 primary-custody implementation remains the next separately reviewed step.
 
 The applicable frozen inputs remain:
 
@@ -125,7 +125,7 @@ Recovery itself is causal and crash-tested. Each operation-lock incident has a d
 
 Before genesis, a complete append mutex or fully validated pending activation that never became a linked commit is unaccepted material: after proving its sealed incident time and exact bootstrap-anchor authority, it is discarded, reports `durableAuditRecorded: false` because no ledger generation yet exists, and leaves genesis retryable. An empty or partial pre-genesis append-mutex directory with no validated pending activation has no trustworthy incident time. D9.1 deliberately refuses in-band deletion with `STATE_PRE_GENESIS_INCIDENT_TIME_UNAVAILABLE`; a separately controlled, protected-log-backed out-of-band incident procedure is required. This exception is a fail-closed recovery hold, not a claim that every pre-genesis remnant is automatically retryable.
 
-Full operation-journal recovery, candidate promotion, custody durability, backup durability and operational accepted-state reconstruction remain outside D9.1. The approved D9.2 boundary covers only synthetic disposable reconstruction while every original byte remains available; D9.3 retains the durability and deletion-aware recovery boundary and is the next separately reviewed step. The D9.1 control ledger must not be presented as those later guarantees.
+Full operation-journal recovery, candidate promotion, custody durability, backup durability and operational accepted-state reconstruction remain outside D9.1. The approved D9.2 boundary covers only synthetic disposable reconstruction while every original byte remains available; D9.3.0 defines primary-custody durability and conservative crash-state classification contracts only; D9.4 retains restriction/tombstone policy and D9.5 retains backup/restore and deletion-aware reconstruction. The D9.1 control ledger must not be presented as those later guarantees.
 
 Low-level recovery entry points are exercised only by disposable state-store tests and are not exposed by the launcher or append worker. A later operational recovery tool must take the same kernel lock, prove the former owner process is dead, authenticate the separately qualified recovery role and persist an audited recovery intent before changing any protected head or lock state.
 
@@ -140,7 +140,7 @@ Before any real bootstrap can be proposed, all of the following still require se
 - a reviewed runtime-domain build and dependency inventory;
 - process sandboxing, service supervision and host hardening for every later peer;
 - protected-runtime integration of the approved synthetic D9.2 verifier without activating it prematurely;
-- the D9.3 custody, backup, journal durability and reconciliation implementation;
+- the D9.3.1 primary-custody, journal, and crash-state classification implementation, D9.4 restriction/tombstone controls, and D9.5 backup/restore implementation;
 - protected authentication material provisioned outside Git;
 - a separately approved bootstrap permit, people, window and ceremony.
 
