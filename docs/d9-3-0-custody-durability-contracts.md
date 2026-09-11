@@ -2,6 +2,8 @@
 
 Status: **proposed design-only extension; awaiting separate approval**. D9.3.0 defines closed records and an offline consistency harness. It creates no executable adapter, broker, journal, recovery tool, custody object, backup, credential, principal, database write, evidence import, or public behavior. D9.0.1 remains the applicable approved base contract and is not modified.
 
+The fingerprinted catalog uses the permanent lifecycle-neutral value `design_only_contract_freeze`. This value describes the immutable design-only capability boundary; it does not encode a transient review state. Approval is recorded externally through reviewed documentation and the approval commit, and approval must not modify the fingerprinted contract root. Contract approval does not activate implementation or authorize production use.
+
 ## Decision and authority boundary
 
 D9.3.0 supplies the smallest separately versioned extension needed to describe a future primary-copy custody operation and its durable audit trail. It keeps three claims structurally distinct:
@@ -62,19 +64,21 @@ Adapter and journal-event formats use major version 2 because their interpretati
 
 | Surface | SHA-256 |
 |---|---|
-| Exact catalog file | `0bbd8a70f620fb49b37c6a260d2108e1f155e10961ebe1d52aa050fa5222e64b` |
+| Exact catalog file | `cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c` |
 | Classification semantic record | `b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8` |
 | Digest-profile semantic record | `c8532cd78032dba55add0b9d17d6d5625aaae887c4b2bbe3fea87c286b31e920` |
 | Field-registry semantic record | `04293fb9885ed792516c04b11ef4608fd82cec9f4223be75b9fa8d9a93392a96` |
 | Effective 1,198-property field mapping | `14616c2ff46109cf6eaed017f44bec066c6d9468b6650760fce67dc2f328aa46` |
 | Exact schema-pointer resolver projection | `6276a2785d6693477755717dc27819a07b326a455b004b89a18d7a058cb276d7` |
+| Synthetic custody-profile commitment | `9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3` |
+| Synthetic journal-profile commitment | `76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f` |
 | Adapter request-stream matrix | `8ea4ae1feab8c4c068e08dbc7b70e093b6d189fa55bfb9aba53661274b5864b7` |
 | Custody/message matrix | `7308d306667767d1df8f203754bfa4ac3814513873d4438a508c7b5f5e997127` |
 | Custody state-transition matrix | `4c03c2110ff620ea1c2a67f522c59b46fe76734d90f97aa84e50c52d1ad1823e` |
 | Journal/history matrix | `f70fa8e2b52ea38ae252fb08b15067030f9f832375521b840f44c5c1b32d46dd` |
 | Recovery/crash/orphan matrix | `ae1a756bb7de72822aa472268ac45bbdd07e9826ecc3fcc4c9a3191931a92a0a` |
-| Complete primary-receipt golden bytes | `3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e` |
-| Sorted 16-file contract-root inventory | `88cff5f5655f948d96ed9696e2fcfa2189c8dd9139c3704a5acfa380ed6f179c` |
+| Complete primary-receipt golden bytes | `b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f` |
+| Sorted 16-file contract-root inventory | `cf073b571a70b347ba3ea8e0e851d5d44013fe701fd9f77a235673302b423ba3` |
 
 These are proposal fingerprints, not active configuration. Approval must cite the exact reviewed values. Runtime selection must pin both D9.0.1 and D9.3.0; it cannot regenerate or substitute either catalog.
 

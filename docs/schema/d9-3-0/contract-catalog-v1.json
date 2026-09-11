@@ -1,7 +1,7 @@
 {
   "format": "jedi-atlas-d930-contract-catalog",
   "format_version": "1.0.0",
-  "status_code": "design_only_unapproved",
+  "status_code": "design_only_contract_freeze",
   "hash_profile": "sha256-over-exact-file-bytes",
   "catalog_self_digest": "not_present_to_avoid_self_reference",
   "base_contract": {

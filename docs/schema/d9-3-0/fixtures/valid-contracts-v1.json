@@ -13,7 +13,7 @@
       "base_d90_classification_fingerprint_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
       "base_d90_global_handles_fingerprint_sha256": "68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e",
       "base_d90_operation_scopes_fingerprint_sha256": "9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e",
-      "d930_contract_catalog_sha256": "0bbd8a70f620fb49b37c6a260d2108e1f155e10961ebe1d52aa050fa5222e64b",
+      "d930_contract_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
       "d930_classification_fingerprint_sha256": "b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8",
       "settings": {
         "settings_kind_code": "custody_adapter",
@@ -36,7 +36,7 @@
         "integrity_claim_lifetime_ms": 30000
       },
       "activation_state_code": "design_only_unactivated",
-      "record_digest_sha256": "154bb217b59da39dfa01392e1049462c603d06b82f765a1de14414fe665a04d8"
+      "record_digest_sha256": "9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3"
     },
     "journal_profile": {
       "format": "jedi-atlas-d930-operational-profile",
@@ -50,7 +50,7 @@
       "base_d90_classification_fingerprint_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
       "base_d90_global_handles_fingerprint_sha256": "68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e",
       "base_d90_operation_scopes_fingerprint_sha256": "9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e",
-      "d930_contract_catalog_sha256": "0bbd8a70f620fb49b37c6a260d2108e1f155e10961ebe1d52aa050fa5222e64b",
+      "d930_contract_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
       "d930_classification_fingerprint_sha256": "b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8",
       "settings": {
         "settings_kind_code": "journal",
@@ -73,7 +73,7 @@
         "recovery_namespace_code": "d930_recovery_within_operation_journal"
       },
       "activation_state_code": "design_only_unactivated",
-      "record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46"
+      "record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f"
     },
     "primary_receipt": {
       "format": "jedi-atlas-primary-durability-receipt",
@@ -83,7 +83,7 @@
       "hash_algorithm_code": "sha256",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_operational_profile_record_digest_sha256": "154bb217b59da39dfa01392e1049462c603d06b82f765a1de14414fe665a04d8",
+      "d930_operational_profile_record_digest_sha256": "9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3",
       "semantic": {
         "operation_id": "operation.synthetic.001",
         "operation_nonce": "3333333333333333333333333333333333333333333333333333333333333333",
@@ -124,7 +124,7 @@
       "persisted_by_binding_code": "journal.broker.synthetic",
       "persisted_at": "2030-01-01T00:11:00.000Z",
       "semantic_payload_sha256": "9b5f964df4d9b6e2657626ead3b75716f930256ec58dfdf054d207bff781385f",
-      "persistence_request_record_digest_sha256": "9458edac0e3fad9937b11602736038f6b5c38ff231743d3c414cfa618e15033d"
+      "persistence_request_record_digest_sha256": "62a5dcbb80a10f9597776387dad63e5b51e30578714fe26d7ffdc02240adc68b"
     },
     "receipt_broker_request": {
       "format": "jedi-atlas-durability-receipt-broker-message",
@@ -139,8 +139,8 @@
       "recipient_binding_code": "journal.broker.synthetic",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_operational_profile_record_digest_sha256": "154bb217b59da39dfa01392e1049462c603d06b82f765a1de14414fe665a04d8",
-      "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
+      "d930_operational_profile_record_digest_sha256": "9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3",
+      "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
       "request_record_digest_sha256": null,
       "created_at": "2030-01-01T00:10:00.250Z",
       "payload": {
@@ -188,7 +188,7 @@
         "outcome_code": null,
         "error_code": null
       },
-      "record_digest_sha256": "9458edac0e3fad9937b11602736038f6b5c38ff231743d3c414cfa618e15033d"
+      "record_digest_sha256": "62a5dcbb80a10f9597776387dad63e5b51e30578714fe26d7ffdc02240adc68b"
     },
     "receipt_broker_response": {
       "format": "jedi-atlas-durability-receipt-broker-message",
@@ -203,20 +203,20 @@
       "recipient_binding_code": "custody.adapter.synthetic",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_operational_profile_record_digest_sha256": "154bb217b59da39dfa01392e1049462c603d06b82f765a1de14414fe665a04d8",
-      "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
-      "request_record_digest_sha256": "9458edac0e3fad9937b11602736038f6b5c38ff231743d3c414cfa618e15033d",
+      "d930_operational_profile_record_digest_sha256": "9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3",
+      "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
+      "request_record_digest_sha256": "62a5dcbb80a10f9597776387dad63e5b51e30578714fe26d7ffdc02240adc68b",
       "created_at": "2030-01-01T00:11:30.000Z",
       "payload": {
         "receipt_record_code": "receipt.primary.001",
         "receipt_semantic": null,
-        "receipt_raw_sha256": "3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e",
+        "receipt_raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f",
         "receipt_persisted_at": "2030-01-01T00:11:00.000Z",
         "outcome_code": "persisted",
         "error_code": null,
         "receipt_semantic_sha256": null
       },
-      "record_digest_sha256": "c844c4401d17efa682c1b6ec6ff72f3a15d99e883a57cec53c09f731f5049a3a"
+      "record_digest_sha256": "315bc9db5c570497aa2b6fc15200ac67b3c12d2113f65a79d149f2f91602abf6"
     },
     "adapter_publish_response": {
       "format": "jedi-atlas-custody-adapter-message",
@@ -232,7 +232,7 @@
       "recipient_binding_code": "importer.synthetic",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_operational_profile_record_digest_sha256": "154bb217b59da39dfa01392e1049462c603d06b82f765a1de14414fe665a04d8",
+      "d930_operational_profile_record_digest_sha256": "9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3",
       "request_record_digest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "created_at": "2030-01-01T00:12:00.000Z",
       "ancillary_descriptors": [],
@@ -280,9 +280,9 @@
           "format": "jedi-atlas-primary-durability-receipt",
           "format_version": "1.0.0",
           "record_code": "receipt.primary.001",
-          "receipt_raw_sha256": "3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e"
+          "receipt_raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f"
         },
-        "receipt_broker_ack_record_digest_sha256": "c844c4401d17efa682c1b6ec6ff72f3a15d99e883a57cec53c09f731f5049a3a",
+        "receipt_broker_ack_record_digest_sha256": "315bc9db5c570497aa2b6fc15200ac67b3c12d2113f65a79d149f2f91602abf6",
         "outcome_code": "published",
         "error_code": null,
         "source_capability_record_digest_sha256": null,
@@ -292,7 +292,7 @@
         "sealed_capability_record_digest_sha256": null,
         "sealed_capability_leaf_record_digest_sha256": null
       },
-      "record_digest_sha256": "2f0ad755aad5c23c2e7f6104ee100423c97e00529609fa0b2921ac9a793374a6"
+      "record_digest_sha256": "504d5ffac69ec592d75507048d9806abe254c09c38ed300901ace6eca738af48"
     },
     "journal_semantic": {
       "format": "jedi-atlas-operation-journal-semantic-assertion",
@@ -307,7 +307,7 @@
       "component_executable_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
+      "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
       "authorization_permit_record_digest_sha256": null,
       "authorization_bundle_seal_record_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
       "prepromotion_authorization_record_digest_sha256": null,
@@ -375,7 +375,7 @@
           {
             "operation_code": "publish_no_replace",
             "request_record_digest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "response_record_digest_sha256": "2f0ad755aad5c23c2e7f6104ee100423c97e00529609fa0b2921ac9a793374a6",
+            "response_record_digest_sha256": "504d5ffac69ec592d75507048d9806abe254c09c38ed300901ace6eca738af48",
             "success_outcome_code": "published",
             "request_persistence_ack_record_digest_sha256": "5353535353535353535353535353535353535353535353535353535353535353",
             "response_persistence_ack_record_digest_sha256": "5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d"
@@ -385,7 +385,7 @@
           "format": "jedi-atlas-primary-durability-receipt",
           "format_version": "1.0.0",
           "record_code": "receipt.primary.001",
-          "receipt_raw_sha256": "3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e"
+          "receipt_raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f"
         },
         "preparation_capability_consumed_transition_digest_sha256": "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a"
       },
@@ -395,7 +395,7 @@
       "final_backup_receipt": null,
       "event_at": "2030-01-01T00:12:30.000Z",
       "recovery": null,
-      "record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9"
+      "record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af"
     },
     "journal_broker_request": {
       "format": "jedi-atlas-operation-journal-broker-message",
@@ -409,7 +409,7 @@
       "recipient_binding_code": "journal.broker.synthetic",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
+      "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
       "request_record_digest_sha256": null,
       "created_at": "2030-01-01T00:12:31.000Z",
       "payload": {
@@ -429,7 +429,7 @@
           "component_executable_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
           "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
           "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-          "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
+          "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
           "authorization_permit_record_digest_sha256": null,
           "authorization_bundle_seal_record_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
           "prepromotion_authorization_record_digest_sha256": null,
@@ -497,7 +497,7 @@
               {
                 "operation_code": "publish_no_replace",
                 "request_record_digest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                "response_record_digest_sha256": "2f0ad755aad5c23c2e7f6104ee100423c97e00529609fa0b2921ac9a793374a6",
+                "response_record_digest_sha256": "504d5ffac69ec592d75507048d9806abe254c09c38ed300901ace6eca738af48",
                 "success_outcome_code": "published",
                 "request_persistence_ack_record_digest_sha256": "5353535353535353535353535353535353535353535353535353535353535353",
                 "response_persistence_ack_record_digest_sha256": "5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d"
@@ -507,7 +507,7 @@
               "format": "jedi-atlas-primary-durability-receipt",
               "format_version": "1.0.0",
               "record_code": "receipt.primary.001",
-              "receipt_raw_sha256": "3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e"
+              "receipt_raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f"
             },
             "preparation_capability_consumed_transition_digest_sha256": "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a"
           },
@@ -517,9 +517,9 @@
           "final_backup_receipt": null,
           "event_at": "2030-01-01T00:12:30.000Z",
           "recovery": null,
-          "record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9"
+          "record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af"
         },
-        "semantic_assertion_record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9",
+        "semantic_assertion_record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af",
         "persisted_at": null,
         "outcome_code": null,
         "error_code": null,
@@ -529,7 +529,7 @@
         "persisted_record_digest_sha256": null,
         "supporting_record_kind_code": null
       },
-      "record_digest_sha256": "c352be6d26c67f5a2be61d806916ff2226f61d1f712720fa5c26f190690c17a2"
+      "record_digest_sha256": "7f8967b2d28d13f27d15920ff9f0e77f0feedac8e47afd38de44257428ae1b36"
     },
     "journal_event": {
       "format": "jedi-atlas-operation-journal-event",
@@ -551,7 +551,7 @@
         "component_executable_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
         "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-        "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
+        "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
         "authorization_permit_record_digest_sha256": null,
         "authorization_bundle_seal_record_digest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
         "prepromotion_authorization_record_digest_sha256": null,
@@ -619,7 +619,7 @@
             {
               "operation_code": "publish_no_replace",
               "request_record_digest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-              "response_record_digest_sha256": "2f0ad755aad5c23c2e7f6104ee100423c97e00529609fa0b2921ac9a793374a6",
+              "response_record_digest_sha256": "504d5ffac69ec592d75507048d9806abe254c09c38ed300901ace6eca738af48",
               "success_outcome_code": "published",
               "request_persistence_ack_record_digest_sha256": "5353535353535353535353535353535353535353535353535353535353535353",
               "response_persistence_ack_record_digest_sha256": "5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d"
@@ -629,7 +629,7 @@
             "format": "jedi-atlas-primary-durability-receipt",
             "format_version": "1.0.0",
             "record_code": "receipt.primary.001",
-            "receipt_raw_sha256": "3317a27756b534ed3f3025fdda85f026fd48c739dfdce185d3fe0417c4fe204e"
+            "receipt_raw_sha256": "b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f"
           },
           "preparation_capability_consumed_transition_digest_sha256": "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a"
         },
@@ -639,13 +639,13 @@
         "final_backup_receipt": null,
         "event_at": "2030-01-01T00:12:30.000Z",
         "recovery": null,
-        "record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9"
+        "record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af"
       },
-      "semantic_assertion_record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9",
-      "append_request_record_digest_sha256": "c352be6d26c67f5a2be61d806916ff2226f61d1f712720fa5c26f190690c17a2",
+      "semantic_assertion_record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af",
+      "append_request_record_digest_sha256": "7f8967b2d28d13f27d15920ff9f0e77f0feedac8e47afd38de44257428ae1b36",
       "persisted_by_binding_code": "journal.broker.synthetic",
       "persisted_at": "2030-01-01T00:13:00.000Z",
-      "record_digest_sha256": "b31be4dca30922cb90fe065958790ad614634648ac589238eac70217cd84c029"
+      "record_digest_sha256": "b92e3ec8b11cda10906491b227a1b36600c2038205d9862d37487920819bc2f7"
     },
     "journal_broker_response": {
       "format": "jedi-atlas-operation-journal-broker-message",
@@ -659,25 +659,25 @@
       "recipient_binding_code": "custody.adapter.synthetic",
       "runtime_profile_record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "identity_bindings_record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-      "d930_journal_profile_record_digest_sha256": "babca390cc8d15c82b3a1f04befae3a30958beab03003132de50876c0e706e46",
-      "request_record_digest_sha256": "c352be6d26c67f5a2be61d806916ff2226f61d1f712720fa5c26f190690c17a2",
+      "d930_journal_profile_record_digest_sha256": "76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f",
+      "request_record_digest_sha256": "7f8967b2d28d13f27d15920ff9f0e77f0feedac8e47afd38de44257428ae1b36",
       "created_at": "2030-01-01T00:13:00.001Z",
       "payload": {
         "journal_code": "journal.operation.synthetic.001",
         "expected_event_sequence": 2,
         "expected_previous_event_record_digest_sha256": "1010101010101010101010101010101010101010101010101010101010101010",
         "semantic_assertion": null,
-        "semantic_assertion_record_digest_sha256": "98d6459ea1434d818c5278c88b746adf07192ae5bce0c2fc15a00c92208c90c9",
+        "semantic_assertion_record_digest_sha256": "6200a2b7d20dd80cdfe1dc5eb249d714eae2ccc1352eeeaf927076ff08ffd6af",
         "persisted_at": "2030-01-01T00:13:00.000Z",
         "outcome_code": "persisted",
         "error_code": null,
         "supporting_record": null,
         "supporting_record_digest_sha256": null,
         "persisted_record_code": "journal.event.001",
-        "persisted_record_digest_sha256": "b31be4dca30922cb90fe065958790ad614634648ac589238eac70217cd84c029",
+        "persisted_record_digest_sha256": "b92e3ec8b11cda10906491b227a1b36600c2038205d9862d37487920819bc2f7",
         "supporting_record_kind_code": null
       },
-      "record_digest_sha256": "0098f97b26e5e930fb0ee0935b743979f7e815c6a906c7f6f4d0b078ae71e255"
+      "record_digest_sha256": "868db97ecf3c8e38c51dfb5ff1697d4d0bfd8dca683f156116b58a09be2a6a69"
     }
   }
 }

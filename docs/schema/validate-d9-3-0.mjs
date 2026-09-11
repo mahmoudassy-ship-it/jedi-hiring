@@ -33,12 +33,15 @@ const frozenD901 = {
 
 // Updated only after the exact proposal inventory is frozen.
 const expected = {
-  catalog: '0bbd8a70f620fb49b37c6a260d2108e1f155e10961ebe1d52aa050fa5222e64b',
+  catalog: 'cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c',
   classification: 'b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8',
   digest_profiles: 'c8532cd78032dba55add0b9d17d6d5625aaae887c4b2bbe3fea87c286b31e920',
   field_registry: '04293fb9885ed792516c04b11ef4608fd82cec9f4223be75b9fa8d9a93392a96',
-  root_inventory: '88cff5f5655f948d96ed9696e2fcfa2189c8dd9139c3704a5acfa380ed6f179c',
+  root_inventory: 'cf073b571a70b347ba3ea8e0e851d5d44013fe701fd9f77a235673302b423ba3',
   resolver_projection: '6276a2785d6693477755717dc27819a07b326a455b004b89a18d7a058cb276d7',
+  custody_profile_commitment: '9b1d68cf65887d9e88e3d6e37a47d1f471fe479fdbbd6232595ba89e3a9242e3',
+  journal_profile_commitment: '76278dd1ccc3216bc41269d2bc97d8b8067b6a195fc6c7b3dbf2952a7fbde97f',
+  primary_receipt_golden: 'b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f',
 }
 
 const schemaFiles = [
@@ -93,6 +96,12 @@ function fail(code, detail = '') {
 
 function assertThrowsCode(fn, code) {
   assert.throws(fn, (error) => String(error.message).includes(code), `expected ${code}`)
+}
+
+function validateCatalogLifecycle(catalogRecord) {
+  if (catalogRecord.status_code !== 'design_only_contract_freeze') {
+    fail('CATALOG_LIFECYCLE_STATE_REJECTED', String(catalogRecord.status_code))
+  }
 }
 
 function pointerSet(value, pointer, replacement) {
@@ -271,6 +280,12 @@ function assertFrozenInputs() {
 }
 
 function assertCatalog() {
+  validateCatalogLifecycle(catalog)
+  for (const statusCode of ['design_only_unapproved', 'approved', 'active']) {
+    const substituted = clone(catalog)
+    substituted.status_code = statusCode
+    assertThrowsCode(() => validateCatalogLifecycle(substituted), 'CATALOG_LIFECYCLE_STATE_REJECTED')
+  }
   assert.equal(rawSha(path.join(root, 'contract-catalog-v1.json')), expected.catalog)
   const expectedSchemaFiles = ['common-v1.schema.json', ...schemaFiles]
   assert.deepEqual(catalog.schemas.map((entry) => entry.schema_file).sort(), expectedSchemaFiles.slice().sort())
@@ -294,6 +309,9 @@ function assertCatalog() {
   assert.equal(digestProfiles.record_digest_sha256, expected.digest_profiles)
   assert.equal(fieldRegistry.record_digest_sha256, expected.field_registry)
   assert.equal(validFixtures.fixture_set_code, 'd930.synthetic.contracts.v1')
+  assert.equal(validFixtures.records.custody_profile.record_digest_sha256, expected.custody_profile_commitment)
+  assert.equal(validFixtures.records.journal_profile.record_digest_sha256, expected.journal_profile_commitment)
+  assert.equal(golden.complete_primary_receipt.raw_sha256, expected.primary_receipt_golden)
   assert.equal(inventoryDigest(), expected.root_inventory)
 }
 
@@ -4965,6 +4983,7 @@ function report() {
     crash_boundaries: classifications.crash_boundary_rules.length,
     backup_receipt_payloads_defined: 0,
     runtime_components_created: 0,
+    catalog_lifecycle_substitutions_rejected: ['design_only_unapproved', 'approved', 'active'],
     fingerprints: expected,
   }
 }
