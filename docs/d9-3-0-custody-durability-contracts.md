@@ -1,8 +1,8 @@
 # D9.3.0 custody, durability, journal, and recovery contracts
 
-Status: **proposed design-only extension; awaiting separate approval**. D9.3.0 defines closed records and an offline consistency harness. It creates no executable adapter, broker, journal, recovery tool, custody object, backup, credential, principal, database write, evidence import, or public behavior. D9.0.1 remains the applicable approved base contract and is not modified.
+Status: **approved corrected design-only contract freeze at reviewed commit `89433cf058ca8f52b658ea1ce2d0391aaf44f7fe`; not activated or authorized for runtime use**. D9.3.0 defines closed records and an offline consistency harness. It creates no executable adapter, broker, journal, recovery tool, custody object, backup, credential, principal, database write, evidence import, or public behavior. D9.0.1 remains the applicable approved base contract and is not modified. Physical custody does not establish evidence acceptance, officiality, legal authority, human review, or publication eligibility. D9.3.1 remains the next separately reviewed implementation step.
 
-The fingerprinted catalog uses the permanent lifecycle-neutral value `design_only_contract_freeze`. This value describes the immutable design-only capability boundary; it does not encode a transient review state. Approval is recorded externally through reviewed documentation and the approval commit, and approval must not modify the fingerprinted contract root. Contract approval does not activate implementation or authorize production use.
+The fingerprinted catalog continues to use the permanent lifecycle-neutral value `design_only_contract_freeze`. This value describes the immutable design-only capability boundary; it does not encode a transient review state. Approval is recorded externally through this reviewed documentation and approval commit, not inside the fingerprinted contracts; approval must not modify the fingerprinted contract root. Contract approval does not activate implementation or authorize production use.
 
 ## Decision and authority boundary
 
@@ -58,9 +58,9 @@ The root `docs/schema/d9-3-0/` contains 16 JSON artifacts: nine schemas (one sha
 | `contract-catalog-v1.json` | catalog 1.0.0 | Exact raw hashes, predecessor fingerprints, migration hashes, and design-only boundary. |
 | `fixtures/*.json` | synthetic fixture set 1.0.0 | Valid, invalid, mutation, and independent golden-vector inputs. |
 
-Adapter and journal-event formats use major version 2 because their interpretation changes incompatibly. Newly introduced namespaces begin at 1.0.0. D9.0.1 machine-contract artifacts are neither edited nor aliased; existing prose may link forward to this proposal. A later semantic change requires a new version, catalog, fingerprints, fixtures, review, and explicit activation decision.
+Adapter and journal-event formats use major version 2 because their interpretation changes incompatibly. Newly introduced namespaces begin at 1.0.0. D9.0.1 machine-contract artifacts are neither edited nor aliased; existing prose may link forward to this approved design-only freeze. A later semantic change requires a new version, catalog, fingerprints, fixtures, review, and explicit activation decision.
 
-### Pinned proposal fingerprints
+### Pinned approved fingerprints
 
 | Surface | SHA-256 |
 |---|---|
@@ -80,7 +80,7 @@ Adapter and journal-event formats use major version 2 because their interpretati
 | Complete primary-receipt golden bytes | `b48325f9c6fb1fa68cd995f0a45d0a4e12e6edf200d87d5c035173df36b62c6f` |
 | Sorted 16-file contract-root inventory | `cf073b571a70b347ba3ea8e0e851d5d44013fe701fd9f77a235673302b423ba3` |
 
-These are proposal fingerprints, not active configuration. Approval must cite the exact reviewed values. Runtime selection must pin both D9.0.1 and D9.3.0; it cannot regenerate or substitute either catalog.
+Approval at reviewed commit `89433cf058ca8f52b658ea1ce2d0391aaf44f7fe` pins every exact value above. They are approved design-contract fingerprints, not active configuration. Runtime selection must pin both D9.0.1 and D9.3.0; it cannot regenerate or substitute either catalog.
 
 ## Trust and handle boundary
 
@@ -105,7 +105,7 @@ flowchart LR
   Q -. later human gates .-> P[Verified legal authority]
 ```
 
-The proposal adds no D9.0.1 logical handle. The journal broker alone retains `operation_journal` with append-intended access. An authenticated IPC endpoint is not a backing-store handle. The adapter never writes SQLite; the journal broker cannot create evidence rows; the D9.2 writer never receives a raw CAS path or unrestricted custody access. Attribution is not authentication, authorization, qualification, or review.
+The approved design-only contract adds no D9.0.1 logical handle. The journal broker alone retains `operation_journal` with append-intended access. An authenticated IPC endpoint is not a backing-store handle. The adapter never writes SQLite; the journal broker cannot create evidence rows; the D9.2 writer never receives a raw CAS path or unrestricted custody access. Attribution is not authentication, authorization, qualification, or review.
 
 The offline fixtures use a closed set of exact synthetic binding codes solely to exercise role separation; code prefixes are not trusted. Active-generation, executable, peer-credential, permit, bundle-seal, and binding-record resolution remain governed by the frozen D9.0.1 contracts and the approved synthetic D9.1 boundary. The one-shot `receiver_process` is a concrete byte-verifier process and must terminate; the stable independent-verifier binding is not itself a process and may also authorize a distinct live coordinator process. That coordinator must have a different process-instance code and kernel `(pid, start_time_ticks)`, hold no custody descriptor, authenticate exactly at semantic append, and act only after the verifier-result record and terminal lifecycle record have durable acknowledgements. D9.3.0 does not duplicate the base contracts or turn a supplied binding code into authority.
 
@@ -260,16 +260,16 @@ The harness cannot prove authenticated IPC, kernel peer identity, active binding
 
 The nine inventory-head commitments in a recovery knowledge snapshot are typed design commitments, not a runtime inventory service. D9.3.1 therefore also needs a separately scoped fixed-function snapshot service or equivalent protected read path. It must not smuggle new backing-store access through IPC or widen the seven frozen D9.0.1 handle partitions. Until that consumer and its atomic snapshot semantics are separately reviewed, recovery remains classification-only and fail closed.
 
-## Implementation sequence after approval
+## Implementation sequence after contract approval
 
-1. **D9.3.0 — this proposed freeze:** exact schemas, registries, fixtures, fingerprints, and offline validator; no runtime.
+1. **D9.3.0 — approved design-only contract freeze:** exact schemas, registries, fixtures, fingerprints, and offline validator; no runtime.
 2. **D9.3.1 — primary custody vertical slice:** restricted local CAS, adapter IPC/descriptor mechanics, receipt and journal brokers, copy-aware integrity relay, D9.0.1 admission/resolution integration, a separately scoped protected inventory-snapshot consumer, and synthetic crash-state classification using the approved contracts. It cannot execute a recovery action and remains unactivated until downstream gates exist.
 3. **D9.4 — clearance and destructive-policy slice:** scanners, privacy/secret/malware controls, rights decisions, restriction, relocation, tombstone, and separately privileged deletion.
 4. **D9.5 — backup and restore slice:** define the reserved receipt payloads and resolver, independently protected copies, restore drills, and deletion-aware reconstruction.
 5. **D9.6+ — later acceptance and pilot gates:** integrated fault/security acceptance, separately approved one-document run, then a hosted production profile.
 
-## Approval prerequisites and non-goals
+## Approved boundary and non-goals
 
-Approval must pin this exact catalog and fingerprints, adapter-v2/journal-v2 incompatibility, capability-leaf semantics, receipt-broker ordering, integrity lifecycle graph, existing-handle journal namespaces, 13 histories, 19 classification-only recovery rules, 14 crash boundaries, and typed-but-unavailable D9.5 references. Any substantive edit creates a new reviewed version.
+Approval pins this exact catalog and fingerprints, adapter-v2/journal-v2 incompatibility, capability-leaf semantics, receipt-broker ordering, integrity lifecycle graph, existing-handle journal namespaces, 13 histories, 19 classification-only recovery rules, 14 crash boundaries, and typed-but-unavailable D9.5 references. Any substantive edit creates a new reviewed version.
 
-This proposal does not implement or authorize CAS storage, journal storage, recovery execution, backup, restore, restriction, deletion, credentials, operational profiles, runtime activation, bootstrap, evidence import, canonical promotion, API/search/export/frontend behavior, legal verification, or publication. It changes no migration and creates no source document, artifact bytes, Atlas row, legal fact, or legal proposition.
+This approved design-only contract does not implement or authorize CAS storage, journal storage, recovery execution, backup, restore, restriction, deletion, credentials, operational profiles, runtime activation, bootstrap, evidence import, canonical promotion, API/search/export/frontend behavior, legal verification, or publication. It changes no migration and creates no source document, artifact bytes, Atlas row, legal fact, or legal proposition.
