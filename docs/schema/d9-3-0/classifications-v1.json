@@ -1,0 +1,2235 @@
+{
+  "format": "jedi-atlas-d930-classifications",
+  "format_version": "1.0.0",
+  "base_contract": {
+    "d90_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d90_classification_fingerprint_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
+    "d90_global_handles_fingerprint_sha256": "68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e",
+    "d90_operation_scopes_fingerprint_sha256": "9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e"
+  },
+  "version_policy": {
+    "adapter_message_version": "2.0.0",
+    "journal_semantic_version": "1.0.0",
+    "journal_broker_message_version": "1.0.0",
+    "operation_journal_version": "2.0.0",
+    "primary_receipt_version": "1.0.0",
+    "integrity_access_lifecycle_version": "1.0.0",
+    "recovery_payload_version": "1.0.0",
+    "mixed_journal_versions_within_operation": "forbidden",
+    "d90_contract_mutation": "forbidden",
+    "activation_without_dual_catalog_pin": "forbidden"
+  },
+  "handle_scope_compatibility": {
+    "storage_handle_slot_code": "operation_journal",
+    "storage_holder_role_code": "journal_broker",
+    "storage_access_code": "append_intended",
+    "additional_storage_handle_slots": [],
+    "additional_handle_grants": [],
+    "ipc_endpoint_code": "ipc.journal",
+    "ipc_is_not_backing_store_handle": true,
+    "receipt_namespace_code": "d930_primary_receipts_within_operation_journal",
+    "supporting_record_namespace_code": "d930_secret_free_supporting_records_within_operation_journal",
+    "recovery_namespace_code": "d930_recovery_within_operation_journal",
+    "d90_scope_widening": "forbidden"
+  },
+  "custody_message_rules": [
+    {
+      "operation_code": "open_staged",
+      "request_nonnull_fields": [
+        "bundle_seal_record_digest_sha256",
+        "collector_handoff_record_digest_sha256",
+        "custody_intent",
+        "relative_path",
+        "staging_root_slot_code",
+        "staging_snapshot_code"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "opened"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "bundle_seal_record_digest_sha256",
+        "custody_intent",
+        "outcome_code",
+        "source_capability_record_digest_sha256",
+        "source_capability_leaf_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [
+        "staged_source"
+      ],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ]
+    },
+    {
+      "operation_code": "prepare",
+      "request_nonnull_fields": [
+        "artifact",
+        "custody_intent",
+        "source_capability_record_digest_sha256",
+        "source_capability_leaf_record_digest_sha256"
+      ],
+      "request_descriptor_roles": [
+        "staged_source"
+      ],
+      "success_outcomes": [
+        "prepared"
+      ],
+      "success_nonnull_fields": [
+        "custody_intent",
+        "outcome_code",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256",
+        "source_capability_record_digest_sha256",
+        "source_capability_leaf_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ]
+    },
+    {
+      "operation_code": "verify_prepared",
+      "request_nonnull_fields": [
+        "artifact",
+        "custody_intent",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "verified"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "custody_intent",
+        "outcome_code",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ]
+    },
+    {
+      "operation_code": "publish_no_replace",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "custody_intent",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "published",
+        "reused_verified"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "custody_intent",
+        "outcome_code",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256",
+        "primary_receipt",
+        "receipt_broker_ack_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ]
+    },
+    {
+      "operation_code": "seal_custody_access",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "primary_receipt",
+        "purpose_code"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "sealed"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "custody_evaluated_at",
+        "custody_leaf_projection_sha256",
+        "known_through_bundle_sequence",
+        "outcome_code",
+        "primary_receipt",
+        "purpose_code",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_leaf_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [],
+      "failure_outcomes": [
+        "rejected",
+        "retryable_failure"
+      ]
+    },
+    {
+      "operation_code": "open_custody",
+      "request_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "primary_receipt",
+        "purpose_code",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_leaf_record_digest_sha256"
+      ],
+      "request_descriptor_roles": [],
+      "success_outcomes": [
+        "available"
+      ],
+      "success_nonnull_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "custody_evaluated_at",
+        "custody_leaf_projection_sha256",
+        "known_through_bundle_sequence",
+        "outcome_code",
+        "primary_receipt",
+        "purpose_code",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_leaf_record_digest_sha256"
+      ],
+      "success_descriptor_roles": [
+        "custody_source"
+      ],
+      "failure_outcomes": [
+        "corrupt",
+        "rejected",
+        "retryable_failure"
+      ]
+    }
+  ],
+  "custody_message_role_rule": {
+    "request_sender_role_code": "bundle_importer",
+    "request_recipient_role_code": "custody_adapter",
+    "response_sender_role_code": "custody_adapter",
+    "response_recipient_role_code": "bundle_importer"
+  },
+  "custody_failure_error_rules": [
+    {
+      "outcome_code": "corrupt",
+      "allowed_error_codes": [
+        "CUSTODY_CORRUPT"
+      ]
+    },
+    {
+      "outcome_code": "rejected",
+      "allowed_error_codes": [
+        "CUSTODY_CONFLICT"
+      ]
+    },
+    {
+      "outcome_code": "retryable_failure",
+      "allowed_error_codes": [
+        "CUSTODY_TIMEOUT"
+      ]
+    }
+  ],
+  "custody_message_pair_rules": [
+    {
+      "operation_code": "open_staged",
+      "exact_echo_fields": [
+        "bundle_seal_record_digest_sha256",
+        "custody_intent"
+      ]
+    },
+    {
+      "operation_code": "prepare",
+      "exact_echo_fields": [
+        "custody_intent",
+        "source_capability_record_digest_sha256",
+        "source_capability_leaf_record_digest_sha256"
+      ]
+    },
+    {
+      "operation_code": "verify_prepared",
+      "exact_echo_fields": [
+        "artifact",
+        "custody_intent",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ]
+    },
+    {
+      "operation_code": "publish_no_replace",
+      "exact_echo_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "custody_intent",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ]
+    },
+    {
+      "operation_code": "seal_custody_access",
+      "exact_echo_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "clearance_decision_record_digest_sha256",
+        "clearance_scope_sha256",
+        "copy_code",
+        "primary_receipt",
+        "purpose_code"
+      ]
+    },
+    {
+      "operation_code": "open_custody",
+      "exact_echo_fields": [
+        "artifact",
+        "backend_code",
+        "backend_reference",
+        "copy_code",
+        "primary_receipt",
+        "purpose_code",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_leaf_record_digest_sha256"
+      ]
+    }
+  ],
+  "capability_leaf_rules": {
+    "leaf_field_semantics_code": "exact_current_leaf_presented_when_request_is_authenticated",
+    "leaf_may_be_issuance_or_transition": true,
+    "successful_response_echoes_claimed_leaf": true,
+    "response_triggered_transition_is_never_embedded_in_its_own_response": true,
+    "initial_issuance_leaf_pairs": [
+      [
+        "open_staged",
+        "source_capability_record_digest_sha256",
+        "source_capability_leaf_record_digest_sha256"
+      ],
+      [
+        "prepare",
+        "preparation_capability_record_digest_sha256",
+        "preparation_capability_leaf_record_digest_sha256"
+      ],
+      [
+        "seal_custody_access",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_leaf_record_digest_sha256"
+      ]
+    ],
+    "post_response_transition_bindings": [
+      [
+        "prepare",
+        "source_capability_consumed_transition_digest_sha256",
+        "primary_receipt"
+      ],
+      [
+        "verify_prepared",
+        "preparation_capability_verified_transition_digest_sha256",
+        "primary_receipt"
+      ],
+      [
+        "publish_no_replace",
+        "preparation_capability_consumed_transition_digest_sha256",
+        "custody_finalization"
+      ],
+      [
+        "open_custody",
+        "sealed_capability_consumed_transition_digest_sha256",
+        "integrity_access"
+      ]
+    ]
+  },
+  "adapter_request_stream_rules": [
+    {
+      "stream_code": "custody_finalization",
+      "operation_codes": [
+        "open_staged",
+        "prepare",
+        "verify_prepared",
+        "publish_no_replace"
+      ]
+    },
+    {
+      "stream_code": "integrity_access",
+      "operation_codes": [
+        "seal_custody_access",
+        "open_custody"
+      ]
+    }
+  ],
+  "custody_state_transition_rules": [
+    {
+      "from_state_code": "none",
+      "trigger_record_kind_code": "adapter_response",
+      "operation_code": "open_staged",
+      "outcome_codes": [
+        "opened"
+      ],
+      "to_state_code": "staged_opened"
+    },
+    {
+      "from_state_code": "staged_opened",
+      "trigger_record_kind_code": "adapter_response",
+      "operation_code": "prepare",
+      "outcome_codes": [
+        "prepared"
+      ],
+      "to_state_code": "prepared"
+    },
+    {
+      "from_state_code": "prepared",
+      "trigger_record_kind_code": "adapter_response",
+      "operation_code": "verify_prepared",
+      "outcome_codes": [
+        "verified"
+      ],
+      "to_state_code": "verified"
+    },
+    {
+      "from_state_code": "verified",
+      "trigger_record_kind_code": "receipt_broker_response",
+      "operation_code": "persist_primary_receipt",
+      "outcome_codes": [
+        "persisted"
+      ],
+      "to_state_code": "primary_receipt_persisted"
+    },
+    {
+      "from_state_code": "primary_receipt_persisted",
+      "trigger_record_kind_code": "adapter_response",
+      "operation_code": "publish_no_replace",
+      "outcome_codes": [
+        "published",
+        "reused_verified"
+      ],
+      "to_state_code": "adapter_response_emitted"
+    },
+    {
+      "from_state_code": "adapter_response_emitted",
+      "trigger_record_kind_code": "journal_broker_response",
+      "operation_code": "journal_append",
+      "outcome_codes": [
+        "persisted"
+      ],
+      "to_state_code": "journal_linked"
+    }
+  ],
+  "custody_terminal_rules": [
+    {
+      "state_code": "journal_linked",
+      "retry_policy_code": "exact_replay_only"
+    },
+    {
+      "state_code": "corrupt",
+      "retry_policy_code": "new_authorized_operation_only"
+    },
+    {
+      "state_code": "recovery_required",
+      "retry_policy_code": "recovery_classification_required"
+    }
+  ],
+  "primary_receipt_rules": [
+    {
+      "finalization_outcome_code": "published",
+      "no_replace_disposition_code": "created_new",
+      "required_claims": [
+        "file_data_synced",
+        "parent_directory_synced",
+        "no_replace_enforced",
+        "reopened_and_rehashed"
+      ]
+    },
+    {
+      "finalization_outcome_code": "reused_verified",
+      "no_replace_disposition_code": "existing_exact",
+      "required_claims": [
+        "file_data_synced",
+        "parent_directory_synced",
+        "no_replace_enforced",
+        "reopened_and_rehashed"
+      ]
+    }
+  ],
+  "receipt_broker_rules": {
+    "request_sender_role_code": "custody_adapter",
+    "request_recipient_role_code": "journal_broker",
+    "response_sender_role_code": "journal_broker",
+    "response_recipient_role_code": "custody_adapter",
+    "backing_store_handle_slot_code": "operation_journal",
+    "request_nonnull_fields": [
+      "receipt_record_code",
+      "receipt_semantic",
+      "receipt_semantic_sha256"
+    ],
+    "success_nonnull_fields": [
+      "receipt_record_code",
+      "receipt_persisted_at",
+      "receipt_raw_sha256",
+      "outcome_code"
+    ],
+    "success_outcome_codes": [
+      "persisted"
+    ],
+    "failure_nonnull_fields": [
+      "outcome_code",
+      "error_code"
+    ],
+    "failure_outcome_codes": [
+      "rejected",
+      "retryable_failure"
+    ],
+    "failure_error_rules": [
+      {
+        "outcome_code": "rejected",
+        "error_code": "D930_RECEIPT_STORE_REJECTED"
+      },
+      {
+        "outcome_code": "retryable_failure",
+        "error_code": "D930_RECEIPT_STORE_UNAVAILABLE"
+      }
+    ],
+    "same_request_replay_code": "exactly_once_same_response",
+    "collision_code": "same_code_or_request_with_different_content_rejected"
+  },
+  "journal_broker_rules": {
+    "request_recipient_role_code": "journal_broker",
+    "response_sender_role_code": "journal_broker",
+    "backing_store_handle_slot_code": "operation_journal",
+    "supporting_request_required_fields": [
+      "journal_code",
+      "supporting_record_kind_code",
+      "supporting_record",
+      "supporting_record_digest_sha256"
+    ],
+    "supporting_response_required_fields": [
+      "journal_code",
+      "supporting_record_kind_code",
+      "supporting_record_digest_sha256",
+      "persisted_record_code",
+      "persisted_record_digest_sha256",
+      "persisted_at",
+      "outcome_code"
+    ],
+    "append_request_required_fields": [
+      "journal_code",
+      "expected_event_sequence",
+      "expected_previous_event_record_digest_sha256",
+      "semantic_assertion",
+      "semantic_assertion_record_digest_sha256"
+    ],
+    "append_response_required_fields": [
+      "journal_code",
+      "expected_event_sequence",
+      "expected_previous_event_record_digest_sha256",
+      "semantic_assertion_record_digest_sha256",
+      "persisted_record_code",
+      "persisted_record_digest_sha256",
+      "persisted_at",
+      "outcome_code"
+    ],
+    "success_outcome_codes": [
+      "persisted"
+    ],
+    "failure_nonnull_fields": [
+      "journal_code",
+      "outcome_code",
+      "error_code"
+    ],
+    "failure_outcome_codes": [
+      "rejected",
+      "retryable_failure"
+    ],
+    "supporting_failure_error_rules": [
+      {
+        "outcome_code": "rejected",
+        "error_code": "D930_SUPPORTING_STORE_REJECTED"
+      },
+      {
+        "outcome_code": "retryable_failure",
+        "error_code": "D930_SUPPORTING_STORE_UNAVAILABLE"
+      }
+    ],
+    "append_failure_error_rules": [
+      {
+        "outcome_code": "rejected",
+        "error_code": "D930_JOURNAL_APPEND_REJECTED"
+      },
+      {
+        "outcome_code": "retryable_failure",
+        "error_code": "D930_JOURNAL_APPEND_UNAVAILABLE"
+      }
+    ],
+    "supporting_sender_must_equal_record_producer": true,
+    "semantic_sender_must_equal_assertion_component": true,
+    "broker_assigns": [
+      "event_sequence",
+      "previous_event_record_digest_sha256",
+      "persisted_at",
+      "record_digest_sha256"
+    ],
+    "same_request_replay_code": "exactly_once_same_response"
+  },
+  "backup_reference_rules": [
+    {
+      "journal_field_code": "artifact_backup_receipt",
+      "receipt_kind_code": "artifact_copy",
+      "scope_profile_code": "artifact_bundle_copy_primary_receipt_operation_nonce_v1",
+      "required_before_stage_code": "database_transaction",
+      "implementation_owner": "D9.5"
+    },
+    {
+      "journal_field_code": "prior_database_backup_receipt",
+      "receipt_kind_code": "prior_database",
+      "scope_profile_code": "prior_logical_state_database_generation_operation_nonce_v1",
+      "required_before_stage_code": "promotion",
+      "implementation_owner": "D9.5"
+    },
+    {
+      "journal_field_code": "final_backup_receipt",
+      "receipt_kind_code": "final_consistent_set",
+      "scope_profile_code": "resulting_logical_state_receipt_head_inventory_operation_nonce_v1",
+      "required_before_stage_code": "completion",
+      "implementation_owner": "D9.5"
+    }
+  ],
+  "journal_composition_policy": {
+    "base_classification_record_digest_sha256": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef",
+    "inherited_sections": [
+      "journal_stage_origin_rules",
+      "journal_event_origin_rules",
+      "journal_event_rules",
+      "journal_authorization_rules",
+      "runtime_role_binding_rules",
+      "permit_scope_execution_rules",
+      "result_rules",
+      "outcome_rules",
+      "result_error_rules",
+      "error_rules",
+      "recovered_result_authorization_rules",
+      "post_promotion_source_error_rules",
+      "error_effect_rules",
+      "error_bundle_reference_rules"
+    ],
+    "superseded_sections": [
+      "journal_history_rules"
+    ],
+    "extension_event_kinds": [],
+    "semantic_origin_extension": [],
+    "extension_event_rules": [],
+    "broker_role_code": "journal_broker",
+    "unlisted_base_rule_changes": "forbidden"
+  },
+  "journal_reference_rules": [
+    {
+      "event_kind_code": "operation_started",
+      "stage_code": "startup",
+      "required": [],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "custody_object_durable",
+      "stage_code": "custody_prepare",
+      "required": [
+        "custody_finalization"
+      ],
+      "forbidden": [
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_code": "custody_backup",
+      "required": [
+        "artifact_backup_receipt"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_code": "prior_backup",
+      "required": [
+        "prior_database_backup_receipt"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "promotion_started",
+      "stage_code": "promotion",
+      "required": [
+        "prior_database_backup_receipt"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "promotion_observed",
+      "stage_code": "post_promotion_verification",
+      "required": [
+        "prior_database_backup_receipt"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_code": "final_backup",
+      "required": [
+        "final_backup_receipt"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_code": "independent_verification",
+      "operation_mode_code": "no_op_verification",
+      "bundle_kind_code": "single_document",
+      "required": [
+        "integrity_access"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "stage_succeeded",
+      "stage_code": "reconciliation",
+      "operation_mode_code": "recovery",
+      "required": [
+        "recovery"
+      ],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt"
+      ]
+    },
+    {
+      "event_kind_code": "recovery_required",
+      "stage_code": "any",
+      "required": [],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "operation_completed",
+      "stage_code": "completion",
+      "required": [],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    },
+    {
+      "event_kind_code": "default",
+      "stage_code": "any",
+      "required": [],
+      "forbidden": [
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery"
+      ]
+    }
+  ],
+  "journal_history_rules": [
+    {
+      "history_code": "bootstrap_imported",
+      "base_selector": {
+        "operation_mode_code": "bootstrap",
+        "result_outcome_code": "imported",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "bootstrap",
+      "milestones": [
+        "operation_started@startup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "stage_succeeded@final_backup",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "document_imported",
+      "base_selector": {
+        "operation_mode_code": "document_import",
+        "result_outcome_code": "imported",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "custody_object_durable@custody_prepare",
+        "stage_succeeded@custody_backup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "stage_succeeded@final_backup",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "accepted_bootstrap_no_op",
+      "base_selector": {
+        "operation_mode_code": "no_op_verification",
+        "result_outcome_code": "no_op",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": false
+    },
+    {
+      "history_code": "accepted_document_no_op",
+      "base_selector": {
+        "operation_mode_code": "no_op_verification",
+        "result_outcome_code": "no_op",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "stage_succeeded@independent_verification",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": false
+    },
+    {
+      "history_code": "post_promotion_completion_bootstrap",
+      "base_selector": {
+        "operation_mode_code": "recovery",
+        "result_outcome_code": "recovered",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "post_promotion_completion",
+      "milestones": [
+        "operation_started@startup",
+        "stage_succeeded@reconciliation",
+        "stage_succeeded@final_backup",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "post_promotion_completion_document",
+      "base_selector": {
+        "operation_mode_code": "recovery",
+        "result_outcome_code": "recovered",
+        "terminal_error_code": null
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "post_promotion_completion",
+      "milestones": [
+        "operation_started@startup",
+        "stage_succeeded@reconciliation",
+        "stage_succeeded@final_backup",
+        "operation_completed@completion"
+      ],
+      "backup_resolution_required": true
+    }
+  ],
+  "journal_failure_history_rules": [
+    {
+      "history_code": "dry_run_manifest_rejected",
+      "base_selector": {
+        "operation_mode_code": "dry_run",
+        "result_outcome_code": "rejected",
+        "terminal_error_code": "MANIFEST_SCHEMA_INVALID"
+      },
+      "bundle_kind_code": "any",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "operation_completed@completion"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": false
+    },
+    {
+      "history_code": "bootstrap_promotion_ambiguous",
+      "base_selector": {
+        "operation_mode_code": "bootstrap",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "PROMOTION_STATE_AMBIGUOUS"
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "bootstrap",
+      "milestones": [
+        "operation_started@startup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "recovery_required@post_promotion_verification"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "document_promotion_ambiguous",
+      "base_selector": {
+        "operation_mode_code": "document_import",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "PROMOTION_STATE_AMBIGUOUS"
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "custody_object_durable@custody_prepare",
+        "stage_succeeded@custody_backup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "recovery_required@post_promotion_verification"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "bootstrap_final_backup_failed",
+      "base_selector": {
+        "operation_mode_code": "bootstrap",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "FINAL_BACKUP_FAILED"
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "bootstrap",
+      "milestones": [
+        "operation_started@startup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "recovery_required@final_backup"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "document_final_backup_failed",
+      "base_selector": {
+        "operation_mode_code": "document_import",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "FINAL_BACKUP_FAILED"
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "custody_object_durable@custody_prepare",
+        "stage_succeeded@custody_backup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "recovery_required@final_backup"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "bootstrap_completion_write_failed",
+      "base_selector": {
+        "operation_mode_code": "bootstrap",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "JOURNAL_COMPLETION_WRITE_FAILED"
+      },
+      "bundle_kind_code": "principal_bootstrap",
+      "permit_kind_code": "bootstrap",
+      "milestones": [
+        "operation_started@startup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "stage_succeeded@final_backup",
+        "recovery_required@completion"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    },
+    {
+      "history_code": "document_completion_write_failed",
+      "base_selector": {
+        "operation_mode_code": "document_import",
+        "result_outcome_code": "recovery_required",
+        "terminal_error_code": "JOURNAL_COMPLETION_WRITE_FAILED"
+      },
+      "bundle_kind_code": "single_document",
+      "permit_kind_code": "none",
+      "milestones": [
+        "operation_started@startup",
+        "custody_object_durable@custody_prepare",
+        "stage_succeeded@custody_backup",
+        "candidate_committed@database_transaction",
+        "candidate_sealed@independent_verification",
+        "stage_succeeded@prior_backup",
+        "promotion_started@promotion",
+        "promotion_observed@post_promotion_verification",
+        "stage_succeeded@final_backup",
+        "recovery_required@completion"
+      ],
+      "optional_penultimate_stage_failed": true,
+      "backup_resolution_required": true
+    }
+  ],
+  "candidate_promotion_rules": {
+    "by_bundle_kind": [
+      {
+        "bundle_kind_code": "principal_bootstrap",
+        "candidate_write_requires_prior_milestones": [],
+        "custody_fields": "forbidden"
+      },
+      {
+        "bundle_kind_code": "single_document",
+        "candidate_write_requires_prior_milestones": [
+          "custody_object_durable@custody_prepare",
+          "stage_succeeded@custody_backup"
+        ],
+        "custody_fields": "required"
+      }
+    ],
+    "candidate_seal_format": "jedi-atlas-logical-state-seal/1.0.0:candidate_file_seal",
+    "promotion_requires": [
+      "candidate_file_seal_record_digest_sha256",
+      "prior_database_backup_receipt"
+    ],
+    "document_promotion_started_requires": [
+      "prepromotion_authorization_record_digest_sha256"
+    ],
+    "prepromotion_authorization_otherwise_forbidden": true,
+    "completion_requirements": [
+      {
+        "result_outcome_code": "imported",
+        "final_backup_receipt": true
+      },
+      {
+        "result_outcome_code": "no_op",
+        "final_backup_receipt": false
+      },
+      {
+        "result_outcome_code": "recovered",
+        "permit_kind_code": "recovery",
+        "final_backup_receipt": false
+      },
+      {
+        "result_outcome_code": "recovered",
+        "permit_kind_code": "post_promotion_completion",
+        "final_backup_receipt": true
+      }
+    ],
+    "synthetic_d92_result_is_operational_seal": false
+  },
+  "integrity_access_policy": {
+    "purpose_code": "integrity",
+    "claim_lifetime_ms_max": 30000,
+    "claim_window_semantics": "adapter_request_acceptance_only",
+    "fd_lifetime_semantics": "not_bounded_by_claim_expiry",
+    "adapter_requester_role_code": "bundle_importer",
+    "descriptor_receiver_role_code": "one_shot_independent_verifier",
+    "descriptor_relay_code": "launcher_supervised_importer_to_verifier_scm_rights",
+    "success_requires": [
+      "verifier_recomputed_artifact_identity",
+      "verifier_result_supporting_record_acknowledged_before_receiver_termination",
+      "descriptor_close_confirmation",
+      "confirmed_receiver_termination",
+      "distinct_descriptor_free_live_verifier_coordinator_authenticated_at_semantic_append_after_terminal_lifecycle_ack"
+    ],
+    "unconfirmed_termination_code": "fail_closed_recovery_required",
+    "bootstrap_no_op_custody_access": "forbidden",
+    "processing_access": "forbidden"
+  },
+  "recovery_decision_rules": [
+    {
+      "priority": 10,
+      "decision_rule_code": "incomplete_or_unknown",
+      "match_any": [
+        {
+          "knowledge.snapshot_completeness_code": "incomplete"
+        }
+      ],
+      "classification_code": "ambiguous",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "incomplete_inventory",
+        "scope_not_authorized"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 20,
+      "decision_rule_code": "active_operation_or_lock",
+      "match_any": [
+        {
+          "observation.operation_state_code": "active"
+        },
+        {
+          "observation.lock_state_code": "held_by_other"
+        },
+        {
+          "observation.lock_state_code": "absent"
+        }
+      ],
+      "classification_code": "active_operation",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "active_operation",
+        "lock_not_current"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 30,
+      "decision_rule_code": "explicit_hold",
+      "match_any": [
+        {
+          "observation.hold_scan_code": "complete_present"
+        }
+      ],
+      "classification_code": "held_or_referenced",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "hold_present"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 40,
+      "decision_rule_code": "referenced_bytes_unavailable",
+      "match_any": [
+        {
+          "observation.reference_scan_code": "complete_present",
+          "observation.bytes_state_code": "unavailable"
+        },
+        {
+          "observation.reference_scan_code": "complete_present",
+          "observation.bytes_state_code": "mismatch"
+        }
+      ],
+      "classification_code": "referenced_unverifiable",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "accepted_reference",
+        "bytes_unavailable"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 50,
+      "decision_rule_code": "accepted_reference_exact",
+      "match_any": [
+        {
+          "observation.reference_scan_code": "complete_present",
+          "observation.bytes_state_code": "available_exact"
+        }
+      ],
+      "classification_code": "held_or_referenced",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_retained",
+      "blocking_reason_codes": [
+        "accepted_reference"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 60,
+      "decision_rule_code": "before_prepare_no_effect",
+      "match_any": [
+        {
+          "observation.operation_state_code": "not_started",
+          "observation.temporary_state_code": "absent",
+          "observation.final_object_state_code": "absent",
+          "observation.candidate_state_code": "absent",
+          "observation.canonical_state_code": "prior_exact"
+        }
+      ],
+      "classification_code": "before_prepare_no_effect",
+      "next_step_code": "none",
+      "classification_outcome_code": "classified_no_effect",
+      "blocking_reason_codes": [],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 70,
+      "decision_rule_code": "temporary_partial",
+      "match_any": [
+        {
+          "observation.temporary_state_code": "partial",
+          "observation.final_object_state_code": "absent"
+        }
+      ],
+      "classification_code": "temporary_only",
+      "next_step_code": "wait_for_d9_4",
+      "classification_outcome_code": "classified_waiting_dependency",
+      "blocking_reason_codes": [
+        "d9_4_required",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 80,
+      "decision_rule_code": "temporary_verified",
+      "match_any": [
+        {
+          "observation.temporary_state_code": "verified",
+          "observation.final_object_state_code": "absent"
+        }
+      ],
+      "classification_code": "temporary_only",
+      "next_step_code": "wait_for_d9_4",
+      "classification_outcome_code": "classified_waiting_dependency",
+      "blocking_reason_codes": [
+        "d9_4_required",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 90,
+      "decision_rule_code": "final_exact_receipt_absent",
+      "match_any": [
+        {
+          "observation.final_object_state_code": "exact",
+          "observation.primary_receipt_state_code": "absent"
+        }
+      ],
+      "classification_code": "durable_unattested",
+      "next_step_code": "new_exact_operation_required",
+      "classification_outcome_code": "classified_new_operation_required",
+      "blocking_reason_codes": [
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 100,
+      "decision_rule_code": "receipt_without_resolvable_response",
+      "match_any": [
+        {
+          "observation.primary_receipt_state_code": "exact",
+          "observation.adapter_response_state_code": "absent",
+          "observation.journal_link_state_code": "absent"
+        },
+        {
+          "observation.primary_receipt_state_code": "exact",
+          "observation.adapter_response_state_code": "unresolvable",
+          "observation.journal_link_state_code": "absent"
+        }
+      ],
+      "classification_code": "receipt_durable_response_unresolved",
+      "next_step_code": "new_exact_operation_required",
+      "classification_outcome_code": "classified_new_operation_required",
+      "blocking_reason_codes": [
+        "response_unresolvable",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 110,
+      "decision_rule_code": "response_exact_journal_absent",
+      "match_any": [
+        {
+          "observation.primary_receipt_state_code": "exact",
+          "observation.adapter_response_state_code": "exact_resolvable",
+          "observation.journal_link_state_code": "absent"
+        }
+      ],
+      "classification_code": "durable_unlinked",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "journal_reference",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 120,
+      "decision_rule_code": "primary_linked_backup_pending",
+      "match_any": [
+        {
+          "observation.journal_link_state_code": "exact",
+          "observation.artifact_backup_state_code": "unavailable_d9_5",
+          "observation.candidate_state_code": "absent"
+        }
+      ],
+      "classification_code": "artifact_backup_pending",
+      "next_step_code": "wait_for_d9_5",
+      "classification_outcome_code": "classified_waiting_dependency",
+      "blocking_reason_codes": [
+        "d9_5_required"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 130,
+      "decision_rule_code": "candidate_committed_unsealed",
+      "match_any": [
+        {
+          "observation.candidate_state_code": "committed",
+          "observation.promotion_state_code": "not_started"
+        }
+      ],
+      "classification_code": "candidate_only",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "candidate_reference",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 140,
+      "decision_rule_code": "candidate_sealed_not_promoted",
+      "match_any": [
+        {
+          "observation.candidate_state_code": "sealed",
+          "observation.promotion_state_code": "not_started"
+        }
+      ],
+      "classification_code": "candidate_only",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "candidate_reference",
+        "authority_not_defined"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 150,
+      "decision_rule_code": "promotion_ambiguous",
+      "match_any": [
+        {
+          "observation.promotion_state_code": "rename_unknown"
+        }
+      ],
+      "classification_code": "promotion_ambiguous",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "state_ambiguous"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 160,
+      "decision_rule_code": "promoted_final_backup_pending",
+      "match_any": [
+        {
+          "observation.promotion_state_code": "target_verified",
+          "observation.canonical_state_code": "target_exact",
+          "observation.final_backup_state_code": "unavailable_d9_5",
+          "observation.completion_state_code": "absent"
+        }
+      ],
+      "classification_code": "promoted_completion_pending",
+      "next_step_code": "wait_for_d9_5",
+      "classification_outcome_code": "classified_waiting_dependency",
+      "blocking_reason_codes": [
+        "d9_5_required"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 165,
+      "decision_rule_code": "promoted_journal_completion_pending",
+      "match_any": [
+        {
+          "observation.promotion_state_code": "target_verified",
+          "observation.canonical_state_code": "target_exact",
+          "observation.final_backup_state_code": "reference_exact",
+          "observation.completion_state_code": "absent"
+        }
+      ],
+      "classification_code": "promoted_completion_pending",
+      "next_step_code": "post_promotion_completion_authority_required",
+      "classification_outcome_code": "classified_authority_required",
+      "blocking_reason_codes": [
+        "scope_not_authorized"
+      ],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 170,
+      "decision_rule_code": "completion_exact",
+      "match_any": [
+        {
+          "observation.completion_state_code": "exact",
+          "observation.canonical_state_code": "target_exact",
+          "observation.final_backup_state_code": "reference_exact"
+        }
+      ],
+      "classification_code": "canonical_referenced",
+      "next_step_code": "none",
+      "classification_outcome_code": "classified_no_effect",
+      "blocking_reason_codes": [],
+      "action_execution_code": "none_classification_only"
+    },
+    {
+      "priority": 999,
+      "decision_rule_code": "default_ambiguous",
+      "match_any": [
+        {}
+      ],
+      "classification_code": "ambiguous",
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold",
+      "blocking_reason_codes": [
+        "state_ambiguous",
+        "scope_not_authorized"
+      ],
+      "action_execution_code": "none_classification_only"
+    }
+  ],
+  "recovery_action_outcome_rules": [
+    {
+      "next_step_code": "none",
+      "classification_outcome_code": "classified_no_effect"
+    },
+    {
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_hold"
+    },
+    {
+      "next_step_code": "retain_and_hold",
+      "classification_outcome_code": "classified_retained"
+    },
+    {
+      "next_step_code": "new_exact_operation_required",
+      "classification_outcome_code": "classified_new_operation_required"
+    },
+    {
+      "next_step_code": "wait_for_d9_4",
+      "classification_outcome_code": "classified_waiting_dependency"
+    },
+    {
+      "next_step_code": "wait_for_d9_5",
+      "classification_outcome_code": "classified_waiting_dependency"
+    },
+    {
+      "next_step_code": "post_promotion_completion_authority_required",
+      "classification_outcome_code": "classified_authority_required"
+    }
+  ],
+  "crash_boundary_rules": [
+    {
+      "boundary_code": "before_prepare",
+      "decision_rule_code": "before_prepare_no_effect",
+      "safe_direct_action_code": "none_classification_only"
+    },
+    {
+      "boundary_code": "temporary_partial",
+      "decision_rule_code": "temporary_partial",
+      "safe_direct_action_code": "retain_wait_for_d9_4"
+    },
+    {
+      "boundary_code": "temporary_verified",
+      "decision_rule_code": "temporary_verified",
+      "safe_direct_action_code": "retain_wait_for_d9_4"
+    },
+    {
+      "boundary_code": "publish_result_unknown",
+      "decision_rule_code": "incomplete_or_unknown",
+      "safe_direct_action_code": "retain_and_hold"
+    },
+    {
+      "boundary_code": "final_exact_receipt_absent",
+      "decision_rule_code": "final_exact_receipt_absent",
+      "safe_direct_action_code": "classify_new_exact_operation_required"
+    },
+    {
+      "boundary_code": "receipt_persisted_response_absent",
+      "decision_rule_code": "receipt_without_resolvable_response",
+      "safe_direct_action_code": "classify_new_exact_operation_required"
+    },
+    {
+      "boundary_code": "response_resolvable_journal_absent",
+      "decision_rule_code": "response_exact_journal_absent",
+      "safe_direct_action_code": "retain_and_hold"
+    },
+    {
+      "boundary_code": "journal_linked_artifact_backup_absent",
+      "decision_rule_code": "primary_linked_backup_pending",
+      "safe_direct_action_code": "retain_wait_for_d9_5"
+    },
+    {
+      "boundary_code": "candidate_committed_unsealed",
+      "decision_rule_code": "candidate_committed_unsealed",
+      "safe_direct_action_code": "retain_and_hold"
+    },
+    {
+      "boundary_code": "candidate_sealed_prior_backup_absent",
+      "decision_rule_code": "candidate_sealed_not_promoted",
+      "safe_direct_action_code": "retain_and_hold"
+    },
+    {
+      "boundary_code": "promotion_rename_unknown",
+      "decision_rule_code": "promotion_ambiguous",
+      "safe_direct_action_code": "retain_and_hold"
+    },
+    {
+      "boundary_code": "promoted_final_backup_absent",
+      "decision_rule_code": "promoted_final_backup_pending",
+      "safe_direct_action_code": "retain_wait_for_d9_5"
+    },
+    {
+      "boundary_code": "final_backup_completion_absent",
+      "decision_rule_code": "promoted_journal_completion_pending",
+      "safe_direct_action_code": "classify_post_promotion_authority_required"
+    },
+    {
+      "boundary_code": "completion_exact",
+      "decision_rule_code": "completion_exact",
+      "safe_direct_action_code": "none_classification_only"
+    }
+  ],
+  "orphan_precedence": [
+    "incomplete_or_unknown",
+    "active_operation_or_lock",
+    "explicit_hold",
+    "referenced_bytes_unavailable",
+    "accepted_reference_exact",
+    "before_prepare_no_effect",
+    "temporary_partial",
+    "temporary_verified",
+    "final_exact_receipt_absent",
+    "receipt_without_resolvable_response",
+    "response_exact_journal_absent",
+    "primary_linked_backup_pending",
+    "candidate_committed_unsealed",
+    "candidate_sealed_not_promoted",
+    "promotion_ambiguous",
+    "promoted_final_backup_pending",
+    "promoted_journal_completion_pending",
+    "completion_exact",
+    "default_ambiguous"
+  ],
+  "recovery_record_rules": {
+    "generic_document_recovery_append_code": "forbidden_without_separately_versioned_authority",
+    "exact_bootstrap_reconstruction_code": "inherited_d90_not_extended_here",
+    "post_promotion_classification_append_code": "allowed_only_with_exact_frozen_post_promotion_completion_permit",
+    "storage_handle_slot_code": "operation_journal",
+    "storage_namespace_code": "d930_recovery_within_operation_journal",
+    "record_kind_code": "classification_only_recovery_assessment",
+    "action_execution_code": "none_classification_only",
+    "one_successor_per_predecessor": true,
+    "first_attempt_sequence": 1,
+    "later_attempt_policy_code": "next_sequence_linked_to_immediately_prior_terminal_same_subject",
+    "strictly_increasing_journal_sequence": true,
+    "strictly_increasing_event_at": true,
+    "strictly_increasing_persisted_at": true,
+    "event_at_not_after_persisted_at": true,
+    "knowledge_projection_bounds": [
+      "recovery_attempt_sequence",
+      "persisted_at"
+    ],
+    "current_snapshot_requires_exact_preappend_journal_head": true,
+    "recovery_lock_binding_required": true,
+    "final_object_deletion_actions": [],
+    "temporary_cleanup_actions": [],
+    "candidate_cleanup_actions": [],
+    "restriction_or_tombstone_actions": [],
+    "backup_creation_actions": [],
+    "canonical_write_actions": []
+  },
+  "new_error_rules": [
+    {
+      "error_code": "D930_PRIMARY_RECEIPT_MISSING",
+      "stage_code": "custody_prepare",
+      "terminal_event_kind_code": "operation_completed",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "durable_orphan",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "forbidden",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "reconcile_orphan"
+    },
+    {
+      "error_code": "D930_PRIMARY_RECEIPT_MISMATCH",
+      "stage_code": "custody_prepare",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_orphan",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_BACKUP_RECEIPT_MISSING",
+      "stage_code": "custody_backup",
+      "terminal_event_kind_code": "operation_completed",
+      "result_outcome_code": "rejected",
+      "canonical_effect_code": "none_verified",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "forbidden",
+      "retryability_code": "recovery_only",
+      "recovery_class_code": "reconcile_orphan"
+    },
+    {
+      "error_code": "D930_BACKUP_RECEIPT_MISMATCH",
+      "stage_code": "custody_backup",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_DURABILITY_STATE_AMBIGUOUS",
+      "stage_code": "custody_prepare",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_orphan",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_JOURNAL_LINK_MISSING",
+      "stage_code": "completion",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "reconcile_orphan"
+    },
+    {
+      "error_code": "D930_ACTIVE_OPERATION_BLOCKS_RECONCILIATION",
+      "stage_code": "reconciliation",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_REFERENCES_OR_HOLDS_BLOCK_RECONCILIATION",
+      "stage_code": "reconciliation",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_BYTES_UNAVAILABLE",
+      "stage_code": "reconciliation",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_referenced",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    },
+    {
+      "error_code": "D930_ORPHAN_STATE_AMBIGUOUS",
+      "stage_code": "reconciliation",
+      "terminal_event_kind_code": "recovery_required",
+      "result_outcome_code": "recovery_required",
+      "canonical_effect_code": "unknown",
+      "object_disposition_code": "durable_orphan",
+      "bundle_reference_policy_code": "required",
+      "observed_state_policy_code": "optional",
+      "retryability_code": "human_decision_required",
+      "recovery_class_code": "forensic_hold"
+    }
+  ],
+  "authority_boundary": {
+    "primary_receipt_establishes": "named_physical_storage_observation_only",
+    "journal_establishes": "operational_traceability_only",
+    "migration_005_receipt_establishes": "accepted_quarantine_projection_only_after_verified_promotion",
+    "physical_custody_implies_accepted_evidence": false,
+    "accepted_evidence_implies_legal_authority": false,
+    "legal_identity_or_authority_established": false,
+    "review_or_publication_established": false
+  },
+  "matrix_fingerprints": {
+    "adapter_request_stream_rules_sha256": "8ea4ae1feab8c4c068e08dbc7b70e093b6d189fa55bfb9aba53661274b5864b7",
+    "custody_message_rules_sha256": "7308d306667767d1df8f203754bfa4ac3814513873d4438a508c7b5f5e997127",
+    "custody_state_transition_rules_sha256": "4c03c2110ff620ea1c2a67f522c59b46fe76734d90f97aa84e50c52d1ad1823e",
+    "journal_rules_sha256": "f70fa8e2b52ea38ae252fb08b15067030f9f832375521b840f44c5c1b32d46dd",
+    "recovery_decision_rules_sha256": "ae1a756bb7de72822aa472268ac45bbdd07e9826ecc3fcc4c9a3191931a92a0a"
+  },
+  "record_digest_sha256": "b61fff46a6094aeb23dfcfb0d02f808b9ac83d345a832a9d914d8de8b641a5e8",
+  "recovery_observation_consistency_rules": [
+    {
+      "rule_code": "not_started_has_no_downstream_effect",
+      "when": {
+        "path_code": "operation_state_code",
+        "value": "not_started"
+      },
+      "require_all": {
+        "temporary_state_code": [
+          "absent"
+        ],
+        "final_object_state_code": [
+          "absent"
+        ],
+        "primary_receipt_state_code": [
+          "absent"
+        ],
+        "adapter_response_state_code": [
+          "absent"
+        ],
+        "journal_link_state_code": [
+          "absent"
+        ],
+        "artifact_backup_state_code": [
+          "not_applicable",
+          "unavailable_d9_5"
+        ],
+        "candidate_state_code": [
+          "absent"
+        ],
+        "prior_backup_state_code": [
+          "not_applicable",
+          "unavailable_d9_5"
+        ],
+        "promotion_state_code": [
+          "not_started"
+        ],
+        "canonical_state_code": [
+          "prior_exact"
+        ],
+        "final_backup_state_code": [
+          "not_applicable",
+          "unavailable_d9_5"
+        ],
+        "completion_state_code": [
+          "absent"
+        ]
+      }
+    },
+    {
+      "rule_code": "temporary_partial_requires_started_operation",
+      "when": {
+        "path_code": "temporary_state_code",
+        "value": "partial"
+      },
+      "require_all": {
+        "operation_state_code": [
+          "active",
+          "terminal"
+        ]
+      }
+    },
+    {
+      "rule_code": "temporary_verified_requires_started_operation",
+      "when": {
+        "path_code": "temporary_state_code",
+        "value": "verified"
+      },
+      "require_all": {
+        "operation_state_code": [
+          "active",
+          "terminal"
+        ]
+      }
+    },
+    {
+      "rule_code": "final_exact_requires_started_operation",
+      "when": {
+        "path_code": "final_object_state_code",
+        "value": "exact"
+      },
+      "require_all": {
+        "operation_state_code": [
+          "active",
+          "terminal"
+        ]
+      }
+    },
+    {
+      "rule_code": "receipt_exact_requires_final_exact",
+      "when": {
+        "path_code": "primary_receipt_state_code",
+        "value": "exact"
+      },
+      "require_all": {
+        "final_object_state_code": [
+          "exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "response_exact_requires_receipt_exact",
+      "when": {
+        "path_code": "adapter_response_state_code",
+        "value": "exact_resolvable"
+      },
+      "require_all": {
+        "primary_receipt_state_code": [
+          "exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "journal_exact_requires_response_exact",
+      "when": {
+        "path_code": "journal_link_state_code",
+        "value": "exact"
+      },
+      "require_all": {
+        "adapter_response_state_code": [
+          "exact_resolvable"
+        ]
+      }
+    },
+    {
+      "rule_code": "artifact_backup_exact_requires_journal_exact",
+      "when": {
+        "path_code": "artifact_backup_state_code",
+        "value": "reference_exact"
+      },
+      "require_all": {
+        "journal_link_state_code": [
+          "exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "candidate_committed_requires_artifact_backup",
+      "when": {
+        "path_code": "candidate_state_code",
+        "value": "committed"
+      },
+      "require_all": {
+        "artifact_backup_state_code": [
+          "reference_exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "candidate_sealed_requires_artifact_backup",
+      "when": {
+        "path_code": "candidate_state_code",
+        "value": "sealed"
+      },
+      "require_all": {
+        "artifact_backup_state_code": [
+          "reference_exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "target_verified_requires_complete_promotion_inputs",
+      "when": {
+        "path_code": "promotion_state_code",
+        "value": "target_verified"
+      },
+      "require_all": {
+        "candidate_state_code": [
+          "sealed"
+        ],
+        "prior_backup_state_code": [
+          "reference_exact"
+        ],
+        "canonical_state_code": [
+          "target_exact"
+        ]
+      }
+    },
+    {
+      "rule_code": "target_canonical_requires_verified_promotion",
+      "when": {
+        "path_code": "canonical_state_code",
+        "value": "target_exact"
+      },
+      "require_all": {
+        "promotion_state_code": [
+          "target_verified"
+        ]
+      }
+    },
+    {
+      "rule_code": "final_backup_exact_requires_verified_promotion",
+      "when": {
+        "path_code": "final_backup_state_code",
+        "value": "reference_exact"
+      },
+      "require_all": {
+        "promotion_state_code": [
+          "target_verified"
+        ]
+      }
+    },
+    {
+      "rule_code": "completion_exact_requires_complete_target",
+      "when": {
+        "path_code": "completion_state_code",
+        "value": "exact"
+      },
+      "require_all": {
+        "promotion_state_code": [
+          "target_verified"
+        ],
+        "canonical_state_code": [
+          "target_exact"
+        ],
+        "final_backup_state_code": [
+          "reference_exact"
+        ]
+      }
+    }
+  ],
+  "recovery_fail_closed_guards": [
+    {
+      "guard_code": "snapshot_incomplete",
+      "path_code": "knowledge.snapshot_completeness_code",
+      "unsafe_values": [
+        "incomplete"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "operation_control_inventory_unavailable",
+      "path_code": "knowledge.operation_control_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "capability_inventory_unavailable",
+      "path_code": "knowledge.capability_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "primary_receipt_inventory_unavailable",
+      "path_code": "knowledge.primary_receipt_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "custody_inventory_unavailable",
+      "path_code": "knowledge.custody_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "candidate_inventory_unavailable",
+      "path_code": "knowledge.candidate_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "canonical_state_inventory_unavailable",
+      "path_code": "knowledge.canonical_state_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "reference_inventory_unavailable",
+      "path_code": "knowledge.reference_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "hold_inventory_unavailable",
+      "path_code": "knowledge.hold_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "backup_inventory_unavailable",
+      "path_code": "knowledge.backup_inventory.state_code",
+      "unsafe_values": [
+        "unavailable"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "operation_unknown",
+      "path_code": "observation.operation_state_code",
+      "unsafe_values": [
+        "unknown"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "lock_unknown_or_stale",
+      "path_code": "observation.lock_state_code",
+      "unsafe_values": [
+        "unknown",
+        "stale"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "temporary_unknown",
+      "path_code": "observation.temporary_state_code",
+      "unsafe_values": [
+        "unknown"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "final_object_unknown_or_mismatch",
+      "path_code": "observation.final_object_state_code",
+      "unsafe_values": [
+        "unknown",
+        "mismatch"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "primary_receipt_unknown_or_mismatch",
+      "path_code": "observation.primary_receipt_state_code",
+      "unsafe_values": [
+        "unknown",
+        "mismatch"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "adapter_response_unknown_or_mismatch",
+      "path_code": "observation.adapter_response_state_code",
+      "unsafe_values": [
+        "unknown",
+        "mismatch"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "journal_link_unknown_or_mismatch",
+      "path_code": "observation.journal_link_state_code",
+      "unsafe_values": [
+        "unknown",
+        "mismatch"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "artifact_backup_unknown_or_missing",
+      "path_code": "observation.artifact_backup_state_code",
+      "unsafe_values": [
+        "unknown",
+        "reference_missing"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "candidate_unknown",
+      "path_code": "observation.candidate_state_code",
+      "unsafe_values": [
+        "unknown"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "prior_backup_unknown_or_missing",
+      "path_code": "observation.prior_backup_state_code",
+      "unsafe_values": [
+        "unknown",
+        "reference_missing"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "promotion_unknown",
+      "path_code": "observation.promotion_state_code",
+      "unsafe_values": [
+        "unknown"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "canonical_unknown_or_other",
+      "path_code": "observation.canonical_state_code",
+      "unsafe_values": [
+        "unknown",
+        "other"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "final_backup_unknown_or_missing",
+      "path_code": "observation.final_backup_state_code",
+      "unsafe_values": [
+        "unknown",
+        "reference_missing"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "completion_unknown_or_mismatch",
+      "path_code": "observation.completion_state_code",
+      "unsafe_values": [
+        "unknown",
+        "mismatch"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "reference_scan_incomplete",
+      "path_code": "observation.reference_scan_code",
+      "unsafe_values": [
+        "incomplete"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "hold_scan_incomplete",
+      "path_code": "observation.hold_scan_code",
+      "unsafe_values": [
+        "incomplete"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    },
+    {
+      "guard_code": "bytes_unknown_unavailable_or_mismatch",
+      "path_code": "observation.bytes_state_code",
+      "unsafe_values": [
+        "unknown"
+      ],
+      "decision_rule_code": "incomplete_or_unknown"
+    }
+  ]
+}

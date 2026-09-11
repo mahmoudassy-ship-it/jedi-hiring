@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-3-0/operation-journal-broker-message-v1.schema.json",
+  "title": "JEDI Atlas D9.3.0 semantic assertion append broker exchange",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "record_code", "message_kind_code", "operation_id", "operation_nonce", "request_id", "sender_binding_code", "recipient_binding_code", "runtime_profile_record_digest_sha256", "identity_bindings_record_digest_sha256", "d930_journal_profile_record_digest_sha256", "request_record_digest_sha256", "created_at", "payload", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-operation-journal-broker-message" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "message_kind_code": { "enum": ["persist_supporting_request", "persist_supporting_response", "append_request", "append_response"] },
+    "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/operationNonce" },
+    "request_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "sender_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "recipient_binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "runtime_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "identity_bindings_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "d930_journal_profile_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "request_record_digest_sha256": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "created_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["journal_code", "expected_event_sequence", "expected_previous_event_record_digest_sha256", "supporting_record_kind_code", "supporting_record", "supporting_record_digest_sha256", "semantic_assertion", "semantic_assertion_record_digest_sha256", "persisted_record_code", "persisted_record_digest_sha256", "persisted_at", "outcome_code", "error_code"],
+      "properties": {
+        "journal_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+        "expected_event_sequence": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" }, { "type": "null" }] },
+        "expected_previous_event_record_digest_sha256": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+        "supporting_record_kind_code": { "oneOf": [{ "enum": ["custody_adapter_message", "integrity_access_lifecycle_record"] }, { "type": "null" }] },
+        "supporting_record": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-3-0/custody-adapter-message-v2.schema.json" }, { "$ref": "https://jedi-hiring.invalid/schema/d9-3-0/integrity-access-lifecycle-record-v1.schema.json" }, { "type": "null" }] },
+        "supporting_record_digest_sha256": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+        "semantic_assertion": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-3-0/operation-journal-semantic-v1.schema.json" }, { "type": "null" }] },
+        "semantic_assertion_record_digest_sha256": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+        "persisted_record_code": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" }, { "type": "null" }] },
+        "persisted_record_digest_sha256": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+        "persisted_at": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" }, { "type": "null" }] },
+        "outcome_code": { "oneOf": [{ "enum": ["persisted", "rejected", "retryable_failure"] }, { "type": "null" }] },
+        "error_code": { "oneOf": [{ "$ref": "https://jedi-hiring.invalid/schema/d9-3-0/common-v1.schema.json#/$defs/brokerErrorCode" }, { "type": "null" }] }
+      }
+    },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}

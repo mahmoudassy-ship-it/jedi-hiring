@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-3-0/operational-profile-v1.schema.json",
+  "title": "JEDI Atlas D9.3.0 operational profile extension",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "profile_kind_code",
+    "profile_code",
+    "generation",
+    "issued_at",
+    "base_d90_catalog_sha256",
+    "base_d90_classification_fingerprint_sha256",
+    "base_d90_global_handles_fingerprint_sha256",
+    "base_d90_operation_scopes_fingerprint_sha256",
+    "d930_contract_catalog_sha256",
+    "d930_classification_fingerprint_sha256",
+    "settings",
+    "activation_state_code",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-d930-operational-profile" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "profile_kind_code": { "enum": ["custody_adapter", "journal"] },
+    "profile_code": { "const": "pilot_local_restricted_d930_v1" },
+    "generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "issued_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "base_d90_catalog_sha256": { "const": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a" },
+    "base_d90_classification_fingerprint_sha256": { "const": "8d7b64822663edf09dac0d613ed9da30de0569acb8a1258a84e1850af656deef" },
+    "base_d90_global_handles_fingerprint_sha256": { "const": "68c54bc683be3b3ff8ffba615fc850045c75a42539606858bffd42a881470f7e" },
+    "base_d90_operation_scopes_fingerprint_sha256": { "const": "9c2c9fd552bfdaac26448feace4de8f729c5b0587fa904ba65647b21c4de897e" },
+    "d930_contract_catalog_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "d930_classification_fingerprint_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "settings": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "settings_kind_code",
+            "adapter_message_format",
+            "adapter_message_version",
+            "primary_receipt_format",
+            "primary_receipt_version",
+            "receipt_broker_message_format",
+            "receipt_broker_message_version",
+            "backend_code",
+            "custody_class_code",
+            "reference_profile_code",
+            "durability_profile_code",
+            "publish_policy_code",
+            "integrity_purpose_code",
+            "integrity_claim_lifetime_ms",
+            "capability_bearer_transport_code",
+            "integrity_descriptor_relay_code",
+            "processing_access_code",
+            "restriction_tombstone_code"
+          ],
+          "properties": {
+            "settings_kind_code": { "const": "custody_adapter" },
+            "adapter_message_format": { "const": "jedi-atlas-custody-adapter-message" },
+            "adapter_message_version": { "const": "2.0.0" },
+            "primary_receipt_format": { "const": "jedi-atlas-primary-durability-receipt" },
+            "primary_receipt_version": { "const": "1.0.0" },
+            "receipt_broker_message_format": { "const": "jedi-atlas-durability-receipt-broker-message" },
+            "receipt_broker_message_version": { "const": "1.0.0" },
+            "backend_code": { "const": "pilot_local_cas_v1" },
+            "custody_class_code": { "const": "restricted_store" },
+            "reference_profile_code": { "const": "sha256_fanout_v1" },
+            "durability_profile_code": { "const": "local_posix_file_and_directory_sync_v1" },
+            "publish_policy_code": { "const": "prepare_verify_publish_no_replace_reopen_rehash" },
+            "integrity_purpose_code": { "const": "integrity" },
+            "integrity_claim_lifetime_ms": { "const": 30000 },
+            "capability_bearer_transport_code": { "const": "authenticated_ipc_sidecar_not_json" },
+            "integrity_descriptor_relay_code": { "const": "launcher_supervised_importer_to_one_shot_verifier_scm_rights" },
+            "processing_access_code": { "const": "denied" },
+            "restriction_tombstone_code": { "const": "deferred_d9_4" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "settings_kind_code",
+            "journal_format",
+            "journal_version",
+            "journal_broker_message_format",
+            "journal_broker_message_version",
+            "journal_semantic_format",
+            "journal_semantic_version",
+            "append_policy_code",
+            "semantic_time_field_code",
+            "persistence_time_field_code",
+            "primary_receipt_resolution_code",
+            "backup_receipt_resolution_code",
+            "backup_implementation_code",
+            "backing_store_handle_slot_code",
+            "primary_receipt_namespace_code",
+            "supporting_record_namespace_code",
+            "recovery_namespace_code",
+            "orphan_final_object_deletion_code"
+          ],
+          "properties": {
+            "settings_kind_code": { "const": "journal" },
+            "journal_format": { "const": "jedi-atlas-operation-journal-event" },
+            "journal_version": { "const": "2.0.0" },
+            "journal_broker_message_format": { "const": "jedi-atlas-operation-journal-broker-message" },
+            "journal_broker_message_version": { "const": "1.0.0" },
+            "journal_semantic_format": { "const": "jedi-atlas-operation-journal-semantic-assertion" },
+            "journal_semantic_version": { "const": "1.0.0" },
+            "append_policy_code": { "const": "single_hash_chain_broker_persisted" },
+            "semantic_time_field_code": { "const": "event_at" },
+            "persistence_time_field_code": { "const": "persisted_at" },
+            "primary_receipt_resolution_code": { "const": "exact_canonical_receipt_bytes_by_code_and_sha256" },
+            "backup_receipt_resolution_code": { "const": "typed_external_receipt_required" },
+            "backup_implementation_code": { "const": "deferred_d9_5" },
+            "backing_store_handle_slot_code": { "const": "operation_journal" },
+            "primary_receipt_namespace_code": { "const": "d930_primary_receipts_within_operation_journal" },
+            "supporting_record_namespace_code": { "const": "d930_secret_free_supporting_records_within_operation_journal" },
+            "recovery_namespace_code": { "const": "d930_recovery_within_operation_journal" },
+            "orphan_final_object_deletion_code": { "const": "denied_deferred_d9_4" }
+          }
+        }
+      ]
+    },
+    "activation_state_code": { "const": "design_only_unactivated" },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "profile_kind_code": { "const": "custody_adapter" } }, "required": ["profile_kind_code"] },
+      "then": { "properties": { "settings": { "properties": { "settings_kind_code": { "const": "custody_adapter" } }, "required": ["settings_kind_code"] } } }
+    },
+    {
+      "if": { "properties": { "profile_kind_code": { "const": "journal" } }, "required": ["profile_kind_code"] },
+      "then": { "properties": { "settings": { "properties": { "settings_kind_code": { "const": "journal" } }, "required": ["settings_kind_code"] } } }
+    }
+  ]
+}

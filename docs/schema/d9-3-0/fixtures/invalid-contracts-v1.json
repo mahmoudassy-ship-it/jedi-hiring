@@ -1,0 +1,83 @@
+{
+  "format": "jedi-atlas-d930-invalid-fixtures",
+  "format_version": "1.0.0",
+  "mutations": [
+    {
+      "case_code": "receipt_operation_replay",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/operation_id",
+      "replacement": "operation.synthetic.other",
+      "expected_error_code": "RECEIPT_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "receipt_nonce_replay",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/operation_nonce",
+      "replacement": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "expected_error_code": "RECEIPT_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "receipt_bundle_replay",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/bundle/bundle_sequence",
+      "replacement": 3,
+      "expected_error_code": "RECEIPT_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "receipt_copy_replay",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/copy_code",
+      "replacement": "copy.primary.other",
+      "expected_error_code": "RECEIPT_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "receipt_artifact_replay",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/artifact/byte_length",
+      "replacement": 17,
+      "expected_error_code": "RECEIPT_BINDING_MISMATCH"
+    },
+    {
+      "case_code": "receipt_backend_fanout",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/backend_reference",
+      "replacement": "objects/sha256/77/6666666666666666666666666666666666666666666666666666666666666666",
+      "expected_error_code": "BACKEND_REFERENCE_MISMATCH"
+    },
+    {
+      "case_code": "receipt_false_sync_claim",
+      "target_code": "primary_receipt",
+      "pointer": "/semantic/file_data_synced",
+      "replacement": false,
+      "expected_error_code": "SCHEMA_REJECTED"
+    },
+    {
+      "case_code": "adapter_wrong_version",
+      "target_code": "adapter_publish_response",
+      "pointer": "/format_version",
+      "replacement": "1.0.0",
+      "expected_error_code": "UNSUPPORTED_CONTRACT"
+    },
+    {
+      "case_code": "journal_missing_direct_custody",
+      "target_code": "journal_semantic",
+      "pointer": "/custody_finalization",
+      "replacement": null,
+      "expected_error_code": "JOURNAL_REFERENCE_MATRIX"
+    },
+    {
+      "case_code": "journal_persistence_backdated",
+      "target_code": "journal_event",
+      "pointer": "/persisted_at",
+      "replacement": "2030-01-01T00:12:00.000Z",
+      "expected_error_code": "CHRONOLOGY_REJECTED"
+    },
+    {
+      "case_code": "journal_broker_peer_swap",
+      "target_code": "journal_broker_request",
+      "pointer": "/recipient_binding_code",
+      "replacement": "custody.adapter.synthetic",
+      "expected_error_code": "BROKER_ROLE_REJECTED"
+    }
+  ]
+}

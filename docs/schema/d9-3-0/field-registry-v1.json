@@ -1,0 +1,645 @@
+{
+  "format": "jedi-atlas-d930-field-registry",
+  "format_version": "1.0.0",
+  "defaults": {
+    "canonicality_code": "canonical",
+    "confidentiality_code": "protected_operational",
+    "redaction_code": "never_log_value",
+    "unknown_field_code": "reject",
+    "null_semantics_code": "explicit_not_applicable_or_not_yet_known_only"
+  },
+  "mapping_semantics": {
+    "top_level_field_rule": "every listed field inherits its contract rule unless a variant or field override is more specific",
+    "nested_field_rule": "nested properties inherit their containing top_level field then matching nested family overrides",
+    "variant_selection_rule": "exactly_one_selector_for_each_closed_contract_discriminator_value",
+    "unmapped_property_rule": "reject",
+    "nested_pattern_grammar": "/**/<literal> or /**/*<suffix>; terminal property names only; JSON Pointer escaping applies",
+    "nested_pattern_precedence": "exact_literal_before_suffix; equal_specificity_overlap_rejected"
+  },
+  "contracts": [
+    {
+      "schema_file": "operational-profile-v1.schema.json",
+      "producer_role_codes": [
+        "configuration_authority"
+      ],
+      "consumer_role_codes": [
+        "trusted_launcher",
+        "custody_adapter",
+        "journal_broker"
+      ],
+      "storage_code": "protected_configuration_root",
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "profile_kind_code",
+        "profile_code",
+        "generation",
+        "issued_at",
+        "base_d90_catalog_sha256",
+        "base_d90_classification_fingerprint_sha256",
+        "base_d90_global_handles_fingerprint_sha256",
+        "base_d90_operation_scopes_fingerprint_sha256",
+        "d930_contract_catalog_sha256",
+        "d930_classification_fingerprint_sha256",
+        "settings",
+        "activation_state_code",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "custody-adapter-message-v2.schema.json",
+      "producer_role_codes": [
+        "bundle_importer",
+        "custody_adapter"
+      ],
+      "consumer_role_codes": [
+        "bundle_importer",
+        "custody_adapter",
+        "journal_broker",
+        "independent_verifier_via_bundle_importer_descriptor_relay"
+      ],
+      "storage_code": "protected_operation_journal_secret_free_supporting_record_namespace",
+      "variant_rules": [
+        {
+          "selector": {
+            "message_kind_code": "request"
+          },
+          "producer_role_codes": [
+            "bundle_importer"
+          ],
+          "consumer_role_codes": [
+            "custody_adapter"
+          ]
+        },
+        {
+          "selector": {
+            "message_kind_code": "response"
+          },
+          "producer_role_codes": [
+            "custody_adapter"
+          ],
+          "consumer_role_codes": [
+            "bundle_importer",
+            "journal_broker",
+            "independent_verifier_via_bundle_importer_descriptor_relay"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "message_kind_code",
+        "operation_code",
+        "operation_id",
+        "request_id",
+        "request_sequence",
+        "operation_nonce",
+        "sender_binding_code",
+        "recipient_binding_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_operational_profile_record_digest_sha256",
+        "request_record_digest_sha256",
+        "created_at",
+        "ancillary_descriptors",
+        "payload",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "integrity-access-lifecycle-record-v1.schema.json",
+      "producer_role_codes": [
+        "trusted_launcher",
+        "independent_verifier"
+      ],
+      "consumer_role_codes": [
+        "bundle_importer",
+        "journal_broker",
+        "independent_verifier",
+        "recovery_operator"
+      ],
+      "storage_code": "protected_operation_journal_secret_free_supporting_record_namespace",
+      "variant_rules": [
+        {
+          "selector": {
+            "record_kind_code": "descriptor_delivery"
+          },
+          "producer_role_codes": [
+            "trusted_launcher"
+          ],
+          "consumer_role_codes": [
+            "bundle_importer",
+            "journal_broker",
+            "independent_verifier"
+          ]
+        },
+        {
+          "selector": {
+            "record_kind_code": "verifier_result"
+          },
+          "producer_role_codes": [
+            "independent_verifier"
+          ],
+          "consumer_role_codes": [
+            "trusted_launcher",
+            "bundle_importer",
+            "journal_broker"
+          ]
+        },
+        {
+          "selector": {
+            "record_kind_code": "access_closed_and_receiver_terminated"
+          },
+          "producer_role_codes": [
+            "trusted_launcher"
+          ],
+          "consumer_role_codes": [
+            "bundle_importer",
+            "journal_broker",
+            "independent_verifier",
+            "recovery_operator"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_kind_code",
+        "record_code",
+        "operation_id",
+        "operation_nonce",
+        "bundle",
+        "artifact",
+        "copy_code",
+        "backend_code",
+        "backend_reference",
+        "purpose_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_operational_profile_record_digest_sha256",
+        "open_custody_request_record_digest_sha256",
+        "open_custody_response_record_digest_sha256",
+        "sealed_capability_record_digest_sha256",
+        "sealed_capability_consumed_transition_digest_sha256",
+        "producer_binding_code",
+        "sender_binding_code",
+        "receiver_binding_code",
+        "verifier_binding_code",
+        "verifier_executable_sha256",
+        "receiver_process",
+        "descriptor_delivery_record_digest_sha256",
+        "verifier_result_record_digest_sha256",
+        "transport_code",
+        "descriptor_role_code",
+        "access_code",
+        "file_type_code",
+        "peer_credentials_verified",
+        "pidfd_supervision_active",
+        "verification_outcome_code",
+        "recomputed_artifact",
+        "sender_close_state_code",
+        "sender_closed_at",
+        "receiver_termination_state_code",
+        "receiver_terminated_at",
+        "termination_disposition_code",
+        "receiver_descriptor_closed_by_termination",
+        "lifecycle_outcome_code",
+        "event_at",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "primary-durability-receipt-v1.schema.json",
+      "producer_role_codes": [
+        "custody_adapter_semantic",
+        "journal_broker_persistence"
+      ],
+      "consumer_role_codes": [
+        "custody_adapter",
+        "bundle_importer",
+        "journal_broker",
+        "independent_verifier",
+        "recovery_operator"
+      ],
+      "storage_code": "protected_operation_journal_receipt_namespace",
+      "field_overrides": [
+        {
+          "json_pointer_patterns": [
+            "/semantic",
+            "/semantic_payload_sha256"
+          ],
+          "producer_role_codes": [
+            "custody_adapter"
+          ],
+          "consumer_role_codes": [
+            "journal_broker",
+            "bundle_importer",
+            "independent_verifier",
+            "recovery_operator"
+          ]
+        },
+        {
+          "json_pointer_patterns": [
+            "/persistence_request_record_digest_sha256",
+            "/persisted_by_binding_code",
+            "/persisted_at"
+          ],
+          "producer_role_codes": [
+            "journal_broker"
+          ],
+          "consumer_role_codes": [
+            "custody_adapter",
+            "bundle_importer",
+            "independent_verifier",
+            "recovery_operator"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "receipt_file_profile_code",
+        "hash_algorithm_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_operational_profile_record_digest_sha256",
+        "semantic",
+        "semantic_payload_sha256",
+        "persistence_request_record_digest_sha256",
+        "persisted_by_binding_code",
+        "persisted_at"
+      ]
+    },
+    {
+      "schema_file": "durability-receipt-broker-message-v1.schema.json",
+      "producer_role_codes": [
+        "custody_adapter",
+        "journal_broker"
+      ],
+      "consumer_role_codes": [
+        "custody_adapter",
+        "journal_broker"
+      ],
+      "storage_code": "protected_operation_journal_receipt_exchange_namespace",
+      "variant_rules": [
+        {
+          "selector": {
+            "message_kind_code": "persist_request"
+          },
+          "producer_role_codes": [
+            "custody_adapter"
+          ],
+          "consumer_role_codes": [
+            "journal_broker"
+          ]
+        },
+        {
+          "selector": {
+            "message_kind_code": "persist_response"
+          },
+          "producer_role_codes": [
+            "journal_broker"
+          ],
+          "consumer_role_codes": [
+            "bundle_importer",
+            "custody_adapter",
+            "independent_verifier",
+            "trusted_launcher"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "message_kind_code",
+        "operation_id",
+        "operation_nonce",
+        "request_id",
+        "request_sequence",
+        "sender_binding_code",
+        "recipient_binding_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_operational_profile_record_digest_sha256",
+        "d930_journal_profile_record_digest_sha256",
+        "request_record_digest_sha256",
+        "created_at",
+        "payload",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "operation-journal-semantic-v1.schema.json",
+      "producer_role_codes": [
+        "exact_d90_stage_origin_role"
+      ],
+      "consumer_role_codes": [
+        "journal_broker",
+        "trusted_launcher",
+        "bundle_importer",
+        "independent_verifier",
+        "recovery_operator"
+      ],
+      "storage_code": "embedded_exactly_in_broker_request_and_operation_journal_event",
+      "field_overrides": [
+        {
+          "json_pointer_patterns": [
+            "/component_binding_code",
+            "/component_executable_sha256",
+            "/event_at",
+            "/record_digest_sha256"
+          ],
+          "producer_role_codes": [
+            "exact_d90_stage_origin_role"
+          ],
+          "consumer_role_codes": [
+            "journal_broker"
+          ]
+        },
+        {
+          "json_pointer_patterns": [
+            "/recovery"
+          ],
+          "producer_role_codes": [
+            "independent_verifier_under_recovery_authorization"
+          ],
+          "consumer_role_codes": [
+            "journal_broker",
+            "recovery_operator"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "operation_mode_code",
+        "operation_id",
+        "operation_nonce",
+        "event_kind_code",
+        "stage_code",
+        "component_binding_code",
+        "component_executable_sha256",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_journal_profile_record_digest_sha256",
+        "authorization_permit_record_digest_sha256",
+        "authorization_bundle_seal_record_digest_sha256",
+        "prepromotion_authorization_record_digest_sha256",
+        "bundle",
+        "target_logical_state",
+        "observed_logical_state",
+        "canonical_effect_code",
+        "result_outcome_code",
+        "error_code",
+        "retryability_code",
+        "recovery_class_code",
+        "rows_delta",
+        "objects_delta",
+        "object_disposition_code",
+        "candidate_file_sha256",
+        "candidate_file_seal_record_digest_sha256",
+        "backup_inventory_sha256",
+        "custody_finalization",
+        "integrity_access",
+        "artifact_backup_receipt",
+        "prior_database_backup_receipt",
+        "final_backup_receipt",
+        "recovery",
+        "event_at",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "operation-journal-broker-message-v1.schema.json",
+      "producer_role_codes": [
+        "exact_semantic_actor",
+        "journal_broker"
+      ],
+      "consumer_role_codes": [
+        "exact_semantic_actor",
+        "journal_broker"
+      ],
+      "storage_code": "protected_operation_journal_append_exchange_namespace",
+      "variant_rules": [
+        {
+          "selector": {
+            "message_kind_code": "persist_supporting_request"
+          },
+          "producer_role_codes": [
+            "bundle_importer",
+            "custody_adapter",
+            "independent_verifier",
+            "trusted_launcher"
+          ],
+          "consumer_role_codes": [
+            "journal_broker"
+          ]
+        },
+        {
+          "selector": {
+            "message_kind_code": "persist_supporting_response"
+          },
+          "producer_role_codes": [
+            "journal_broker"
+          ],
+          "consumer_role_codes": [
+            "bundle_importer",
+            "custody_adapter",
+            "independent_verifier",
+            "trusted_launcher"
+          ]
+        },
+        {
+          "selector": {
+            "message_kind_code": "append_request"
+          },
+          "producer_role_codes": [
+            "exact_semantic_actor"
+          ],
+          "consumer_role_codes": [
+            "journal_broker"
+          ]
+        },
+        {
+          "selector": {
+            "message_kind_code": "append_response"
+          },
+          "producer_role_codes": [
+            "journal_broker"
+          ],
+          "consumer_role_codes": [
+            "exact_semantic_actor"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "message_kind_code",
+        "operation_id",
+        "operation_nonce",
+        "request_id",
+        "sender_binding_code",
+        "recipient_binding_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "d930_journal_profile_record_digest_sha256",
+        "request_record_digest_sha256",
+        "created_at",
+        "payload",
+        "record_digest_sha256"
+      ]
+    },
+    {
+      "schema_file": "operation-journal-event-v2.schema.json",
+      "producer_role_codes": [
+        "journal_broker"
+      ],
+      "consumer_role_codes": [
+        "trusted_launcher",
+        "bundle_importer",
+        "independent_verifier",
+        "recovery_operator",
+        "backup_adapter"
+      ],
+      "storage_code": "protected_operation_journal",
+      "field_overrides": [
+        {
+          "json_pointer_patterns": [
+            "/semantic_assertion",
+            "/semantic_assertion_record_digest_sha256"
+          ],
+          "producer_role_codes": [
+            "exact_semantic_actor"
+          ],
+          "consumer_role_codes": [
+            "journal_broker",
+            "trusted_launcher",
+            "bundle_importer",
+            "independent_verifier",
+            "recovery_operator",
+            "backup_adapter"
+          ]
+        },
+        {
+          "json_pointer_patterns": [
+            "/journal_code",
+            "/event_sequence",
+            "/previous_event_record_digest_sha256",
+            "/append_request_record_digest_sha256",
+            "/persisted_by_binding_code",
+            "/persisted_at",
+            "/record_digest_sha256"
+          ],
+          "producer_role_codes": [
+            "journal_broker"
+          ],
+          "consumer_role_codes": [
+            "trusted_launcher",
+            "bundle_importer",
+            "independent_verifier",
+            "recovery_operator",
+            "backup_adapter"
+          ]
+        }
+      ],
+      "field_codes": [
+        "format",
+        "format_version",
+        "record_code",
+        "journal_code",
+        "event_sequence",
+        "previous_event_record_digest_sha256",
+        "semantic_assertion",
+        "semantic_assertion_record_digest_sha256",
+        "append_request_record_digest_sha256",
+        "persisted_by_binding_code",
+        "persisted_at",
+        "record_digest_sha256"
+      ]
+    }
+  ],
+  "nested_field_families": [
+    {
+      "json_pointer_pattern": "/**/bundle",
+      "producer_rule": "copied_from_verified_bundle_seal",
+      "consumer_rule": "exact_equality_and_resolution",
+      "storage_rule": "with_parent_record",
+      "confidentiality_code": "internal_integrity_metadata",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/artifact",
+      "producer_rule": "recomputed_from_exact_bytes",
+      "consumer_rule": "exact_equality_and_recomputation",
+      "storage_rule": "with_parent_record",
+      "confidentiality_code": "internal_integrity_metadata",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/backend_reference",
+      "producer_rule": "custody_adapter_from_pinned_reference_profile",
+      "consumer_rule": "exact_sha256_fanout_and_root_confined_resolution",
+      "storage_rule": "with_parent_record",
+      "confidentiality_code": "restricted_location_metadata",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/semantic",
+      "producer_rule": "custody_adapter_then_exact_broker_copy",
+      "consumer_rule": "semantic_digest_and_all_bindings_verified",
+      "storage_rule": "exact_receipt_bytes",
+      "confidentiality_code": "protected_operational",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/recovery",
+      "producer_rule": "independent_verifier_through_journal_broker",
+      "consumer_rule": "ordered_total_recovery_matrix",
+      "storage_rule": "operation_journal_recovery_namespace",
+      "confidentiality_code": "protected_operational",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/*_at",
+      "producer_rule": "named_semantic_or_persistence_actor",
+      "consumer_rule": "canonical_timestamp_and_chronology_validator",
+      "storage_rule": "with_parent_record",
+      "confidentiality_code": "internal_integrity_metadata",
+      "canonicality_code": "canonical"
+    },
+    {
+      "json_pointer_pattern": "/**/*sha256",
+      "producer_rule": "named_hashing_component",
+      "consumer_rule": "registered_context_specific_resolver_or_recomputation",
+      "storage_rule": "with_parent_record",
+      "confidentiality_code": "internal_integrity_metadata",
+      "canonicality_code": "canonical"
+    }
+  ],
+  "ephemeral_transport": {
+    "producer_role_codes": [
+      "trusted_launcher",
+      "custody_adapter"
+    ],
+    "consumer_role_codes": [
+      "exact_process_bound_recipient"
+    ],
+    "fields": [
+      "capability_bearer_bytes",
+      "scm_rights_descriptors"
+    ],
+    "storage_code": "never_persisted_never_logged_never_hashed_never_in_fixture",
+    "canonicality_code": "outside_json_contract",
+    "secret_code": "secret_capability",
+    "must_resolve_commitment": true
+  },
+  "effective_mapping_sha256": "14616c2ff46109cf6eaed017f44bec066c6d9468b6650760fce67dc2f328aa46",
+  "record_digest_sha256": "04293fb9885ed792516c04b11ef4608fd82cec9f4223be75b9fa8d9a93392a96"
+}

@@ -1,0 +1,843 @@
+{
+  "format": "jedi-atlas-d930-digest-profiles",
+  "format_version": "1.0.0",
+  "algorithm_code": "sha256",
+  "canonical_json_profile": {
+    "encoding_code": "utf8",
+    "bom_code": "forbidden",
+    "duplicate_key_code": "reject",
+    "unicode_normalization_code": "none",
+    "object_key_order_code": "utf16_code_unit_ascending",
+    "array_order_code": "preserve",
+    "number_code": "nonnegative_safe_integer_only",
+    "line_ending_code": "none",
+    "insignificant_whitespace_code": "none"
+  },
+  "payload_profiles": [
+    {
+      "profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "input_code": "closed_contract_object",
+      "omitted_top_level_fields": [
+        "record_digest_sha256"
+      ],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "canonical_embedded_semantic_payload_v1",
+      "input_code": "exact_closed_embedded_object",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "exact_primary_durability_receipt_bytes_v1",
+      "input_code": "complete_primary_receipt_object",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "opaque_d9_5_backup_receipt_bytes_v1",
+      "input_code": "future_d9_5_exact_receipt_bytes_undefined_here",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_not_yet_defined"
+    },
+    {
+      "profile_code": "artifact_bundle_copy_primary_receipt_operation_nonce_v1",
+      "input_code": "bundle_artifact_copy_primary_receipt_operation_nonce",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "prior_logical_state_database_generation_operation_nonce_v1",
+      "input_code": "bundle_prior_logical_state_database_generation_operation_nonce",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "resulting_logical_state_receipt_head_inventory_operation_nonce_v1",
+      "input_code": "bundle_resulting_logical_state_receipt_head_inventory_operation_nonce",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "contract_root_inventory_v1",
+      "input_code": "sorted_relative_path_and_raw_sha256_pairs_excluding_validator",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "recovery_lock_projection_v1",
+      "input_code": "permit_control_store_operation_id_operation_nonce_owner_binding_acquired_at_expires_at_and_held_state",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "exact_artifact_bytes",
+      "input_code": "exact_artifact_byte_layer_octets",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_v1"
+    },
+    {
+      "profile_code": "exact_file_bytes",
+      "input_code": "exact_candidate_or_state_file_octets",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_v1"
+    },
+    {
+      "profile_code": "exact_executable_bytes",
+      "input_code": "exact_verified_executable_octets",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_v1"
+    },
+    {
+      "profile_code": "sha256_fanout_v1",
+      "input_code": "lowercase_sha256_to_objects_sha256_two_hex_fanout_relative_path",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "utf8_exact_string_v1"
+    },
+    {
+      "profile_code": "approved_manifest_v1_canonical_digest",
+      "input_code": "approved_manifest_v1_excluding_top_level_bundle_digest_sha256",
+      "omitted_top_level_fields": [
+        "bundle_digest_sha256"
+      ],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "d90_clearance_scope",
+      "input_code": "frozen_d90_clearance_scope_projection",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "d90_custody_leaf",
+      "input_code": "frozen_d90_bitemporal_custody_leaf_projection",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "future_d9_5_inventory",
+      "input_code": "future_d9_5_backup_inventory_bytes_undefined_here",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_not_yet_defined"
+    },
+    {
+      "profile_code": "d90_logical_state",
+      "input_code": "frozen_d90_logical_state_payload_projection",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "protected_head",
+      "input_code": "exact_current_protected_record_excluding_self_digest",
+      "omitted_top_level_fields": [
+        "record_digest_sha256"
+      ],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "future_d9_5_protected_head",
+      "input_code": "future_d9_5_protected_head_projection_undefined_here",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_not_yet_defined"
+    },
+    {
+      "profile_code": "exact_approved_contract_file",
+      "input_code": "exact_approved_d90_contract_file_octets",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_v1"
+    },
+    {
+      "profile_code": "canonical_approved_classification_record",
+      "input_code": "approved_d90_classification_record_excluding_self_digest",
+      "omitted_top_level_fields": [
+        "record_digest_sha256"
+      ],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "canonical_approved_global_handles_payload",
+      "input_code": "approved_d90_global_handle_recipient_matrix_projection",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "canonical_approved_operation_scopes_payload",
+      "input_code": "approved_d90_operation_scope_partitions_projection",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    },
+    {
+      "profile_code": "exact_d930_contract_catalog_file",
+      "input_code": "exact_d930_contract_catalog_octets",
+      "omitted_top_level_fields": [],
+      "byte_serialization_code": "exact_bytes_v1"
+    },
+    {
+      "profile_code": "canonical_d930_classification_record",
+      "input_code": "d930_classification_record_excluding_self_digest",
+      "omitted_top_level_fields": [
+        "record_digest_sha256"
+      ],
+      "byte_serialization_code": "canonical_json_utf8_no_lf_v1"
+    }
+  ],
+  "resolvers": [
+    {
+      "resolver_code": "self",
+      "storage_code": "containing_record",
+      "selection_code": "recompute_exact_profile"
+    },
+    {
+      "resolver_code": "embedded_semantic",
+      "storage_code": "containing_record",
+      "selection_code": "recompute_canonical_embedded_payload"
+    },
+    {
+      "resolver_code": "d90_runtime_profile",
+      "storage_code": "protected_configuration_root",
+      "selection_code": "exact_active_generation_record_digest"
+    },
+    {
+      "resolver_code": "d90_identity_bindings",
+      "storage_code": "protected_configuration_root",
+      "selection_code": "exact_active_generation_record_digest"
+    },
+    {
+      "resolver_code": "d90_bundle_seal",
+      "storage_code": "handoff_registry",
+      "selection_code": "exact_record_digest_bundle_operation_and_nonce"
+    },
+    {
+      "resolver_code": "d90_collector_handoff",
+      "storage_code": "handoff_registry",
+      "selection_code": "exact_record_digest_artifact_and_staging_occurrence"
+    },
+    {
+      "resolver_code": "d90_capability_issuance",
+      "storage_code": "custody_capability_store",
+      "selection_code": "exact_issuance_digest_operation_nonce_kind_and_scope"
+    },
+    {
+      "resolver_code": "d90_capability_leaf",
+      "storage_code": "custody_capability_store",
+      "selection_code": "exact_leaf_for_issuance_current_at_authenticated_request_acceptance_identified_by_basis_request_digest"
+    },
+    {
+      "resolver_code": "d90_capability_transition",
+      "storage_code": "custody_capability_store",
+      "selection_code": "exact_transition_digest_for_issuance_sequence_state_operation_and_nonce"
+    },
+    {
+      "resolver_code": "d90_clearance_record",
+      "storage_code": "clearance_register",
+      "selection_code": "exact_record_digest_artifact_scope_and_knowledge_boundary"
+    },
+    {
+      "resolver_code": "d90_custody_leaf",
+      "storage_code": "custody_event_projection",
+      "selection_code": "exact_bitemporal_custody_leaf_for_copy_at_evaluated_at_and_known_through_bundle_sequence"
+    },
+    {
+      "resolver_code": "d90_evidence_bundle",
+      "storage_code": "accepted_bundle_registry",
+      "selection_code": "exact_bundle_id_sequence_and_canonical_manifest_digest"
+    },
+    {
+      "resolver_code": "d90_recovery_lock_projection",
+      "storage_code": "permit_control_store",
+      "selection_code": "recompute_exact_current_held_lock_projection_for_operation_nonce_trusted_launcher_owner_and_snapshot_time"
+    },
+    {
+      "resolver_code": "d90_authorization_permit",
+      "storage_code": "permit_control_store",
+      "selection_code": "exact_current_permit_digest_operation_nonce_kind_and_scope"
+    },
+    {
+      "resolver_code": "d90_prepromotion_authorization",
+      "storage_code": "clearance_register",
+      "selection_code": "exact_record_digest_operation_nonce_candidate_and_scope"
+    },
+    {
+      "resolver_code": "d90_logical_state_seal",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_record_digest_state_seal_code_and_logical_state_sha256"
+    },
+    {
+      "resolver_code": "d90_candidate_file_seal",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_record_digest_operation_nonce_and_candidate_file_sha256"
+    },
+    {
+      "resolver_code": "d90_component_build",
+      "storage_code": "protected_build_inventory",
+      "selection_code": "exact_binding_generation_role_and_executable_sha256"
+    },
+    {
+      "resolver_code": "d930_operational_profile",
+      "storage_code": "protected_configuration_root",
+      "selection_code": "exact_profile_kind_generation_record_digest_and_catalog"
+    },
+    {
+      "resolver_code": "d930_adapter_message",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_secret_free_canonical_projection_digest_operation_nonce_and_request_chain"
+    },
+    {
+      "resolver_code": "d930_receipt_broker_message",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_message_digest_operation_nonce_and_request_chain"
+    },
+    {
+      "resolver_code": "d930_journal_semantic",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_semantic_assertion_record_digest"
+    },
+    {
+      "resolver_code": "d930_journal_broker_message",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_append_request_digest_operation_nonce_and_expected_head"
+    },
+    {
+      "resolver_code": "d930_supporting_persistence_ack",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_persist_supporting_response_digest_persisted_record_digest_operation_nonce_and_journal_code"
+    },
+    {
+      "resolver_code": "d930_primary_receipt",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_record_code_and_raw_sha256"
+    },
+    {
+      "resolver_code": "d930_journal_event",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_journal_sequence_and_record_digest"
+    },
+    {
+      "resolver_code": "d930_supporting_record",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_discriminator_selected_adapter_or_integrity_lifecycle_record_digest"
+    },
+    {
+      "resolver_code": "d930_inventory_snapshot",
+      "storage_code": "named_protected_store",
+      "selection_code": "exact_complete_inventory_profile_head_and_persistence_bound"
+    },
+    {
+      "resolver_code": "contextual_request_chain",
+      "storage_code": "named_authenticated_ipc_exchange_namespace",
+      "selection_code": "exact_request_digest_format_message_kind_operation_id_nonce_request_id_roles_and_contract_required_sequence",
+      "selection_variants": [
+        {
+          "contract_format": "jedi-atlas-custody-adapter-message",
+          "required_context_fields": ["message_kind_code", "operation_code", "operation_id", "operation_nonce", "request_id", "request_sequence", "sender_binding_code", "recipient_binding_code"]
+        },
+        {
+          "contract_format": "jedi-atlas-durability-receipt-broker-message",
+          "required_context_fields": ["message_kind_code", "operation_id", "operation_nonce", "request_id", "request_sequence", "sender_binding_code", "recipient_binding_code"]
+        },
+        {
+          "contract_format": "jedi-atlas-operation-journal-broker-message",
+          "required_context_fields": ["message_kind_code", "operation_id", "operation_nonce", "request_id", "sender_binding_code", "recipient_binding_code"]
+        }
+      ]
+    },
+    {
+      "resolver_code": "contextual_persisted_journal_record",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_format_namespace_code_and_record_digest"
+    },
+    {
+      "resolver_code": "d95_backup_receipt_unavailable",
+      "storage_code": "future_d9_5_backup_register",
+      "selection_code": "unavailable_until_d9_5_contract_and_implementation"
+    },
+    {
+      "resolver_code": "exact_candidate_file",
+      "storage_code": "disposable_candidate_database",
+      "selection_code": "recompute_exact_file_bytes"
+    },
+    {
+      "resolver_code": "exact_artifact_bytes",
+      "storage_code": "staging_or_restricted_custody",
+      "selection_code": "recompute_byte_layer_length_and_sha256"
+    },
+    {
+      "resolver_code": "exact_backend_reference",
+      "storage_code": "restricted_custody_adapter",
+      "selection_code": "objects_sha256_prefix2_fullhash_mapping"
+    },
+    {
+      "resolver_code": "d930_integrity_lifecycle_record",
+      "storage_code": "protected_operation_journal",
+      "selection_code": "exact_secret_free_lifecycle_record_digest_operation_nonce_copy_and_process_tuple"
+    },
+    {
+      "resolver_code": "d90_contract_anchor",
+      "storage_code": "frozen_contract_root",
+      "selection_code": "exact_approved_file_or_canonical_record_fingerprint_by_named_anchor"
+    },
+    {
+      "resolver_code": "d930_contract_anchor",
+      "storage_code": "d930_contract_root",
+      "selection_code": "exact_catalog_file_or_canonical_classification_record_fingerprint"
+    }
+  ],
+  "field_bindings": [
+    {
+      "field_code": "record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "self"
+    },
+    {
+      "field_code": "semantic_payload_sha256",
+      "context_code": "primary_receipt_semantic",
+      "payload_profile_code": "canonical_embedded_semantic_payload_v1",
+      "resolver_code": "embedded_semantic"
+    },
+    {
+      "field_code": "receipt_semantic_sha256",
+      "context_code": "receipt_broker_request_semantic",
+      "payload_profile_code": "canonical_embedded_semantic_payload_v1",
+      "resolver_code": "embedded_semantic"
+    },
+    {
+      "field_code": "semantic_assertion_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_semantic"
+    },
+    {
+      "field_code": "runtime_profile_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_runtime_profile"
+    },
+    {
+      "field_code": "identity_bindings_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_identity_bindings"
+    },
+    {
+      "field_code": "d930_operational_profile_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_operational_profile"
+    },
+    {
+      "field_code": "d930_journal_profile_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_operational_profile"
+    },
+    {
+      "field_code": "bundle_seal_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_bundle_seal"
+    },
+    {
+      "field_code": "authorization_bundle_seal_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_bundle_seal"
+    },
+    {
+      "field_code": "collector_handoff_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_collector_handoff"
+    },
+    {
+      "field_code": "source_capability_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_issuance"
+    },
+    {
+      "field_code": "source_capability_leaf_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_leaf"
+    },
+    {
+      "field_code": "preparation_capability_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_issuance"
+    },
+    {
+      "field_code": "preparation_capability_leaf_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_leaf"
+    },
+    {
+      "field_code": "sealed_capability_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_issuance"
+    },
+    {
+      "field_code": "sealed_capability_leaf_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_leaf"
+    },
+    {
+      "field_code": "source_capability_consumed_transition_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_transition"
+    },
+    {
+      "field_code": "preparation_capability_issuance_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_issuance"
+    },
+    {
+      "field_code": "preparation_capability_verified_transition_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_transition"
+    },
+    {
+      "field_code": "preparation_capability_consumed_transition_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_transition"
+    },
+    {
+      "field_code": "sealed_capability_consumed_transition_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_capability_transition"
+    },
+    {
+      "field_code": "clearance_decision_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_clearance_record"
+    },
+    {
+      "field_code": "authorization_permit_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_authorization_permit"
+    },
+    {
+      "field_code": "prepromotion_authorization_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_prepromotion_authorization"
+    },
+    {
+      "field_code": "candidate_file_seal_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_candidate_file_seal"
+    },
+    {
+      "field_code": "state_seal_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d90_logical_state_seal"
+    },
+    {
+      "field_code": "request_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "contextual_request_chain"
+    },
+    {
+      "field_code": "response_record_digest_sha256",
+      "context_code": "custody_exchange_response",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "open_staged_response_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "prepare_response_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "verify_prepared_response_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "publish_request_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "receipt_broker_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_receipt_broker_message"
+    },
+    {
+      "field_code": "persistence_request_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_receipt_broker_message"
+    },
+    {
+      "field_code": "append_request_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_broker_message"
+    },
+    {
+      "field_code": "supporting_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_record"
+    },
+    {
+      "field_code": "previous_event_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_event"
+    },
+    {
+      "field_code": "expected_previous_event_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_event"
+    },
+    {
+      "field_code": "known_through_journal_head_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_event"
+    },
+    {
+      "field_code": "prior_attempt_terminal_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_event"
+    },
+    {
+      "field_code": "source_terminal_journal_head_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_journal_event"
+    },
+    {
+      "field_code": "receipt_raw_sha256",
+      "context_code": "primary_receipt_reference",
+      "payload_profile_code": "exact_primary_durability_receipt_bytes_v1",
+      "resolver_code": "d930_primary_receipt"
+    },
+    {
+      "field_code": "receipt_raw_sha256",
+      "context_code": "backup_receipt_reference",
+      "payload_profile_code": "opaque_d9_5_backup_receipt_bytes_v1",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "backup_profile_record_digest_sha256",
+      "context_code": "backup_receipt_reference",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "persisted_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "contextual_persisted_journal_record"
+    },
+    {
+      "field_code": "descriptor_delivery_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_integrity_lifecycle_record"
+    },
+    {
+      "field_code": "verifier_result_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_integrity_lifecycle_record"
+    },
+    {
+      "field_code": "receiver_termination_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_integrity_lifecycle_record"
+    },
+    {
+      "field_code": "request_persistence_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_persistence_ack"
+    },
+    {
+      "field_code": "response_persistence_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_persistence_ack"
+    },
+    {
+      "field_code": "descriptor_delivery_persistence_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_persistence_ack"
+    },
+    {
+      "field_code": "verifier_result_persistence_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_persistence_ack"
+    },
+    {
+      "field_code": "receiver_termination_persistence_ack_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_supporting_persistence_ack"
+    },
+    {
+      "field_code": "open_custody_request_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "open_custody_response_record_digest_sha256",
+      "payload_profile_code": "canonical_contract_record_excluding_self_digest_v1",
+      "resolver_code": "d930_adapter_message"
+    },
+    {
+      "field_code": "recovery_lock_projection_sha256",
+      "payload_profile_code": "recovery_lock_projection_v1",
+      "resolver_code": "d90_recovery_lock_projection"
+    },
+    {
+      "field_code": "scope_sha256",
+      "context_code": "artifact_backup_receipt_reference",
+      "payload_profile_code": "artifact_bundle_copy_primary_receipt_operation_nonce_v1",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "scope_sha256",
+      "context_code": "prior_database_backup_receipt_reference",
+      "payload_profile_code": "prior_logical_state_database_generation_operation_nonce_v1",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "scope_sha256",
+      "context_code": "final_backup_receipt_reference",
+      "payload_profile_code": "resulting_logical_state_receipt_head_inventory_operation_nonce_v1",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    }
+  ],
+  "content_hash_fields": [
+    {
+      "field_code": "sha256",
+      "profile_code": "exact_artifact_bytes",
+      "resolver_code": "exact_artifact_bytes"
+    },
+    {
+      "field_code": "candidate_file_sha256",
+      "profile_code": "exact_file_bytes",
+      "resolver_code": "exact_candidate_file"
+    },
+    {
+      "field_code": "component_executable_sha256",
+      "profile_code": "exact_executable_bytes",
+      "resolver_code": "d90_component_build"
+    },
+    {
+      "field_code": "adapter_executable_sha256",
+      "profile_code": "exact_executable_bytes",
+      "resolver_code": "d90_component_build"
+    },
+    {
+      "field_code": "verifier_executable_sha256",
+      "profile_code": "exact_executable_bytes",
+      "resolver_code": "d90_component_build"
+    },
+    {
+      "field_code": "backend_reference",
+      "profile_code": "sha256_fanout_v1",
+      "resolver_code": "exact_backend_reference"
+    },
+    {
+      "field_code": "bundle_digest_sha256",
+      "profile_code": "approved_manifest_v1_canonical_digest",
+      "resolver_code": "d90_evidence_bundle"
+    },
+    {
+      "field_code": "clearance_scope_sha256",
+      "profile_code": "d90_clearance_scope",
+      "resolver_code": "d90_clearance_record"
+    },
+    {
+      "field_code": "custody_leaf_projection_sha256",
+      "profile_code": "d90_custody_leaf",
+      "resolver_code": "d90_custody_leaf"
+    },
+    {
+      "field_code": "backup_inventory_sha256",
+      "profile_code": "future_d9_5_inventory",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "logical_state_sha256",
+      "profile_code": "d90_logical_state",
+      "resolver_code": "d90_logical_state_seal"
+    },
+    {
+      "field_code": "head_digest_sha256",
+      "context_code": "complete_recovery_inventory",
+      "profile_code": "protected_head",
+      "resolver_code": "d930_inventory_snapshot"
+    },
+    {
+      "field_code": "head_digest_sha256",
+      "context_code": "backup_recovery_inventory",
+      "profile_code": "future_d9_5_protected_head",
+      "resolver_code": "d95_backup_receipt_unavailable"
+    },
+    {
+      "field_code": "base_d90_catalog_sha256",
+      "profile_code": "exact_approved_contract_file",
+      "resolver_code": "d90_contract_anchor"
+    },
+    {
+      "field_code": "base_d90_classification_fingerprint_sha256",
+      "profile_code": "canonical_approved_classification_record",
+      "resolver_code": "d90_contract_anchor"
+    },
+    {
+      "field_code": "base_d90_global_handles_fingerprint_sha256",
+      "profile_code": "canonical_approved_global_handles_payload",
+      "resolver_code": "d90_contract_anchor"
+    },
+    {
+      "field_code": "base_d90_operation_scopes_fingerprint_sha256",
+      "profile_code": "canonical_approved_operation_scopes_payload",
+      "resolver_code": "d90_contract_anchor"
+    },
+    {
+      "field_code": "d930_contract_catalog_sha256",
+      "profile_code": "exact_d930_contract_catalog_file",
+      "resolver_code": "d930_contract_anchor"
+    },
+    {
+      "field_code": "d930_classification_fingerprint_sha256",
+      "profile_code": "canonical_d930_classification_record",
+      "resolver_code": "d930_contract_anchor"
+    }
+  ],
+  "pointer_context_rules": [
+    {
+      "field_code": "receipt_raw_sha256",
+      "json_pointer_contains": "/artifact_backup_receipt/",
+      "context_code": "backup_receipt_reference"
+    },
+    {
+      "field_code": "receipt_raw_sha256",
+      "json_pointer_contains": "/prior_database_backup_receipt/",
+      "context_code": "backup_receipt_reference"
+    },
+    {
+      "field_code": "receipt_raw_sha256",
+      "json_pointer_contains": "/final_backup_receipt/",
+      "context_code": "backup_receipt_reference"
+    },
+    {
+      "field_code": "receipt_raw_sha256",
+      "json_pointer_contains": "*",
+      "context_code": "primary_receipt_reference"
+    },
+    {
+      "field_code": "scope_sha256",
+      "json_pointer_contains": "/artifact_backup_receipt/",
+      "context_code": "artifact_backup_receipt_reference"
+    },
+    {
+      "field_code": "scope_sha256",
+      "json_pointer_contains": "/prior_database_backup_receipt/",
+      "context_code": "prior_database_backup_receipt_reference"
+    },
+    {
+      "field_code": "scope_sha256",
+      "json_pointer_contains": "/final_backup_receipt/",
+      "context_code": "final_backup_receipt_reference"
+    },
+    {
+      "field_code": "head_digest_sha256",
+      "json_pointer_contains": "/backup_inventory/",
+      "context_code": "backup_recovery_inventory"
+    },
+    {
+      "field_code": "head_digest_sha256",
+      "json_pointer_contains": "*",
+      "context_code": "complete_recovery_inventory"
+    }
+  ],
+  "record_digest_sha256": "c8532cd78032dba55add0b9d17d6d5625aaae887c4b2bbe3fea87c286b31e920"
+}
