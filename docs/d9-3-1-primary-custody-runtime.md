@@ -1,6 +1,6 @@
 # D9.3.1 synthetic primary-custody runtime
 
-Status: **implementation candidate awaiting separate review; synthetic and unactivated**. This implementation consumes the approved D9.0.1 and D9.3.0 contracts without changing them. It is not authorized for operational custody, real bootstrap, evidence import, canonical writing, legal verification, public exposure, or production use.
+Status: **approved at implementation commit `d960a03f4b8ac8a78d3f6b40ba909eb24b5f3442` for this synthetic, unactivated boundary only**. This implementation consumes the approved D9.0.1 and D9.3.0 contracts without changing them. Approval is not operational activation and does not authorize custody of real evidence, real bootstrap, evidence import, canonical writing, legal verification, public exposure, or production use. Exact-byte custody and technical auditability establish neither evidence acceptance nor officiality, legal identity, legal effect, or human legal verification. Recovery remains classification-only and fail-closed. D9.4 restriction, security, clearance, and deletion controls are the next separately reviewed milestone; D9.5 backup and restore remains mandatory afterward.
 
 ## Boundary and audit result
 
@@ -54,4 +54,4 @@ Additional adversarial coverage proves fresh-resolver restart reconstruction; ev
 
 The boundary cannot defend against a compromised kernel/root account, code already running as a protected service UID, storage hardware falsely acknowledging sync, rollback of an entire protected directory, operational clock compromise, or denial of service. The relay requires Linux, pidfds, Unix credentials, a C compiler, and the installed OpenSSL library and fails closed when unavailable. The synthetic profile uses a same-numeric non-root UID/GID because D9.0.1 binds only the Unix UID; an operational account/group allocation is required before activation. Operational service management, authenticated inter-service journal IPC, real credentials/bindings, protected deployment roots, cross-store snapshot/lock integration, rollback-resistant audit storage, alerting, D9.4 pre-promotion clearance/restriction/deletion, D9.5 backup/restore, and disaster recovery remain prerequisites.
 
-Passing tests establish only this synthetic implementation candidate. Separate approval and later operational authorization are required before any real bytes can be admitted.
+Passing tests and approval establish only this synthetic, unactivated implementation boundary. Separate operational authorization and all documented prerequisites are required before any real bytes can be admitted.
