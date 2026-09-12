@@ -1,0 +1,597 @@
+{
+  "format": "jedi-atlas-d940-valid-fixtures",
+  "format_version": "1.0.0",
+  "fixture_set_code": "d940.synthetic.contracts.v1",
+  "records": {
+    "identity_bindings": {
+      "format": "jedi-atlas-identity-bindings",
+      "format_version": "1.0.0",
+      "record_code": "identity.bindings.d940.synthetic.001",
+      "binding_set_code": "bindings.d940.synthetic",
+      "binding_generation": 1,
+      "runtime_profile_record_digest_sha256": "59a7e2a95a3a76bb89b76174011562bcd01c8f239a7e10c7458430b32fa2f7e8",
+      "issued_at": "2030-01-01T00:00:00.000Z",
+      "expires_at": "2030-02-01T00:00:00.000Z",
+      "bindings": [
+        {
+          "binding_code": "binding.requester.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.requester.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62000,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.records.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.records.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62001,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.privacy.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.privacy.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62002,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.security.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.security.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62003,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.clearance.synthetic",
+          "runtime_role_code": "clearance_checker",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.clearance.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62004,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.deletion.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.deletion.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62005,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.deletion.approver.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.deletion.approver.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62006,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.recovery.synthetic",
+          "runtime_role_code": "human_submitter",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.recovery.synthetic",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62007,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.custody.synthetic",
+          "runtime_role_code": "custody_adapter",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62008,
+          "executable_sha256": "0909090909090909090909090909090909090909090909090909090909090909",
+          "ipc_endpoint_code": "ipc.d940.9",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.deletion.executor.synthetic",
+          "runtime_role_code": "custody_adapter",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62009,
+          "executable_sha256": "1010101010101010101010101010101010101010101010101010101010101010",
+          "ipc_endpoint_code": "ipc.d940.10",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.independent.verifier.synthetic",
+          "runtime_role_code": "independent_verifier",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62010,
+          "executable_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "ipc_endpoint_code": "ipc.d940.11",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.journal.synthetic",
+          "runtime_role_code": "journal_broker",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62011,
+          "executable_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
+          "ipc_endpoint_code": "ipc.d940.12",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.backup.synthetic",
+          "runtime_role_code": "backup_adapter",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62012,
+          "executable_sha256": "1313131313131313131313131313131313131313131313131313131313131313",
+          "ipc_endpoint_code": "ipc.d940.13",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.importer.synthetic",
+          "runtime_role_code": "bundle_importer",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62013,
+          "executable_sha256": "1414141414141414141414141414141414141414141414141414141414141414",
+          "ipc_endpoint_code": "ipc.d940.filler.14",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.filler.15",
+          "runtime_role_code": "operational_witness",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.filler.15",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62014,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.filler.16",
+          "runtime_role_code": "recovery_authority",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.filler.16",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62015,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.clearance.decider.synthetic",
+          "runtime_role_code": "clearance_decider",
+          "principal_kind_code": "human",
+          "atlas_principal_code": "person.filler.17",
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62016,
+          "executable_sha256": null,
+          "ipc_endpoint_code": null,
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.clearance.broker.synthetic",
+          "runtime_role_code": "clearance_broker",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62017,
+          "executable_sha256": "1818181818181818181818181818181818181818181818181818181818181818",
+          "ipc_endpoint_code": "ipc.d940.filler.18",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        },
+        {
+          "binding_code": "binding.filler.19",
+          "runtime_role_code": "trusted_launcher",
+          "principal_kind_code": "service",
+          "atlas_principal_code": null,
+          "subject_kind_code": "unix_uid",
+          "unix_uid": 62018,
+          "executable_sha256": "1919191919191919191919191919191919191919191919191919191919191919",
+          "ipc_endpoint_code": "ipc.d940.filler.19",
+          "allowed_operation_modes": ["recovery"],
+          "valid_from": "2030-01-01T00:00:00.000Z",
+          "valid_until": "2030-02-01T00:00:00.000Z"
+        }
+      ],
+      "record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+      "runtime_domain_sha256": "9090909090909090909090909090909090909090909090909090909090909090"
+    },
+    "operational_profile": {
+      "format": "jedi-atlas-d940-operational-profile",
+      "format_version": "1.0.0",
+      "record_code": "profile.d940.synthetic.001",
+      "profile_code": "pilot_local_restriction_deletion_design_v1",
+      "generation": 1,
+      "issued_at": "2030-01-01T00:00:00.000Z",
+      "base_d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+      "base_d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+      "base_d931_git_tree_oid": "b9741646402f606a28e7faf05ffc672308a26fb3",
+      "d940_catalog_sha256": "7f36ca6922cc92ef32b01b0a5b5e896d78f7a359affd06a2bd943a9b28b6c2bc",
+      "d940_classification_fingerprint_sha256": "f929f22495ebbbc9849b76890ecc5d0eb4ee23cc0b1e2a6d528993c8063f8585",
+      "settings": {
+        "restriction_precedence_code": "deny_if_any_active_restriction_hold_revocation_or_unknown",
+        "new_access_default_code": "fail_closed",
+        "active_descriptor_policy_code": "terminate_receiver_and_confirm_before_deletion",
+        "deletion_scope_code": "primary_copy_only_until_d9_5",
+        "complete_erasure_claim_code": "forbidden",
+        "backup_coordination_code": "directive_only_unreachable_until_d9_5",
+        "control_store_code": "protected_append_only_d940_control_store",
+        "receipt_store_code": "protected_append_only_d940_receipt_store",
+        "journal_linkage_code": "separate_d940_global_append_broker_v1",
+        "identity_authority_code": "active_d901_binding_plus_d940_authority_roster",
+        "maximum_authorization_lifetime_ms": 86400000,
+        "maximum_descriptor_termination_ms": 30000,
+        "maximum_destructive_snapshot_age_ms": 1000,
+        "maximum_control_record_bytes": 65536,
+        "maximum_reason_summary_bytes": 512,
+        "maximum_open_descriptor_observations": 64,
+        "maximum_copy_observations": 256,
+        "operational_execution_code": "unimplemented"
+      },
+      "activation_state_code": "design_only_unactivated",
+      "record_digest_sha256": "4f177a719b04c01bf35aa3c12828ceb45fbb4f8621920a3d82505e4a8692de76"
+    },
+    "authority_roster": {
+      "format": "jedi-atlas-d940-authority-roster",
+      "format_version": "1.0.0",
+      "record_code": "authority.roster.d940.synthetic.001",
+      "roster_generation": 1,
+      "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+      "binding_set_code": "bindings.d940.synthetic",
+      "binding_generation": 1,
+      "valid_from": "2030-01-01T00:00:00.000Z",
+      "valid_until": "2030-02-01T00:00:00.000Z",
+      "assignments": [
+        {
+          "binding_code": "binding.requester.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "requester",
+          "principal_code": "person.requester.synthetic"
+        },
+        {
+          "binding_code": "binding.records.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "legal_records_authority",
+          "principal_code": "person.records.synthetic"
+        },
+        {
+          "binding_code": "binding.privacy.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "privacy_authority",
+          "principal_code": "person.privacy.synthetic"
+        },
+        {
+          "binding_code": "binding.security.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "security_authority",
+          "principal_code": "person.security.synthetic"
+        },
+        {
+          "binding_code": "binding.clearance.synthetic",
+          "d901_runtime_role_code": "clearance_checker",
+          "actor_kind_code": "human",
+          "role_code": "clearance_authority",
+          "principal_code": "person.clearance.synthetic"
+        },
+        {
+          "binding_code": "binding.deletion.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "deletion_authority",
+          "principal_code": "person.deletion.synthetic"
+        },
+        {
+          "binding_code": "binding.deletion.approver.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "deletion_authority",
+          "principal_code": "person.deletion.approver.synthetic"
+        },
+        {
+          "binding_code": "binding.recovery.synthetic",
+          "d901_runtime_role_code": "human_submitter",
+          "actor_kind_code": "human",
+          "role_code": "recovery_authority",
+          "principal_code": "person.recovery.synthetic"
+        },
+        {
+          "binding_code": "binding.custody.synthetic",
+          "d901_runtime_role_code": "custody_adapter",
+          "actor_kind_code": "service",
+          "role_code": "custody_operator",
+          "principal_code": null
+        },
+        {
+          "binding_code": "binding.deletion.executor.synthetic",
+          "d901_runtime_role_code": "custody_adapter",
+          "actor_kind_code": "service",
+          "role_code": "deletion_executor",
+          "principal_code": null
+        },
+        {
+          "binding_code": "binding.independent.verifier.synthetic",
+          "d901_runtime_role_code": "independent_verifier",
+          "actor_kind_code": "service",
+          "role_code": "independent_verifier",
+          "principal_code": null
+        },
+        {
+          "binding_code": "binding.journal.synthetic",
+          "d901_runtime_role_code": "journal_broker",
+          "actor_kind_code": "service",
+          "role_code": "journal_broker",
+          "principal_code": null
+        },
+        {
+          "binding_code": "binding.backup.synthetic",
+          "d901_runtime_role_code": "backup_adapter",
+          "actor_kind_code": "service",
+          "role_code": "backup_operator",
+          "principal_code": null
+        },
+        {
+          "binding_code": "binding.filler.19",
+          "d901_runtime_role_code": "trusted_launcher",
+          "actor_kind_code": "service",
+          "role_code": "trusted_launcher",
+          "principal_code": null
+        }
+      ],
+      "activation_state_code": "design_only_unactivated",
+      "record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73"
+    },
+    "authority_roster_adoption": {
+      "format": "jedi-atlas-d940-authority-roster-adoption",
+      "format_version": "1.0.0",
+      "record_code": "authority.roster.adoption.d940.synthetic.001",
+      "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73",
+      "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+      "binding_set_code": "bindings.d940.synthetic",
+      "binding_generation": 1,
+      "scope_sha256": "6b8aa0d11feceb27c08baf47ba09fb69526bf1e6da4e15ab2ef7a99c202e7c55",
+      "decisions": [
+        {
+          "binding_code": "binding.filler.15",
+          "runtime_role_code": "operational_witness",
+          "principal_code": "person.filler.15",
+          "decision_code": "approve_roster_generation",
+          "scope_sha256": "6b8aa0d11feceb27c08baf47ba09fb69526bf1e6da4e15ab2ef7a99c202e7c55",
+          "decided_at": "2030-01-01T00:00:10.000Z",
+          "decision_digest_sha256": "0dd9f3c21a62693baa2e01d5a9c7738a66bcb5583c42c3c4a149cd09f33be56a"
+        },
+        {
+          "binding_code": "binding.filler.16",
+          "runtime_role_code": "recovery_authority",
+          "principal_code": "person.filler.16",
+          "decision_code": "approve_roster_generation",
+          "scope_sha256": "6b8aa0d11feceb27c08baf47ba09fb69526bf1e6da4e15ab2ef7a99c202e7c55",
+          "decided_at": "2030-01-01T00:00:10.000Z",
+          "decision_digest_sha256": "79eb77f4884783acc16638bb5ee94274dd3186fa0b3d601b79de514d8def097c"
+        }
+      ],
+      "adopted_at": "2030-01-01T00:00:11.000Z",
+      "activation_state_code": "design_only_unactivated",
+      "record_digest_sha256": "0dc88f7f62164833ff62e1a9dce0bdb83e6ecd7b0ef5ec0c5d7053515071a9f6"
+    },
+    "restriction": {
+      "format": "jedi-atlas-custody-control-record",
+      "format_version": "1.0.0",
+      "record_kind_code": "restriction_imposed",
+      "record_code": "control.restriction.synthetic.001",
+      "operation_id": "operation.restrict.synthetic.001",
+      "operation_nonce": "1111111111111111111111111111111111111111111111111111111111111111",
+      "subject": {
+        "subject_kind_code": "custody_copy",
+        "subject_payload": {
+          "artifact": {
+            "byte_layer_code": "retrieved_body",
+            "hash_algorithm_code": "sha256",
+            "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+            "byte_length": 32
+          },
+          "copy_code": "copy.synthetic.primary",
+          "backend_code": "pilot_local_cas_v1",
+          "backend_reference": "objects/sha256/66/6666666666666666666666666666666666666666666666666666666666666666"
+        },
+        "subject_identity_sha256": "9fa80789489c2742213e9a96aafbf2cb8face37b30389df6dd8b056d5ead90d5"
+      },
+      "chain": {
+        "stream_code": "stream.restriction.synthetic.001",
+        "sequence": 1,
+        "predecessor_record_digest_sha256": null
+      },
+      "reason_category_code": "security_incident",
+      "reason_summary": "Synthetic restriction for contract validation.",
+      "semantic_actor": {
+        "identity_binding": {
+          "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+          "binding_set_code": "bindings.d940.synthetic",
+          "binding_generation": 1,
+          "binding_code": "binding.security.synthetic"
+        },
+        "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73",
+        "actor_kind_code": "human",
+        "role_code": "security_authority",
+        "principal_code": "person.security.synthetic"
+      },
+      "persistence_actor": {
+        "identity_binding": {
+          "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+          "binding_set_code": "bindings.d940.synthetic",
+          "binding_generation": 1,
+          "binding_code": "binding.journal.synthetic"
+        },
+        "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73",
+        "actor_kind_code": "service",
+        "role_code": "journal_broker",
+        "principal_code": null
+      },
+      "knowledge_boundary": {
+        "effective_at": "2030-01-01T00:03:01.000Z",
+        "recorded_at": "2030-01-01T00:03:02.000Z",
+        "persisted_at": "2030-01-01T00:03:03.000Z",
+        "journal_namespace_code": "d940.global.control-journal.v1",
+        "receipt_sequence": 1
+      },
+      "restriction_scope_code": "all_access",
+      "authorization_scope_sha256": null,
+      "authorization_scope": null,
+      "authorization_expires_at": null,
+      "human_approvals": [],
+      "basis_record_digest_sha256": null,
+      "clearance_reference": null,
+      "corrects_record_digest_sha256": null,
+      "corrected_record_kind_code": null,
+      "withdrawal_effect_code": null,
+      "propagates_from_subject_identity_sha256": null,
+      "backup_directive_code": "restrict_before_restore",
+      "record_digest_sha256": "a9a7097f988bdfab350bc43b662c431cc534b939f021db7bbd5b11d3751ccd0c"
+    },
+    "deletion_request": {
+      "format": "jedi-atlas-custody-control-record",
+      "format_version": "1.0.0",
+      "record_kind_code": "deletion_requested",
+      "record_code": "control.deletion-request.synthetic.001",
+      "operation_id": "operation.delete.synthetic.001",
+      "operation_nonce": "2222222222222222222222222222222222222222222222222222222222222222",
+      "subject": {
+        "subject_kind_code": "custody_copy",
+        "subject_payload": {
+          "artifact": {
+            "byte_layer_code": "retrieved_body",
+            "hash_algorithm_code": "sha256",
+            "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+            "byte_length": 32
+          },
+          "copy_code": "copy.synthetic.primary",
+          "backend_code": "pilot_local_cas_v1",
+          "backend_reference": "objects/sha256/66/6666666666666666666666666666666666666666666666666666666666666666"
+        },
+        "subject_identity_sha256": "9fa80789489c2742213e9a96aafbf2cb8face37b30389df6dd8b056d5ead90d5"
+      },
+      "chain": {
+        "stream_code": "stream.deletion.synthetic.001",
+        "sequence": 1,
+        "predecessor_record_digest_sha256": null
+      },
+      "reason_category_code": "deletion_request",
+      "reason_summary": "Synthetic deletion request.",
+      "semantic_actor": {
+        "identity_binding": {
+          "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+          "binding_set_code": "bindings.d940.synthetic",
+          "binding_generation": 1,
+          "binding_code": "binding.requester.synthetic"
+        },
+        "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73",
+        "actor_kind_code": "human",
+        "role_code": "requester",
+        "principal_code": "person.requester.synthetic"
+      },
+      "persistence_actor": {
+        "identity_binding": {
+          "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8",
+          "binding_set_code": "bindings.d940.synthetic",
+          "binding_generation": 1,
+          "binding_code": "binding.journal.synthetic"
+        },
+        "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73",
+        "actor_kind_code": "service",
+        "role_code": "journal_broker",
+        "principal_code": null
+      },
+      "knowledge_boundary": {
+        "effective_at": "2030-01-01T00:03:04.000Z",
+        "recorded_at": "2030-01-01T00:03:05.000Z",
+        "persisted_at": "2030-01-01T00:03:06.000Z",
+        "journal_namespace_code": "d940.global.control-journal.v1",
+        "receipt_sequence": 2
+      },
+      "restriction_scope_code": null,
+      "authorization_scope_sha256": null,
+      "authorization_scope": null,
+      "authorization_expires_at": null,
+      "human_approvals": [],
+      "basis_record_digest_sha256": null,
+      "clearance_reference": null,
+      "corrects_record_digest_sha256": null,
+      "corrected_record_kind_code": null,
+      "withdrawal_effect_code": null,
+      "propagates_from_subject_identity_sha256": null,
+      "backup_directive_code": "none",
+      "record_digest_sha256": "f12d499763169d6276bcc090c900b435a62e0e6e4335c413260829ca7028b2b1"
+    }
+  }
+}

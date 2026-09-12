@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-4-0/custody-control-record-v1.schema.json",
+  "title": "JEDI Atlas D9.4.0 append-only custody control record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_kind_code",
+    "record_code",
+    "operation_id",
+    "operation_nonce",
+    "subject",
+    "chain",
+    "reason_category_code",
+    "reason_summary",
+    "semantic_actor",
+    "persistence_actor",
+    "knowledge_boundary",
+    "restriction_scope_code",
+    "authorization_scope_sha256",
+    "authorization_scope",
+    "authorization_expires_at",
+    "human_approvals",
+    "basis_record_digest_sha256",
+    "clearance_reference",
+    "corrects_record_digest_sha256",
+    "corrected_record_kind_code",
+    "withdrawal_effect_code",
+    "propagates_from_subject_identity_sha256",
+    "backup_directive_code",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-custody-control-record" },
+    "format_version": { "const": "1.0.0" },
+    "record_kind_code": {
+      "enum": [
+        "restriction_imposed",
+        "restriction_released",
+        "quarantine_imposed",
+        "quarantine_released",
+        "hold_imposed",
+        "hold_released",
+        "clearance_revoked",
+        "deletion_requested",
+        "deletion_authorized",
+        "deletion_authorization_revoked",
+        "deletion_denied",
+        "tombstone_applied",
+        "control_corrected",
+        "control_withdrawn",
+        "propagation_asserted"
+      ]
+    },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/operationNonce" },
+    "subject": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/subject" },
+    "chain": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/chain" },
+    "reason_category_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/reasonCategory" },
+    "reason_summary": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "semantic_actor": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/actor" },
+    "persistence_actor": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/actor" },
+    "knowledge_boundary": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/knowledgeBoundary" },
+    "restriction_scope_code": {
+      "oneOf": [
+        { "enum": ["new_access", "all_access", "projection_only"] },
+        { "type": "null" }
+      ]
+    },
+    "authorization_scope_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/nullableSha256" },
+    "authorization_scope": {
+      "oneOf": [
+        { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/deletionAuthorizationScope" },
+        { "type": "null" }
+      ]
+    },
+    "authorization_expires_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/nullableTimestamp" },
+    "human_approvals": {
+      "type": "array",
+      "maxItems": 4,
+      "items": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/humanApproval" }
+    },
+    "basis_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/nullableSha256" },
+    "clearance_reference": {
+      "oneOf": [
+        { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/clearanceReference" },
+        { "type": "null" }
+      ]
+    },
+    "corrects_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/nullableSha256" },
+    "corrected_record_kind_code": {
+      "oneOf": [
+        { "enum": ["restriction_imposed", "restriction_released", "quarantine_imposed", "quarantine_released", "hold_imposed", "hold_released", "clearance_revoked", "deletion_requested", "deletion_denied", "propagation_asserted"] },
+        { "type": "null" }
+      ]
+    },
+    "withdrawal_effect_code": {
+      "oneOf": [
+        { "const": "void_for_derived_projection_keep_history" },
+        { "type": "null" }
+      ]
+    },
+    "propagates_from_subject_identity_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/nullableSha256" },
+    "backup_directive_code": {
+      "enum": ["none", "restrict_before_restore", "tombstone_before_restore", "deletion_pending_d9_5"]
+    },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}

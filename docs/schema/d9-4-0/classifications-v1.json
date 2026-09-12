@@ -1,0 +1,250 @@
+{
+  "format": "jedi-atlas-d940-classifications",
+  "format_version": "1.0.0",
+  "base_contracts": {
+    "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+    "d931_git_tree_oid": "b9741646402f606a28e7faf05ffc672308a26fb3"
+  },
+  "version_policy": {
+    "catalog_lifecycle_code": "design_only_contract_freeze",
+    "unknown_version_code": "reject",
+    "frozen_contract_mutation_code": "reject",
+    "activation_code": "not_authorized"
+  },
+  "subject_rules": [
+    { "subject_kind_code": "artifact", "identity_payload_code": "artifact_identity" },
+    { "subject_kind_code": "custody_copy", "identity_payload_code": "artifact_copy_backend_reference" },
+    { "subject_kind_code": "evidence_bundle", "identity_payload_code": "bundle_reference" },
+    { "subject_kind_code": "processing_output", "identity_payload_code": "bundle_run_output_artifact" },
+    { "subject_kind_code": "candidate_occurrence", "identity_payload_code": "bundle_candidate_record_chain" },
+    { "subject_kind_code": "authority_draft", "identity_payload_code": "opaque_future_draft_version_reference_only" }
+  ],
+  "reason_rules": [
+    { "reason_category_code": "legal_hold", "conclusion_code": "operational_category_not_legal_conclusion", "blocks_deletion": true },
+    { "reason_category_code": "records_retention", "conclusion_code": "operational_category_not_legal_conclusion", "blocks_deletion": true },
+    { "reason_category_code": "licensing", "conclusion_code": "operational_category_not_rights_conclusion", "blocks_deletion": false },
+    { "reason_category_code": "confidentiality", "conclusion_code": "operational_category_not_legal_conclusion", "blocks_deletion": false },
+    { "reason_category_code": "personal_data", "conclusion_code": "operational_category_not_privacy_conclusion", "blocks_deletion": false },
+    { "reason_category_code": "malware", "conclusion_code": "scanner_or_human_observation_not_legal_conclusion", "blocks_deletion": false },
+    { "reason_category_code": "disputed_source", "conclusion_code": "operational_category_not_source_finding", "blocks_deletion": true },
+    { "reason_category_code": "security_incident", "conclusion_code": "operational_category_not_legal_conclusion", "blocks_deletion": false },
+    { "reason_category_code": "deletion_request", "conclusion_code": "request_not_authorization", "blocks_deletion": false },
+    { "reason_category_code": "other_operational", "conclusion_code": "requires_human_classification", "blocks_deletion": true }
+  ],
+  "role_assignment_rules": [
+    { "role_code": "requester", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "legal_records_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "privacy_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "security_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "clearance_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter", "clearance_checker"] },
+    { "role_code": "deletion_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "custody_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["custody_adapter", "trusted_launcher"] },
+    { "role_code": "deletion_executor", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["custody_adapter"] },
+    { "role_code": "independent_verifier", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["independent_verifier"] },
+    { "role_code": "journal_broker", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["journal_broker"] },
+    { "role_code": "recovery_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
+    { "role_code": "backup_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["backup_adapter"] }
+    ,{ "role_code": "trusted_launcher", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["trusted_launcher"] }
+  ],
+  "action_actor_rules": [
+    { "record_kind_code": "restriction_imposed", "semantic_role_codes": ["requester", "security_authority", "clearance_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] },
+    { "record_kind_code": "restriction_released", "semantic_role_codes": ["security_authority", "clearance_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": ["security_authority"] },
+    { "record_kind_code": "quarantine_imposed", "semantic_role_codes": ["security_authority", "custody_operator"], "semantic_actor_kind_codes": ["human", "service"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] },
+    { "record_kind_code": "quarantine_released", "semantic_role_codes": ["security_authority", "clearance_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": ["security_authority"] },
+    { "record_kind_code": "hold_imposed", "semantic_role_codes": ["legal_records_authority", "privacy_authority", "security_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": ["legal_records_authority"] },
+    { "record_kind_code": "hold_released", "semantic_role_codes": ["legal_records_authority", "privacy_authority", "security_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 2, "required_approval_role_codes": ["legal_records_authority", "security_authority"] },
+    { "record_kind_code": "clearance_revoked", "semantic_role_codes": ["clearance_authority", "security_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": ["clearance_authority"] },
+    { "record_kind_code": "deletion_requested", "semantic_role_codes": ["requester"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] },
+    { "record_kind_code": "deletion_authorized", "semantic_role_codes": ["deletion_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 2, "required_approval_role_codes": [] },
+    { "record_kind_code": "deletion_authorization_revoked", "semantic_role_codes": ["deletion_authority", "legal_records_authority", "privacy_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 2, "required_approval_role_codes": ["deletion_authority", "legal_records_authority"] },
+    { "record_kind_code": "deletion_denied", "semantic_role_codes": ["deletion_authority", "legal_records_authority", "privacy_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": ["deletion_authority"] },
+    { "record_kind_code": "tombstone_applied", "semantic_role_codes": ["custody_operator"], "semantic_actor_kind_codes": ["service"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] },
+    { "record_kind_code": "control_corrected", "semantic_role_codes": ["legal_records_authority", "privacy_authority", "security_authority", "clearance_authority", "deletion_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": [] },
+    { "record_kind_code": "control_withdrawn", "semantic_role_codes": ["legal_records_authority", "privacy_authority", "security_authority", "clearance_authority", "deletion_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 1, "required_approval_role_codes": [] },
+    { "record_kind_code": "propagation_asserted", "semantic_role_codes": ["custody_operator"], "semantic_actor_kind_codes": ["service"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] }
+  ],
+  "separation_of_duty_rules": [
+    { "rule_code": "requester_not_any_approver", "left_role_code": "requester", "right_role_code": "human_approval", "required_distinct": true },
+    { "rule_code": "human_approvers_pairwise_distinct", "left_role_code": "human_approval", "right_role_code": "human_approval", "required_distinct": true },
+    { "rule_code": "executor_not_any_human_approver", "left_role_code": "deletion_executor", "right_role_code": "human_approval", "required_distinct": true },
+    { "rule_code": "executor_not_independent_verifier", "left_role_code": "deletion_executor", "right_role_code": "independent_verifier", "required_distinct": true },
+    { "rule_code": "journal_broker_not_semantic_actor", "left_role_code": "journal_broker", "right_role_code": "semantic_actor", "required_distinct": true },
+    { "rule_code": "recovery_authority_not_original_executor", "left_role_code": "recovery_authority", "right_role_code": "deletion_executor", "required_distinct": true }
+  ],
+  "identity_binding_rules": {
+    "runtime_profile_resolution_code": "exact_frozen_d901_profile_digest_and_runtime_domain",
+    "generation_chronology_code": "binding_generation_issued_at_or_after_runtime_profile_issued_at",
+    "os_subject_uniqueness_code": "runtime_domain_subject_kind_and_unix_uid_unique_across_generation",
+    "service_identity_code": "non_null_pinned_executable_and_unique_ipc_endpoint",
+    "service_separation_code": "distinct_binding_code_and_distinct_authenticated_os_subject"
+  },
+  "deletion_approval_rules": [
+    { "reason_category_code": "legal_hold", "authorization_code": "blocked_while_hold_active", "required_human_role_codes": [], "minimum_distinct_humans": 0 },
+    { "reason_category_code": "records_retention", "authorization_code": "blocked_while_hold_active", "required_human_role_codes": [], "minimum_distinct_humans": 0 },
+    { "reason_category_code": "licensing", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["legal_records_authority", "deletion_authority"], "minimum_distinct_humans": 2 },
+    { "reason_category_code": "confidentiality", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["security_authority", "deletion_authority"], "minimum_distinct_humans": 2 },
+    { "reason_category_code": "personal_data", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["privacy_authority", "legal_records_authority", "deletion_authority"], "minimum_distinct_humans": 3 },
+    { "reason_category_code": "malware", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["security_authority", "deletion_authority"], "minimum_distinct_humans": 2 },
+    { "reason_category_code": "disputed_source", "authorization_code": "blocked_while_hold_active", "required_human_role_codes": [], "minimum_distinct_humans": 0 },
+    { "reason_category_code": "security_incident", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["security_authority", "deletion_authority"], "minimum_distinct_humans": 2 },
+    { "reason_category_code": "deletion_request", "authorization_code": "eligible_for_human_decision", "required_human_role_codes": ["legal_records_authority", "deletion_authority"], "minimum_distinct_humans": 2 },
+    { "reason_category_code": "other_operational", "authorization_code": "blocked_while_hold_active", "required_human_role_codes": [], "minimum_distinct_humans": 0 }
+  ],
+  "control_record_rules": [
+    { "record_kind_code": "restriction_imposed", "restriction_scope_required": true, "basis_required": false, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "restriction_released", "restriction_scope_required": true, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "quarantine_imposed", "restriction_scope_required": true, "basis_required": false, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "quarantine_released", "restriction_scope_required": true, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "hold_imposed", "restriction_scope_required": true, "basis_required": false, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "hold_released", "restriction_scope_required": true, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "clearance_revoked", "restriction_scope_required": true, "basis_required": false, "clearance_reference_required": true, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "deletion_requested", "restriction_scope_required": false, "basis_required": false, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "deletion_authorized", "restriction_scope_required": false, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": true },
+    { "record_kind_code": "deletion_authorization_revoked", "restriction_scope_required": false, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "deletion_denied", "restriction_scope_required": false, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "tombstone_applied", "restriction_scope_required": true, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": false, "authorization_required": true },
+    { "record_kind_code": "control_corrected", "restriction_scope_required": false, "basis_required": false, "clearance_reference_required": false, "correction_required": true, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "control_withdrawn", "restriction_scope_required": false, "basis_required": false, "clearance_reference_required": false, "correction_required": true, "propagation_required": false, "authorization_required": false },
+    { "record_kind_code": "propagation_asserted", "restriction_scope_required": true, "basis_required": true, "clearance_reference_required": false, "correction_required": false, "propagation_required": true, "authorization_required": false }
+  ],
+  "control_transition_rules": [
+    { "from_code": "none", "to_code": "restriction_imposed" },
+    { "from_code": "restriction_imposed", "to_code": "restriction_released", "same_restriction_scope": true, "same_reason_category": true },
+    { "from_code": "none", "to_code": "quarantine_imposed" },
+    { "from_code": "quarantine_imposed", "to_code": "quarantine_released", "same_restriction_scope": true, "same_reason_category": true },
+    { "from_code": "none", "to_code": "hold_imposed" },
+    { "from_code": "hold_imposed", "to_code": "hold_released", "same_restriction_scope": true, "same_reason_category": true },
+    { "from_code": "none", "to_code": "clearance_revoked" },
+    { "from_code": "none", "to_code": "deletion_requested" },
+    { "from_code": "deletion_requested", "to_code": "deletion_authorized" },
+    { "from_code": "deletion_authorized", "to_code": "deletion_authorization_revoked" },
+    { "from_code": "tombstone_applied", "to_code": "deletion_authorization_revoked" },
+    { "from_code": "deletion_requested", "to_code": "deletion_denied" },
+    { "from_code": "deletion_authorized", "to_code": "tombstone_applied" },
+    { "from_code": "none", "to_code": "propagation_asserted" }
+  ],
+  "correction_rules": [
+    { "record_kind_code": "control_corrected", "target_codes": ["restriction_imposed", "restriction_released", "quarantine_imposed", "quarantine_released", "hold_imposed", "hold_released", "clearance_revoked", "deletion_requested", "deletion_denied", "propagation_asserted"], "target_must_be_current_leaf": true, "same_subject_operation_nonce_stream": true },
+    { "record_kind_code": "control_withdrawn", "target_codes": ["deletion_requested", "deletion_denied", "propagation_asserted"], "target_must_be_current_leaf": true, "same_subject_operation_nonce_stream": true, "operative_access_control_withdrawal_code": "forbidden_use_explicit_release_or_revocation_transition" }
+  ],
+  "control_projection_rules": {
+    "knowledge_bound_code": "persisted_at_lte_known_at_and_receipt_sequence_lte_known_through",
+    "effective_bound_code": "effective_at_lte_effective_as_of",
+    "selection_order_code": "apply_bounds_then_stream_sequence_ascending",
+    "correction_code": "replace_reason_summary_only_preserve_original_effective_point",
+    "withdrawal_code": "remove_eligible_current_semantic_leaf_only",
+    "tombstone_code": "sticky_once_applied_never_removed_by_generic_correction_or_withdrawal",
+    "unknown_gap_fork_collision_code": "withhold_and_block_deletion",
+    "access_shutdown_trigger_code": "earliest_active_applicable_target_control_at_episode_knowledge_boundary",
+    "propagated_access_trigger_code": "active_propagation_assertion_is_target_trigger",
+    "propagated_basis_code": "basis_must_be_active_blocking_leaf_on_explicit_source_target_edge"
+  },
+  "restriction_precedence": [
+    { "priority": 10, "condition_code": "active_tombstone", "access_eligibility_code": "withheld", "deletion_eligibility_code": "requires_authorization_and_inventory" },
+    { "priority": 20, "condition_code": "active_legal_or_retention_hold", "access_eligibility_code": "withheld", "deletion_eligibility_code": "blocked" },
+    { "priority": 25, "condition_code": "deletion_authorization_revoked", "access_eligibility_code": "withheld", "deletion_eligibility_code": "blocked" },
+    { "priority": 30, "condition_code": "active_quarantine", "access_eligibility_code": "withheld", "deletion_eligibility_code": "requires_authorization_and_inventory" },
+    { "priority": 40, "condition_code": "active_restriction_or_revoked_clearance", "access_eligibility_code": "withheld", "deletion_eligibility_code": "requires_authorization_and_inventory" },
+    { "priority": 50, "condition_code": "active_or_unknown_descriptor", "access_eligibility_code": "withheld", "deletion_eligibility_code": "blocked" },
+    { "priority": 60, "condition_code": "unknown_gap_fork_collision_or_inventory", "access_eligibility_code": "withheld", "deletion_eligibility_code": "blocked" },
+    { "priority": 70, "condition_code": "no_active_control", "access_eligibility_code": "eligible_subject_to_d930_clearance", "deletion_eligibility_code": "not_requested" }
+  ],
+  "propagation_rules": [
+    { "source_subject_kind_code": "evidence_bundle", "target_subject_kind_codes": ["artifact", "custody_copy", "processing_output", "candidate_occurrence", "authority_draft"], "mode_code": "explicit_edge_required_fail_closed_if_graph_incomplete" },
+    { "source_subject_kind_code": "artifact", "target_subject_kind_codes": ["custody_copy", "processing_output", "candidate_occurrence", "authority_draft"], "mode_code": "explicit_edge_required_fail_closed_if_graph_incomplete" },
+    { "source_subject_kind_code": "processing_output", "target_subject_kind_codes": ["artifact", "candidate_occurrence", "authority_draft"], "mode_code": "explicit_edge_required_fail_closed_if_graph_incomplete" },
+    { "source_subject_kind_code": "candidate_occurrence", "target_subject_kind_codes": ["authority_draft"], "mode_code": "explicit_edge_required_fail_closed_if_graph_incomplete" },
+    { "source_subject_kind_code": "custody_copy", "target_subject_kind_codes": [], "mode_code": "copy_only" },
+    { "source_subject_kind_code": "authority_draft", "target_subject_kind_codes": [], "mode_code": "draft_only" }
+  ],
+  "access_revocation_rules": [
+    { "record_kind_code": "capability_revoked", "capability_required": true, "descriptor_required": false, "semantic_role_codes": ["custody_operator"], "semantic_actor_kind_codes": ["service"], "terminal_code": "capability_unusable_for_new_access" },
+    { "record_kind_code": "descriptor_termination_requested", "capability_required": false, "descriptor_required": true, "semantic_role_codes": ["custody_operator"], "semantic_actor_kind_codes": ["service"], "terminal_code": "pending" },
+    { "record_kind_code": "descriptor_termination_confirmed", "capability_required": false, "descriptor_required": true, "semantic_role_codes": ["trusted_launcher"], "semantic_actor_kind_codes": ["service"], "terminal_code": "confirmed_closed_and_receiver_reaped" },
+    { "record_kind_code": "descriptor_termination_failed", "capability_required": false, "descriptor_required": true, "semantic_role_codes": ["trusted_launcher"], "semantic_actor_kind_codes": ["service"], "terminal_code": "recovery_required" }
+  ],
+  "deletion_transition_rules": [
+    { "from_code": "none", "to_code": "execution_started", "record_kind_code": "execution_started" },
+    { "from_code": "execution_started", "to_code": "inventory_observed", "record_kind_code": "inventory_observed" },
+    { "from_code": "inventory_observed", "to_code": "primary_name_removed", "record_kind_code": "unlink_attempted" },
+    { "from_code": "inventory_observed", "to_code": "recovery_required", "record_kind_code": "unlink_failed" },
+    { "from_code": "primary_name_removed", "to_code": "primary_absence_verified", "record_kind_code": "primary_absence_verified" },
+    { "from_code": "execution_started", "to_code": "recovery_required", "record_kind_code": "reconciliation_required" },
+    { "from_code": "inventory_observed", "to_code": "recovery_required", "record_kind_code": "reconciliation_required" },
+    { "from_code": "primary_name_removed", "to_code": "recovery_required", "record_kind_code": "verification_failed" }
+  ],
+  "deletion_execution_rules": [
+    { "record_kind_code": "execution_started", "semantic_role_code": "deletion_executor", "method_code": "none", "required_outcome_code": "not_attempted" },
+    { "record_kind_code": "inventory_observed", "semantic_role_code": "deletion_executor", "method_code": "none", "required_outcome_code": "not_attempted" },
+    { "record_kind_code": "unlink_attempted", "semantic_role_code": "deletion_executor", "method_code": "unlink_primary_name_no_follow", "required_outcome_code": "primary_name_removed" },
+    { "record_kind_code": "unlink_failed", "semantic_role_code": "deletion_executor", "method_code": "unlink_primary_name_no_follow", "required_outcome_code": "failed" },
+    { "record_kind_code": "primary_absence_verified", "semantic_role_code": "independent_verifier", "method_code": "verify_primary_absence_no_follow", "required_outcome_code": "primary_absence_verified" },
+    { "record_kind_code": "verification_failed", "semantic_role_code": "independent_verifier", "method_code": "verify_primary_absence_no_follow", "required_outcome_code": "failed" },
+    { "record_kind_code": "reconciliation_required", "semantic_role_code": "independent_verifier", "method_code": "none", "required_outcome_code": "ambiguous" }
+  ],
+  "backup_coordination_rules": [
+    { "record_kind_code": "restriction_directive", "directive_code": "apply_restriction_before_restore", "semantic_role_codes": ["custody_operator"], "basis_record_kind_codes": ["restriction_imposed"], "execution_code": "unreachable_until_d9_5" },
+    { "record_kind_code": "tombstone_directive", "directive_code": "apply_tombstone_before_restore", "semantic_role_codes": ["custody_operator"], "basis_record_kind_codes": ["tombstone_applied"], "execution_code": "unreachable_until_d9_5" },
+    { "record_kind_code": "deletion_pending", "directive_code": "delete_backup_copy_after_d9_5_authorization", "semantic_role_codes": ["legal_records_authority", "privacy_authority"], "basis_record_kind_codes": ["tombstone_applied"], "execution_code": "unreachable_until_d9_5" },
+    { "record_kind_code": "restore_guard", "directive_code": "do_not_restore", "semantic_role_codes": ["custody_operator", "legal_records_authority"], "basis_record_kind_codes": ["restriction_imposed", "quarantine_imposed", "hold_imposed", "clearance_revoked", "tombstone_applied"], "execution_code": "unreachable_until_d9_5" }
+  ],
+  "recovery_boundary_defaults": [
+    { "crash_boundary_code": "before_restriction_persisted", "classification_code": "safe_no_effect" },
+    { "crash_boundary_code": "after_restriction_before_capability_revocation", "classification_code": "restriction_required" },
+    { "crash_boundary_code": "after_revocation_before_descriptor_termination", "classification_code": "retain_and_hold" },
+    { "crash_boundary_code": "after_tombstone_before_unlink", "classification_code": "retain_and_hold" },
+    { "crash_boundary_code": "after_unlink_before_directory_sync", "classification_code": "reconciliation_required" },
+    { "crash_boundary_code": "after_sync_before_verification", "classification_code": "reconciliation_required" },
+    { "crash_boundary_code": "after_verification_before_receipt", "classification_code": "reconciliation_required" },
+    { "crash_boundary_code": "after_receipt_before_journal_link", "classification_code": "reconciliation_required" }
+  ],
+  "recovery_state_priority_rules": [
+    { "priority": 10, "predicate_code": "control_not_linear_complete", "classification_code": "human_decision_required" },
+    { "priority": 20, "predicate_code": "inventory_or_access_contradictory", "classification_code": "human_decision_required" },
+    { "priority": 30, "predicate_code": "active_unknown_or_pending_access", "classification_code": "retain_and_hold" },
+    { "priority": 40, "predicate_code": "inventory_incomplete_or_unavailable", "classification_code": "reconciliation_required" },
+    { "priority": 50, "predicate_code": "use_boundary_default", "classification_code": "from_boundary_default" }
+  ],
+  "journal_rules": {
+    "journal_namespace_code": "d940.global.control-journal.v1",
+    "sequence_code": "global_gapless_positive_integer",
+    "target_receipt_code": "one_receipt_per_exact_record_digest",
+    "no_replace_code": "record_code_digest_operation_nonce_subject_and_global_sequence",
+    "d930_broker_compatibility_code": "not_claimed_separate_versioned_d940_ledger_required"
+  },
+  "fail_closed_rules": [
+    "unknown_subject_identity",
+    "missing_or_conflicting_control_leaf",
+    "control_chain_gap_fork_or_collision",
+    "active_or_unknown_descriptor",
+    "unconsumed_capability_not_revoked",
+    "authorization_missing_expired_revoked_or_scope_mismatch",
+    "self_approval_or_role_substitution",
+    "active_legal_or_retention_hold",
+    "inventory_incomplete_contradictory_or_unavailable",
+    "unexpected_hard_link_symlink_replica_or_temporary",
+    "backup_state_unknown_or_action_pending",
+    "bytes_or_required_reference_unavailable",
+    "journal_or_receipt_ambiguity",
+    "recovery_authority_missing"
+  ],
+  "authority_boundary": {
+    "physical_custody_establishes_accepted_evidence": false,
+    "accepted_evidence_establishes_officiality": false,
+    "accepted_evidence_establishes_verified_legal_authority": false,
+    "restriction_establishes_legal_conclusion": false,
+    "deletion_receipt_establishes_complete_erasure": false,
+    "automated_policy_check_establishes_human_legal_review": false,
+    "public_api_reachable": false,
+    "operational_deletion_authorized": false
+  },
+  "matrix_fingerprints": {
+    "subject_rules_sha256": "86557dc7eaeb3449ab5db26c93b2dbc125ae4f89c07deaef11e84a549cbbb745",
+    "role_and_separation_sha256": "882a3523645dc95775ff312d15950102708777842f9f7054a70eba4290c528f0",
+    "restriction_projection_sha256": "ca4b30c5d3463e393193b20f219e81da5b046b4b1ba403b1bfdc72a122e6b752",
+    "deletion_lifecycle_sha256": "daff0b0e4cc3b1ba4f094a8eb49ea8608d876df6769dab86611bfeebba3081fc",
+    "recovery_and_backup_sha256": "eb5214b374cca1dddb8a7fb76d17b3c645615d6bcc3c4067e98e57b870efbe16"
+  },
+  "record_digest_sha256": "f929f22495ebbbc9849b76890ecc5d0eb4ee23cc0b1e2a6d528993c8063f8585"
+}

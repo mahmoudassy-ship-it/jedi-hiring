@@ -1,0 +1,14 @@
+{
+  "format": "jedi-atlas-d940-invalid-fixtures",
+  "format_version": "1.0.0",
+  "fixture_set_code": "d940.synthetic.invalid.v1",
+  "mutations": [
+    { "mutation_code": "unknown_field", "base_record_code": "restriction", "json_pointer": "/unexpected", "replacement": true, "expected_error_code": "SCHEMA_REJECTED" },
+    { "mutation_code": "subject_digest_mismatch", "base_record_code": "restriction", "json_pointer": "/subject/subject_identity_sha256", "replacement": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expected_error_code": "SUBJECT_IDENTITY_MISMATCH" },
+    { "mutation_code": "journal_broker_as_semantic_actor", "base_record_code": "restriction", "json_pointer": "/semantic_actor", "replacement": { "identity_binding": { "identity_bindings_record_digest_sha256": "9ec5bc45bfb7d651bac216acb12dbc774bbe21a37503089ed69c3ff3d27221a8", "binding_set_code": "bindings.d940.synthetic", "binding_generation": 1, "binding_code": "binding.journal.synthetic" }, "authority_roster_record_digest_sha256": "171249478fe350dbcff56859f72d32893c48dfad453d254dba4cfc66944f6b73", "actor_kind_code": "service", "role_code": "journal_broker", "principal_code": null }, "expected_error_code": "ROLE_SEPARATION_REJECTED" },
+    { "mutation_code": "restriction_without_scope", "base_record_code": "restriction", "json_pointer": "/restriction_scope_code", "replacement": null, "expected_error_code": "CONTROL_MATRIX_REJECTED" },
+    { "mutation_code": "noncausal_knowledge_time", "base_record_code": "restriction", "json_pointer": "/knowledge_boundary/persisted_at", "replacement": "2026-01-01T00:00:59.000Z", "expected_error_code": "KNOWLEDGE_CHRONOLOGY_REJECTED" },
+    { "mutation_code": "service_deletion_requester", "base_record_code": "deletion_request", "json_pointer": "/semantic_actor/actor_kind_code", "replacement": "service", "expected_error_code": "ACTOR_CLAIM_MISMATCH" },
+    { "mutation_code": "operational_profile_activated", "base_record_code": "operational_profile", "json_pointer": "/activation_state_code", "replacement": "active", "expected_error_code": "SCHEMA_REJECTED" }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "format": "jedi-atlas-d940-field-registry",
+  "format_version": "1.0.0",
+  "mapping_semantics": {
+    "coverage_code": "all_top_level_fields_plus_inherited_nested_classification",
+    "unmapped_field_code": "reject",
+    "nested_rule_code": "nested_leaves_inherit_their_top_level_field_unless_exact_override",
+    "unknown_field_code": "reject"
+  },
+  "contracts": [
+    {
+      "schema_file": "operational-profile-v1.schema.json",
+      "producer_role_codes": ["release_administrator"],
+      "consumer_role_codes": ["trusted_launcher", "custody_operator", "deletion_executor", "independent_verifier"],
+      "storage_code": "protected_runtime_configuration",
+      "confidentiality_code": "restricted_operational",
+      "state_code": "canonical_operational_policy_not_atlas_data",
+      "field_codes": ["format", "format_version", "record_code", "profile_code", "generation", "issued_at", "base_d901_catalog_sha256", "base_d930_catalog_sha256", "base_d931_git_tree_oid", "d940_catalog_sha256", "d940_classification_fingerprint_sha256", "settings", "activation_state_code", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "authority-roster-v1.schema.json",
+      "producer_role_codes": ["release_administrator", "operational_witness"],
+      "consumer_role_codes": ["trusted_launcher", "journal_broker", "custody_operator", "deletion_executor", "independent_verifier"],
+      "storage_code": "protected_d940_authority_store",
+      "confidentiality_code": "highly_restricted_personnel_security",
+      "state_code": "design_only_synthetic_authority_roster_not_active_authorization",
+      "field_codes": ["format", "format_version", "record_code", "roster_generation", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "valid_from", "valid_until", "assignments", "activation_state_code", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "authority-roster-adoption-v1.schema.json",
+      "producer_role_codes": ["operational_witness", "recovery_authority", "bootstrap_authority"],
+      "consumer_role_codes": ["trusted_launcher", "journal_broker"],
+      "storage_code": "protected_d940_authority_store",
+      "confidentiality_code": "highly_restricted_personnel_security",
+      "state_code": "independent_d901_bound_roster_adoption_design_only_unactivated",
+      "field_codes": ["format", "format_version", "record_code", "authority_roster_record_digest_sha256", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "scope_sha256", "decisions", "adopted_at", "activation_state_code", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "custody-control-record-v1.schema.json",
+      "producer_role_codes": ["requester", "legal_records_authority", "privacy_authority", "security_authority", "clearance_authority", "custody_operator", "deletion_authority"],
+      "consumer_role_codes": ["custody_operator", "deletion_executor", "independent_verifier", "journal_broker", "backup_operator"],
+      "storage_code": "protected_append_only_d940_control_store",
+      "confidentiality_code": "restricted_legal_security",
+      "state_code": "canonical_operational_control_not_legal_conclusion",
+      "field_codes": ["format", "format_version", "record_kind_code", "record_code", "operation_id", "operation_nonce", "subject", "chain", "reason_category_code", "reason_summary", "semantic_actor", "persistence_actor", "knowledge_boundary", "restriction_scope_code", "authorization_scope_sha256", "authorization_scope", "authorization_expires_at", "human_approvals", "basis_record_digest_sha256", "clearance_reference", "corrects_record_digest_sha256", "corrected_record_kind_code", "withdrawal_effect_code", "propagates_from_subject_identity_sha256", "backup_directive_code", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "access-revocation-record-v1.schema.json",
+      "producer_role_codes": ["custody_operator", "trusted_launcher"],
+      "consumer_role_codes": ["custody_operator", "deletion_executor", "independent_verifier", "journal_broker"],
+      "storage_code": "protected_append_only_d940_control_store",
+      "confidentiality_code": "highly_restricted_security",
+      "state_code": "canonical_operational_access_history",
+      "field_codes": ["format", "format_version", "record_kind_code", "record_code", "operation_id", "operation_nonce", "subject", "chain", "trigger_control_record_digest_sha256", "access_target_kind_code", "access_target_identity_sha256", "capability_record_digest_sha256", "capability_leaf_record_digest_sha256", "descriptor_lifecycle_record_digest_sha256", "receiver_process_instance_code", "sender_close_state_code", "receiver_termination_state_code", "descriptor_close_state_code", "termination_disposition_code", "semantic_actor", "persistence_actor", "knowledge_boundary", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "deletion-execution-record-v1.schema.json",
+      "producer_role_codes": ["deletion_executor", "independent_verifier"],
+      "consumer_role_codes": ["independent_verifier", "journal_broker", "recovery_authority", "backup_operator"],
+      "storage_code": "protected_append_only_d940_execution_store",
+      "confidentiality_code": "highly_restricted_security",
+      "state_code": "canonical_operational_execution_observation",
+      "field_codes": ["format", "format_version", "record_kind_code", "record_code", "operation_id", "operation_nonce", "subject", "chain", "deletion_authorization_record_digest_sha256", "tombstone_record_digest_sha256", "authorization_scope_sha256", "d930_operational_profile_record_digest_sha256", "d930_primary_durability_receipt_sha256", "safety_snapshot", "access_shutdown_state_code", "inventory", "execution", "semantic_actor", "persistence_actor", "knowledge_boundary", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "deletion-receipt-v1.schema.json",
+      "producer_role_codes": ["independent_verifier"],
+      "consumer_role_codes": ["journal_broker", "recovery_authority", "backup_operator", "legal_records_authority", "privacy_authority"],
+      "storage_code": "protected_append_only_d940_receipt_store",
+      "confidentiality_code": "highly_restricted_legal_security",
+      "state_code": "bounded_operational_receipt_not_erasure_or_legal_proof",
+      "field_codes": ["format", "format_version", "record_code", "operation_id", "operation_nonce", "subject", "deletion_request_record_digest_sha256", "deletion_authorization_record_digest_sha256", "tombstone_record_digest_sha256", "execution_record_digest_sha256", "verification_record_digest_sha256", "authorization_scope_sha256", "d930_operational_profile_record_digest_sha256", "d930_primary_durability_receipt_sha256", "safety_snapshot_sha256", "control_ledger_head_receipt_digest_sha256", "executor", "independent_verifier", "outcome_code", "proof_scope_code", "remaining_copy_classes", "metadata_retention_code", "complete_erasure_claimed", "backup_erasure_claimed", "legal_compliance_claimed", "limitations", "completed_at", "persistence_actor", "knowledge_boundary", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "backup-coordination-record-v1.schema.json",
+      "producer_role_codes": ["custody_operator", "legal_records_authority", "privacy_authority"],
+      "consumer_role_codes": ["backup_operator", "recovery_authority", "journal_broker"],
+      "storage_code": "protected_append_only_d940_control_store",
+      "confidentiality_code": "restricted_operational",
+      "state_code": "canonical_directive_without_d95_execution_authority",
+      "field_codes": ["format", "format_version", "record_kind_code", "record_code", "operation_id", "operation_nonce", "subject", "chain", "basis_control_record_digest_sha256", "control_ledger_head_receipt_digest_sha256", "directive_code", "backup_state_code", "d95_execution_authority_code", "d95_backup_receipt_record_digest_sha256", "semantic_actor", "persistence_actor", "knowledge_boundary", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "recovery-assessment-v1.schema.json",
+      "producer_role_codes": ["independent_verifier"],
+      "consumer_role_codes": ["recovery_authority", "journal_broker", "custody_operator"],
+      "storage_code": "d930_recovery_namespace",
+      "confidentiality_code": "highly_restricted_security",
+      "state_code": "classification_only_no_recovery_authority",
+      "field_codes": ["format", "format_version", "record_code", "operation_id", "operation_nonce", "subject", "snapshot_digest_sha256", "snapshot", "crash_boundary_code", "inventory_state_code", "access_state_code", "control_state_code", "classification_code", "action_execution_code", "recovery_authority_present", "semantic_actor", "persistence_actor", "knowledge_boundary", "record_digest_sha256"]
+    },
+    {
+      "schema_file": "journal-append-receipt-v1.schema.json",
+      "producer_role_codes": ["journal_broker"],
+      "consumer_role_codes": ["trusted_launcher", "custody_operator", "deletion_executor", "independent_verifier", "recovery_authority", "backup_operator"],
+      "storage_code": "protected_append_only_d940_global_ledger",
+      "confidentiality_code": "highly_restricted_security",
+      "state_code": "durable_persistence_acknowledgement_not_legal_or_erasure_proof",
+      "field_codes": ["format", "format_version", "record_code", "journal_namespace_code", "receipt_sequence", "previous_receipt_record_digest_sha256", "target_format", "target_record_code", "target_record_digest_sha256", "target_subject_identity_sha256", "operation_id", "operation_nonce", "semantic_actor", "persistence_actor", "semantic_recorded_at", "persisted_at", "durability_state_code", "record_digest_sha256"]
+    }
+  ],
+  "sensitive_field_families": [
+    { "field_suffix": "_sha256", "confidentiality_code": "restricted_integrity_or_subject_metadata", "public_projection_code": "omit" },
+    { "field_suffix": "_reference", "confidentiality_code": "restricted_storage_metadata", "public_projection_code": "omit" },
+    { "field_suffix": "_principal_code", "confidentiality_code": "restricted_personnel", "public_projection_code": "omit" },
+    { "field_suffix": "reason_summary", "confidentiality_code": "restricted_legal_security", "public_projection_code": "omit" }
+  ],
+  "record_digest_sha256": "bc707e9946b885c48bc6eaab59ddacaed5c8fbeec6739c3c15d097a6e7002991"
+}

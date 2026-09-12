@@ -1,0 +1,98 @@
+{
+  "format": "jedi-atlas-d940-digest-profiles",
+  "format_version": "1.0.0",
+  "canonical_json_profile": {
+    "profile_code": "jedi_canonical_json_v1",
+    "encoding_code": "utf8_no_bom",
+    "object_key_order_code": "utf16_code_unit_ascending",
+    "array_order_code": "preserved",
+    "unicode_normalization_code": "none",
+    "number_code": "nonnegative_safe_integer_only",
+    "line_ending_code": "none",
+    "duplicate_key_code": "reject"
+  },
+  "payload_profiles": [
+    { "profile_code": "d940_contract_record_excluding_self_digest_v1", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "d940_subject_identity_v1", "included_fields": ["subject_kind_code", "subject_payload"], "excluded_top_level_field": null },
+    { "profile_code": "d940_control_approval_scope_v1", "included_fields": ["record_kind_code", "subject_identity_sha256", "operation_id", "operation_nonce", "reason_category_code", "restriction_scope_code", "basis_record_digest_sha256", "corrects_record_digest_sha256", "effective_at"], "excluded_top_level_field": null },
+    { "profile_code": "d940_deletion_authorization_scope_v1", "included_fields": ["deletion_request_record_digest_sha256", "requester_principal_code", "subject_identity_sha256", "operation_id", "operation_nonce", "reason_category_code", "requested_action_code", "d930_operational_profile_record_digest_sha256", "d930_primary_durability_receipt_sha256", "custody_leaf_projection_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "subject_lineage_projection_sha256", "valid_from", "valid_until"], "excluded_top_level_field": null },
+    { "profile_code": "d940_execution_safety_snapshot_v1", "included_fields": ["journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "subject_lineage_projection_sha256", "custody_leaf_projection_sha256", "inventory_snapshot_sha256", "active_hold_count", "unknown_or_conflicting_control_count"], "excluded_top_level_field": null },
+    { "profile_code": "d940_recovery_snapshot_v1", "included_fields": ["journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "subject_lineage_projection_sha256", "inventory_snapshot_sha256", "custody_leaf_projection_sha256"], "excluded_top_level_field": null },
+    { "profile_code": "d940_inventory_snapshot_v1", "excluded_top_level_field": null },
+    { "profile_code": "d940_complete_canonical_object_v1", "excluded_top_level_field": null },
+    { "profile_code": "exact_file_bytes", "excluded_top_level_field": null },
+    { "profile_code": "exact_git_object_id", "excluded_top_level_field": null }
+  ],
+  "projection_profiles": [
+    { "profile_code": "d940_control_head_projection_v1", "input_code": "complete_journal_bounded_control_records", "record_fields": ["receipt_sequence", "record_kind_code", "record_digest_sha256"], "ordering_code": "receipt_sequence_ascending", "selection_code": "all_exact_records_known_at_boundary_active_semantics_derived_separately_by_classification_rules" },
+    { "profile_code": "d940_source_access_inventory_projection_v1", "input_code": "complete_protected_d901_d930_matching_store_snapshot", "included_fields": ["store_snapshot", "capabilities", "descriptor_lifecycle_records", "adapter_message_record_digests"], "ordering_code": "capability_digest_receiver_process_code_and_message_digest_ascending", "completeness_code": "capability_descriptor_and_adapter_message_counts_and_store_heads_must_recompute" },
+    { "profile_code": "d940_access_shutdown_projection_v1", "input_code": "complete_source_access_inventory_plus_journaled_shutdown_records", "included_fields": ["source_access_inventory_sha256", "capability_terminal_record_digests", "descriptor_leaves"], "ordering_code": "digest_and_access_target_identity_ascending", "completeness_code": "every_ready_capability_revoked_every_descriptor_confirmed" },
+    { "profile_code": "d940_custody_leaf_projection_v1", "included_fields": ["d930_operational_profile_record_digest_sha256", "d930_primary_durability_receipt_sha256", "artifact", "copy_code", "backend_code", "backend_reference"], "selection_code": "exact_schema_valid_d930_profile_and_primary_receipt_in_complete_protected_receipt_store_snapshot_and_exact_sha256_fanout_path" },
+    { "profile_code": "d940_custody_path_identity_v1", "target_fields": ["profile_code", "d930_operational_profile_record_digest_sha256", "backend_code", "backend_reference", "copy_code"], "parent_fields": ["profile_code", "d930_operational_profile_record_digest_sha256", "backend_code", "backend_reference_parent_code"], "selection_code": "exact_approved_primary_namespace_without_path_following" },
+    { "profile_code": "d940_subject_lineage_projection_v1", "input_code": "complete_d920_lineage_store_snapshot_for_target", "included_fields": ["target_subject_identity_sha256", "store_snapshot", "nodes", "edges"], "ordering_code": "subject_identity_and_from_to_identity_ascending", "completeness_code": "all_and_only_transitive_ancestors_no_cycles" }
+  ],
+  "resolvers": [
+    { "resolver_code": "self", "storage_code": "record_bytes", "selection_code": "current_record_excluding_only_top_level_self_digest" },
+    { "resolver_code": "d940_subject", "storage_code": "record_bytes", "selection_code": "exact_subject_kind_and_payload_in_same_record" },
+    { "resolver_code": "d901_identity_bindings", "storage_code": "protected_active_generation_store", "selection_code": "exact_record_digest_binding_set_generation_binding_and_active_nonrevoked_leaf" },
+    { "resolver_code": "d901_clearance_record", "storage_code": "clearance_register", "selection_code": "exact_clearance_code_decision_transition_scope_and_current_nonrevoked_leaf" },
+    { "resolver_code": "d940_authority_roster", "storage_code": "protected_d940_authority_store", "selection_code": "exact_record_digest_generation_binding_role_kind_principal_and_active_nonrevoked_leaf" },
+    { "resolver_code": "d940_control_record", "storage_code": "protected_append_only_d940_control_store", "selection_code": "exact_record_digest_kind_subject_operation_nonce_stream_sequence_and_current_leaf_when_required" },
+    { "resolver_code": "d940_access_record", "storage_code": "protected_append_only_d940_control_store", "selection_code": "exact_record_digest_kind_subject_operation_nonce_stream_sequence" },
+    { "resolver_code": "d940_execution_record", "storage_code": "protected_append_only_d940_execution_store", "selection_code": "exact_record_digest_kind_subject_operation_nonce_chain_and_transition" },
+    { "resolver_code": "d940_deletion_receipt", "storage_code": "protected_append_only_d940_receipt_store", "selection_code": "exact_canonical_record_digest_operation_nonce_subject_and_proof_graph" },
+    { "resolver_code": "d940_journal_receipt", "storage_code": "protected_append_only_d940_global_ledger", "selection_code": "exact_namespace_global_sequence_target_digest_subject_operation_nonce_and_previous_receipt" },
+    { "resolver_code": "d930_primary_durability_receipt", "storage_code": "protected_d930_receipt_store", "selection_code": "exact_primary_copy_artifact_backend_operation_bundle_profile_and_persistence_acknowledgement_in_complete_store_snapshot" },
+    { "resolver_code": "d901_custody_capability", "storage_code": "protected_d901_transition_store", "selection_code": "exact_semantically_valid_capability_record_current_leaf_clearance_scope_and_active_identity_generation" },
+    { "resolver_code": "d930_integrity_access_lifecycle", "storage_code": "protected_d930_integrity_lifecycle_store", "selection_code": "exact_descriptor_delivery_record_and_resolved_d901_open_custody_request_response_for_subject_copy_backend_receiver_process_and_capability" },
+    { "resolver_code": "d930_operational_profile", "storage_code": "protected_runtime_configuration", "selection_code": "exact_active_nonrevoked_profile_digest" },
+    { "resolver_code": "frozen_contract_file", "storage_code": "reviewed_git_contract_root", "selection_code": "exact_path_and_raw_sha256" },
+    { "resolver_code": "d931_runtime_tree", "storage_code": "reviewed_git_tree", "selection_code": "exact_git_tree_object_id" }
+    ,{ "resolver_code": "d940_control_projection", "storage_code": "protected_append_only_d940_global_ledger", "selection_code": "complete_dual_time_bounded_control_stream_projection" }
+    ,{ "resolver_code": "d940_access_shutdown_projection", "storage_code": "protected_d901_transition_and_d930_integrity_lifecycle_stores", "selection_code": "complete_matching_store_snapshot_and_exact_journaled_shutdown_records" }
+    ,{ "resolver_code": "d940_custody_leaf_projection", "storage_code": "protected_d930_receipt_and_runtime_profile_stores", "selection_code": "exact_profile_receipt_subject_copy_backend_projection" }
+    ,{ "resolver_code": "d940_custody_path_projection", "storage_code": "protected_runtime_configuration_and_open_directory_handles", "selection_code": "exact_profile_backend_reference_copy_and_parent_namespace_projection" }
+    ,{ "resolver_code": "d940_subject_lineage_projection", "storage_code": "canonical_d920_accepted_evidence_store_read_only_snapshot", "selection_code": "all_and_only_transitive_ancestors_for_exact_target_at_candidate_snapshot" }
+  ],
+  "field_bindings": [
+    { "field_code": "record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "self" },
+    { "field_code": "subject_identity_sha256", "payload_profile_code": "d940_subject_identity_v1", "resolver_code": "d940_subject" },
+    { "field_code": "authority_roster_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_authority_roster" },
+    { "field_code": "identity_bindings_record_digest_sha256", "payload_profile_code": "d940_complete_canonical_object_v1", "resolver_code": "d901_identity_bindings" },
+    { "field_code": "basis_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "corrects_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "trigger_control_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "clearance_decision_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d901_clearance_record" },
+    { "field_code": "clearance_transition_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d901_clearance_record" },
+    { "field_code": "authorization_scope_sha256", "payload_profile_code": "d940_deletion_authorization_scope_v1", "resolver_code": "self" },
+    { "field_code": "snapshot_sha256", "payload_profile_code": "d940_execution_safety_snapshot_v1", "resolver_code": "self" },
+    { "field_code": "snapshot_digest_sha256", "payload_profile_code": "d940_recovery_snapshot_v1", "resolver_code": "self" },
+    { "field_code": "inventory_snapshot_sha256", "payload_profile_code": "d940_inventory_snapshot_v1", "resolver_code": "self" },
+    { "field_code": "deletion_request_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "deletion_authorization_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "tombstone_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "execution_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_execution_record" },
+    { "field_code": "verification_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_execution_record" },
+    { "field_code": "control_ledger_head_receipt_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_journal_receipt" },
+    { "field_code": "control_head_projection_sha256", "payload_profile_code": "d940_control_head_projection_v1", "resolver_code": "d940_control_projection" },
+    { "field_code": "access_head_projection_sha256", "payload_profile_code": "d940_access_shutdown_projection_v1", "resolver_code": "d940_access_shutdown_projection" },
+    { "field_code": "custody_leaf_projection_sha256", "payload_profile_code": "d940_custody_leaf_projection_v1", "resolver_code": "d940_custody_leaf_projection" },
+    { "field_code": "subject_lineage_projection_sha256", "payload_profile_code": "d940_subject_lineage_projection_v1", "resolver_code": "d940_subject_lineage_projection" },
+    { "field_code": "propagates_from_subject_identity_sha256", "payload_profile_code": "d940_subject_identity_v1", "resolver_code": "d940_subject_lineage_projection" },
+    { "field_code": "target_path_identity_sha256", "payload_profile_code": "d940_custody_path_identity_v1", "resolver_code": "d940_custody_path_projection" },
+    { "field_code": "parent_directory_identity_sha256", "payload_profile_code": "d940_custody_path_identity_v1", "resolver_code": "d940_custody_path_projection" },
+    { "field_code": "d930_primary_durability_receipt_sha256", "payload_profile_code": "d940_complete_canonical_object_v1", "resolver_code": "d930_primary_durability_receipt" },
+    { "field_code": "capability_record_digest_sha256", "payload_profile_code": "d940_complete_canonical_object_v1", "resolver_code": "d901_custody_capability" },
+    { "field_code": "capability_leaf_record_digest_sha256", "payload_profile_code": "d940_complete_canonical_object_v1", "resolver_code": "d901_custody_capability" },
+    { "field_code": "descriptor_lifecycle_record_digest_sha256", "payload_profile_code": "d940_complete_canonical_object_v1", "resolver_code": "d930_integrity_access_lifecycle" },
+    { "field_code": "d930_operational_profile_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d930_operational_profile" },
+    { "field_code": "basis_control_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_control_record" },
+    { "field_code": "target_record_digest_sha256", "payload_profile_code": "d940_contract_record_excluding_self_digest_v1", "resolver_code": "d940_journal_receipt" }
+  ],
+  "content_hash_fields": [
+    { "field_code": "base_d901_catalog_sha256", "profile_code": "exact_file_bytes", "resolver_code": "frozen_contract_file" },
+    { "field_code": "base_d930_catalog_sha256", "profile_code": "exact_file_bytes", "resolver_code": "frozen_contract_file" },
+    { "field_code": "base_d931_git_tree_oid", "profile_code": "exact_git_object_id", "resolver_code": "d931_runtime_tree" }
+  ],
+  "record_digest_sha256": "48e7bcb3941630df7e728995f3e48936e591eac3cb874ccb78a1ec77f710da8b"
+}

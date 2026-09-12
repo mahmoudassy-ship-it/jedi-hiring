@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-4-0/authority-roster-v1.schema.json",
+  "title": "JEDI Atlas D9.4.0 synthetic authority roster bound to an active D9.0.1 identity generation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "roster_generation",
+    "identity_bindings_record_digest_sha256",
+    "binding_set_code",
+    "binding_generation",
+    "valid_from",
+    "valid_until",
+    "assignments",
+    "activation_state_code",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-d940-authority-roster" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "roster_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "identity_bindings_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "binding_set_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "binding_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+    "valid_from": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "valid_until": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+    "assignments": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["binding_code", "d901_runtime_role_code", "actor_kind_code", "role_code", "principal_code"],
+        "properties": {
+          "binding_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+          "d901_runtime_role_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+          "actor_kind_code": { "enum": ["human", "service"] },
+          "role_code": {
+            "enum": ["requester", "legal_records_authority", "privacy_authority", "security_authority", "clearance_authority", "custody_operator", "deletion_authority", "deletion_executor", "independent_verifier", "journal_broker", "recovery_authority", "backup_operator", "trusted_launcher"]
+          },
+          "principal_code": {
+            "oneOf": [
+              { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/principalCode" },
+              { "type": "null" }
+            ]
+          }
+        }
+      }
+    },
+    "activation_state_code": { "const": "design_only_unactivated" },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}
