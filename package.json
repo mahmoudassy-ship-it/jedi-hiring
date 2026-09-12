@@ -25,6 +25,7 @@
     "schema:validate:d9-3-0": "node --disable-warning=ExperimentalWarning docs/schema/validate-d9-3-0.mjs",
     "test:d9-1": "node --disable-warning=ExperimentalWarning --test tests/d9-1-*.test.mjs",
     "test:d9-2": "node --disable-warning=ExperimentalWarning --test tests/d9-2-*.test.mjs",
+    "test:d9-3-1": "node --disable-warning=ExperimentalWarning --test tests/d9-3-1-*.test.mjs",
     "security:check": "node scripts/check-secrets.mjs",
     "check": "npm run data:build && npm run data:check && npm run schema:validate && npm test && npm run build && npm run security:check"
   }
