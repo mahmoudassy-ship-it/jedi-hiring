@@ -14,6 +14,10 @@ import {
   parseStrictJson,
   sha256Bytes,
 } from '../../d9/control-plane/canonical.mjs'
+import {
+  loadApprovedContractSet,
+  verifyRuntimeGeneration,
+} from '../../d9/control-plane/contracts.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const project = path.resolve(here, '../..')
@@ -40,13 +44,13 @@ const frozen = {
 }
 
 const expected = {
-  catalog: '7f36ca6922cc92ef32b01b0a5b5e896d78f7a359affd06a2bd943a9b28b6c2bc',
-  classification: 'f929f22495ebbbc9849b76890ecc5d0eb4ee23cc0b1e2a6d528993c8063f8585',
-  digest_profiles: '48e7bcb3941630df7e728995f3e48936e591eac3cb874ccb78a1ec77f710da8b',
-  field_registry: 'bc707e9946b885c48bc6eaab59ddacaed5c8fbeec6739c3c15d097a6e7002991',
-  root_inventory: '9ca5e3099e362c73f0a61616d02b81acc0df3cbd14fd3891b460e82875b4f64e',
+  catalog: '12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7',
+  classification: 'be5b45a512538c50a6779566174304666c7b91b33aefed08940b3e8d9123e69d',
+  digest_profiles: '86734fdc8add20399615d1d9f5d455118577509636e38f9fca20f955989eed90',
+  field_registry: '0dc62b99be6e879e2c5df8416ed8b9411902f7e6af4322a4aef95ed1ba2e6ef1',
+  root_inventory: '764a79a61d5a8a774f6727106305b36f12c9d6269443e152ce0fcb98e2fe4269',
   subject_rules: '86557dc7eaeb3449ab5db26c93b2dbc125ae4f89c07deaef11e84a549cbbb745',
-  role_and_separation: '882a3523645dc95775ff312d15950102708777842f9f7054a70eba4290c528f0',
+  role_and_separation: '65a0a1aadfb0a430f58e06f623cbed1b6b8b3adb54dece0356380fc20d31a0ec',
   restriction_projection: 'ca4b30c5d3463e393193b20f219e81da5b046b4b1ba403b1bfdc72a122e6b752',
   deletion_lifecycle: 'daff0b0e4cc3b1ba4f094a8eb49ea8608d876df6769dab86611bfeebba3081fc',
   recovery_and_backup: 'eb5214b374cca1dddb8a7fb76d17b3c645615d6bcc3c4067e98e57b870efbe16',
@@ -54,6 +58,7 @@ const expected = {
 
 const schemaFiles = [
   'operational-profile-v1.schema.json',
+  'authority-identity-extension-v1.schema.json',
   'authority-roster-v1.schema.json',
   'authority-roster-adoption-v1.schema.json',
   'custody-control-record-v1.schema.json',
@@ -218,39 +223,165 @@ function bindingCode(actor) {
   return actor.identity_binding.binding_code
 }
 
-function validateD901IdentityGeneration(bindings = validFixtures.records.identity_bindings) {
-  validateFrozenSchema(frozenD90IdentityBindingsSchema, bindings)
-  if (bindings.record_digest_sha256 !== recordDigest(bindings)) fail('IDENTITY_BINDINGS_DIGEST_MISMATCH')
-  const runtime = frozenD90Fixtures.fixtures.find((entry) => entry.fixture_code === 'runtime_profile')?.value
-  validateFrozenSchema(frozenD90RuntimeProfileSchema, runtime)
-  if (runtime.record_digest_sha256 !== recordDigest(runtime) || bindings.runtime_profile_record_digest_sha256 !== runtime.record_digest_sha256 || bindings.runtime_domain_sha256 !== runtime.runtime_domain_sha256) fail('D901_RUNTIME_PROFILE_MISMATCH')
-  if (bindings.issued_at < runtime.issued_at) fail('D901_IDENTITY_BINDING_CHRONOLOGY_REJECTED')
-  const osSubjects = new Set()
-  const serviceEndpoints = new Set()
-  for (const binding of bindings.bindings) {
-    const subjectIdentity = `${bindings.runtime_domain_sha256}/${binding.subject_kind_code}/${binding.unix_uid}`
-    if (osSubjects.has(subjectIdentity)) fail('D901_OS_SUBJECT_COLLISION')
-    osSubjects.add(subjectIdentity)
-    if (binding.principal_kind_code === 'service') {
-      if (binding.executable_sha256 === null || binding.ipc_endpoint_code === null) fail('D901_SERVICE_IDENTITY_INCOMPLETE')
-      if (serviceEndpoints.has(binding.ipc_endpoint_code)) fail('D901_SERVICE_ENDPOINT_COLLISION')
-      serviceEndpoints.add(binding.ipc_endpoint_code)
-    }
-  }
-  return bindings
+const d901ComponentFixtureFiles = {
+  backup_adapter: 'docs/schema/d9-0/bootstrap-control-v1.schema.json',
+  bundle_importer: 'docs/schema/d9-0/clearance-record-v1.schema.json',
+  clearance_broker: 'docs/schema/d9-0/collector-handoff-v1.schema.json',
+  cloner_promoter: 'docs/schema/d9-0/common-v1.schema.json',
+  collector: 'docs/schema/d9-0/custody-adapter-message-v1.schema.json',
+  custody_adapter: 'docs/schema/d9-0/custody-capability-control-v1.schema.json',
+  database_writer: 'docs/schema/d9-0/identity-bindings-v1.schema.json',
+  handoff_broker: 'docs/schema/d9-0/importer-result-v1.schema.json',
+  independent_verifier: 'docs/schema/d9-0/logical-state-seal-v1.schema.json',
+  journal_broker: 'docs/schema/d9-0/operation-journal-event-v1.schema.json',
+  scanner: 'docs/schema/d9-0/runtime-profile-v1.schema.json',
+  trusted_launcher: 'docs/schema/tranche-2a-evidence-bundle-v1.schema.json',
 }
 
-function validateAuthorityRoster(record) {
+const d901OperationalFixtureFiles = {
+  backup: 'docs/schema/d9-0/contract-catalog-v1.json',
+  clearance: 'docs/schema/d9-0/classifications-v1.json',
+  custody_adapter: 'docs/schema/d9-0/digest-profiles-v1.json',
+  handoff: 'docs/schema/d9-0/field-registry-v1.json',
+  journal: 'docs/schema/d9-0/fixtures/golden-vectors-v1.json',
+  scanner_registry: 'docs/schema/d9-0/fixtures/invalid-contracts-v1.json',
+}
+
+const d901ScannerFixtureFiles = {
+  malware: ['docs/schema/d9-0/bootstrap-control-v1.schema.json', 'docs/schema/d9-0/classifications-v1.json'],
+  personal_data: ['docs/schema/d9-0/clearance-record-v1.schema.json', 'docs/schema/d9-0/digest-profiles-v1.json'],
+  secrets: ['docs/schema/d9-0/collector-handoff-v1.schema.json', 'docs/schema/d9-0/field-registry-v1.json'],
+}
+
+function d901ProductionVerificationContext() {
+  const runtime = clone(frozenD90Fixtures.fixtures.find((entry) => entry.fixture_code === 'runtime_profile')?.value)
+  const componentFiles = {}
+  const dependencyLock = path.join(project, 'docs/schema/d9-0/field-registry-v1.json')
+  for (const release of runtime.component_releases) {
+    const executable = path.join(project, d901ComponentFixtureFiles[release.runtime_role_code])
+    release.executable_sha256 = rawSha(executable)
+    release.dependency_lock_sha256 = rawSha(dependencyLock)
+    componentFiles[release.runtime_role_code] = { executable, dependencyLock }
+  }
+  const operationalProfileFiles = {}
+  for (const profile of runtime.operational_profiles) {
+    const file = path.join(project, d901OperationalFixtureFiles[profile.profile_kind_code])
+    profile.profile_sha256 = rawSha(file)
+    operationalProfileFiles[profile.profile_kind_code] = file
+  }
+  const scannerFiles = {}
+  for (const scanner of runtime.scanner_policy.required_scanners) {
+    const [buildRelative, rulesRelative] = d901ScannerFixtureFiles[scanner.scanner_code]
+    const build = path.join(project, buildRelative)
+    const rules = path.join(project, rulesRelative)
+    scanner.build_sha256 = rawSha(build)
+    scanner.rules_sha256 = rawSha(rules)
+    scannerFiles[scanner.scanner_code] = { build, rules }
+  }
+  const runtimeDomainFile = path.join(project, 'docs/schema/d9-0/common-v1.schema.json')
+  runtime.runtime_domain_sha256 = rawSha(runtimeDomainFile)
+  runtime.record_digest_sha256 = recordDigest(runtime)
+  return {
+    runtime,
+    componentFiles,
+    operationalProfileFiles,
+    scannerFiles,
+    runtimeDomainFile,
+  }
+}
+
+const d901ContractSet = loadApprovedContractSet({ contractRoot: frozenD90Root })
+const d901VerificationContext = d901ProductionVerificationContext()
+let verifiedD901FixtureIdentity = null
+
+function validateD901IdentityGeneration(bindings = validFixtures.records.identity_bindings) {
+  if (bindings === validFixtures.records.identity_bindings && verifiedD901FixtureIdentity !== null) return verifiedD901FixtureIdentity
+  const { runtime, ...files } = d901VerificationContext
+  const selection = {
+    profile_code: runtime.profile_code,
+    profile_generation: runtime.profile_generation,
+    runtime_profile_record_digest_sha256: runtime.record_digest_sha256,
+    binding_set_code: bindings.binding_set_code,
+    binding_generation: bindings.binding_generation,
+    identity_bindings_record_digest_sha256: bindings.record_digest_sha256,
+  }
+  const verified = verifyRuntimeGeneration({
+    contractSet: d901ContractSet,
+    runtimeProfileBytes: Buffer.from(canonicalize(runtime), 'utf8'),
+    identityBindingsBytes: Buffer.from(canonicalize(bindings), 'utf8'),
+    selection,
+    asOf: '2030-01-01T00:10:00.000Z',
+    migrationsDirectory: path.join(project, 'data/migrations'),
+    evidenceBundleSchemaPath: path.join(project, 'docs/schema/tranche-2a-evidence-bundle-v1.schema.json'),
+    ...files,
+  }).identityBindings
+  if (bindings === validFixtures.records.identity_bindings) verifiedD901FixtureIdentity = verified
+  return verified
+}
+
+function validateAuthorityIdentityExtension(record = validFixtures.records.authority_identity_extension) {
+  validateRecord(record)
+  const bindings = validateD901IdentityGeneration()
+  if (record.identity_bindings_record_digest_sha256 !== bindings.record_digest_sha256 || record.binding_set_code !== bindings.binding_set_code || record.binding_generation !== bindings.binding_generation) fail('AUTHORITY_EXTENSION_D901_GENERATION_MISMATCH')
+  if (!(bindings.issued_at <= record.issued_at && record.issued_at < record.expires_at && record.expires_at <= bindings.expires_at)) fail('AUTHORITY_EXTENSION_INTERVAL_REJECTED')
+  const binding = record.bindings[0]
+  if (!binding || binding.extension_role_code !== 'd940_roster_adopter' || binding.principal_kind_code !== 'human' || binding.subject_kind_code !== 'unix_uid') fail('AUTHORITY_EXTENSION_BINDING_REJECTED')
+  if (!(record.issued_at <= binding.valid_from && binding.valid_from < binding.valid_until && binding.valid_until <= record.expires_at)) fail('AUTHORITY_EXTENSION_BINDING_INTERVAL_REJECTED')
+  if (bindings.bindings.some((entry) => entry.binding_code === binding.binding_code || entry.unix_uid === binding.unix_uid || entry.atlas_principal_code === binding.principal_code)) fail('AUTHORITY_EXTENSION_COLLIDES_WITH_D901')
+  return record
+}
+
+function validateAuthorityRoster(record, extension = validFixtures.records.authority_identity_extension) {
+  validateAuthorityIdentityExtension(extension)
   validateRecord(record)
   const bindings = validateD901IdentityGeneration()
   if (record.identity_bindings_record_digest_sha256 !== bindings.record_digest_sha256 || record.binding_set_code !== bindings.binding_set_code || record.binding_generation !== bindings.binding_generation) fail('IDENTITY_BINDING_GENERATION_MISMATCH')
-  if (!(record.valid_from < record.valid_until)) fail('ROSTER_INTERVAL_REJECTED')
-  if (new Set(record.assignments.map((entry) => entry.binding_code)).size !== record.assignments.length) fail('ROSTER_BINDING_COLLISION')
+  if (record.authority_identity_extension_record_digest_sha256 !== extension.record_digest_sha256 || record.authority_identity_extension_generation !== extension.extension_generation) fail('AUTHORITY_EXTENSION_GENERATION_MISMATCH')
+  if (!(bindings.issued_at <= record.valid_from && extension.issued_at <= record.valid_from && record.valid_from < record.valid_until && record.valid_until <= bindings.expires_at && record.valid_until <= extension.expires_at)) fail('ROSTER_INTERVAL_REJECTED')
+  const expectedHumanRoles = ['bootstrap_authority', 'clearance_checker', 'clearance_decider', 'human_submitter', 'operational_witness', 'recovery_authority', 'recovery_operator']
+  if (canonicalize(record.human_identity_mappings.map((entry) => entry.d901_runtime_role_code)) !== canonicalize(expectedHumanRoles)) fail('ROSTER_HUMAN_IDENTITY_ORDER_REJECTED')
+  const humanBindingCodes = new Set()
+  const humanPrincipalCodes = new Set()
+  const humanMappingByBinding = new Map()
+  for (const mapping of record.human_identity_mappings) {
+    const binding = bindings.bindings.find((entry) => entry.binding_code === mapping.binding_code)
+    if (!binding || binding.runtime_role_code !== mapping.d901_runtime_role_code || binding.principal_kind_code !== 'human') fail('ROSTER_HUMAN_IDENTITY_UNRESOLVED')
+    if (humanBindingCodes.has(mapping.binding_code) || humanPrincipalCodes.has(mapping.principal_code)) fail('ROSTER_HUMAN_IDENTITY_COLLISION')
+    if (binding.atlas_principal_code !== null && binding.atlas_principal_code !== mapping.principal_code) fail('ROSTER_HUMAN_IDENTITY_ATTRIBUTION_MISMATCH')
+    humanBindingCodes.add(mapping.binding_code)
+    humanPrincipalCodes.add(mapping.principal_code)
+    humanMappingByBinding.set(mapping.binding_code, mapping)
+  }
+  const extensionBinding = extension.bindings[0]
+  if (humanBindingCodes.has(extensionBinding.binding_code) || humanPrincipalCodes.has(extensionBinding.principal_code)) fail('AUTHORITY_EXTENSION_COLLIDES_WITH_ROSTER')
+  const expectedRoles = classifications.role_assignment_rules.flatMap((entry) => Array(entry.assignment_count).fill(entry.role_code))
+  if (canonicalize(record.assignments.map((entry) => entry.role_code)) !== canonicalize(expectedRoles)) fail('ROSTER_ROLE_ORDER_REJECTED')
+  const bindingReuseGroups = new Map()
+  const assignmentPrincipals = new Map()
   for (const assignment of record.assignments) {
     const rule = classifications.role_assignment_rules.find((entry) => entry.role_code === assignment.role_code)
     if (!rule || rule.actor_kind_code !== assignment.actor_kind_code || !rule.allowed_d901_runtime_role_codes.includes(assignment.d901_runtime_role_code)) fail('ROLE_ASSIGNMENT_REJECTED')
-    if ((assignment.actor_kind_code === 'human') !== (assignment.principal_code !== null)) fail('ROLE_ASSIGNMENT_PRINCIPAL_REJECTED')
+    const binding = bindings.bindings.find((entry) => entry.binding_code === assignment.binding_code)
+    if (!binding || binding.runtime_role_code !== assignment.d901_runtime_role_code || binding.principal_kind_code !== assignment.actor_kind_code) fail('ROLE_ASSIGNMENT_BINDING_UNRESOLVED')
+    if (assignment.actor_kind_code === 'human') {
+      const mapping = humanMappingByBinding.get(assignment.binding_code)
+      if (!mapping || assignment.principal_code !== mapping.principal_code) fail('ROLE_ASSIGNMENT_PRINCIPAL_REJECTED')
+    } else if (assignment.principal_code !== null) fail('ROLE_ASSIGNMENT_PRINCIPAL_REJECTED')
+    const priorReuseGroup = bindingReuseGroups.get(assignment.binding_code)
+    if (priorReuseGroup !== undefined && priorReuseGroup !== rule.binding_reuse_group_code) fail('ROSTER_BINDING_REUSE_REJECTED')
+    bindingReuseGroups.set(assignment.binding_code, rule.binding_reuse_group_code)
+    const priorPrincipal = assignmentPrincipals.get(assignment.binding_code)
+    if (priorPrincipal !== undefined && priorPrincipal !== assignment.principal_code) fail('ROSTER_BINDING_PRINCIPAL_DRIFT')
+    assignmentPrincipals.set(assignment.binding_code, assignment.principal_code)
   }
+  for (const rule of classifications.role_assignment_rules.filter((entry) => entry.assignment_count > 1)) {
+    const assignments = record.assignments.filter((entry) => entry.role_code === rule.role_code)
+    if (assignments.length !== rule.assignment_count || new Set(assignments.map((entry) => entry.binding_code)).size !== assignments.length || new Set(assignments.map((entry) => entry.principal_code)).size !== assignments.length) fail('ROSTER_ROLE_DISTINCT_ASSIGNMENTS_REQUIRED', rule.role_code)
+    if (rule.required_d901_runtime_role_codes && canonicalize(assignments.map((entry) => entry.d901_runtime_role_code)) !== canonicalize(rule.required_d901_runtime_role_codes)) fail('ROSTER_ROLE_EXACT_RUNTIME_SET_REQUIRED', rule.role_code)
+  }
+  const separatedServices = ['deletion_executor', 'independent_verifier', 'journal_broker', 'backup_operator']
+    .map((role) => record.assignments.find((entry) => entry.role_code === role)?.binding_code)
+  if (new Set(separatedServices).size !== separatedServices.length) fail('ROSTER_SERVICE_SEPARATION_REJECTED')
 }
 
 function rosterAdoptionScope(roster, bindings) {
@@ -259,26 +390,37 @@ function rosterAdoptionScope(roster, bindings) {
     identity_bindings_record_digest_sha256: bindings.record_digest_sha256,
     binding_set_code: bindings.binding_set_code,
     binding_generation: bindings.binding_generation,
+    authority_identity_extension_record_digest_sha256: roster.authority_identity_extension_record_digest_sha256,
+    authority_identity_extension_generation: roster.authority_identity_extension_generation,
     roster_generation: roster.roster_generation,
   })
 }
 
-function validateAuthorityRosterAdoption(record, roster = validFixtures.records.authority_roster, bindings = validFixtures.records.identity_bindings) {
+function validateAuthorityRosterAdoption(record, roster = validFixtures.records.authority_roster, bindings = validFixtures.records.identity_bindings, extension = validFixtures.records.authority_identity_extension) {
+  validateAuthorityIdentityExtension(extension)
+  validateAuthorityRoster(roster, extension)
   validateRecord(record)
   const scope = rosterAdoptionScope(roster, bindings)
-  if (record.authority_roster_record_digest_sha256 !== roster.record_digest_sha256 || record.identity_bindings_record_digest_sha256 !== bindings.record_digest_sha256 || record.binding_set_code !== bindings.binding_set_code || record.binding_generation !== bindings.binding_generation || record.scope_sha256 !== scope) fail('ROSTER_ADOPTION_SCOPE_MISMATCH')
+  if (record.authority_roster_record_digest_sha256 !== roster.record_digest_sha256 || record.identity_bindings_record_digest_sha256 !== bindings.record_digest_sha256 || record.binding_set_code !== bindings.binding_set_code || record.binding_generation !== bindings.binding_generation || record.authority_identity_extension_record_digest_sha256 !== extension.record_digest_sha256 || record.authority_identity_extension_generation !== extension.extension_generation || record.scope_sha256 !== scope) fail('ROSTER_ADOPTION_SCOPE_MISMATCH')
   const decisionBindings = new Set()
   const decisionPrincipals = new Set()
   for (const decision of record.decisions) {
-    const binding = bindings.bindings.find((entry) => entry.binding_code === decision.binding_code)
-    if (!binding || binding.principal_kind_code !== 'human' || binding.runtime_role_code !== decision.runtime_role_code || binding.atlas_principal_code !== decision.principal_code || !['operational_witness', 'recovery_authority', 'bootstrap_authority'].includes(binding.runtime_role_code)) fail('ROSTER_ADOPTION_ACTOR_REJECTED')
-    if (roster.assignments.some((entry) => entry.binding_code === binding.binding_code)) fail('ROSTER_SELF_ADOPTION_REJECTED')
-    if (decision.scope_sha256 !== scope || !(bindings.issued_at <= decision.decided_at && decision.decided_at < bindings.expires_at && binding.valid_from <= decision.decided_at && decision.decided_at < binding.valid_until && decision.decided_at <= record.adopted_at)) fail('ROSTER_ADOPTION_CHRONOLOGY_REJECTED')
+    const baseBinding = bindings.bindings.find((entry) => entry.binding_code === decision.binding_code)
+    const extensionBinding = extension.bindings.find((entry) => entry.binding_code === decision.binding_code)
+    const binding = decision.identity_source_code === 'd901_generation' ? baseBinding : extensionBinding
+    const identityMapping = roster.human_identity_mappings.find((entry) => entry.binding_code === decision.binding_code)
+    const baseValid = decision.identity_source_code === 'd901_generation' && binding && identityMapping && binding.principal_kind_code === 'human' && binding.runtime_role_code === decision.runtime_role_code && identityMapping.d901_runtime_role_code === decision.runtime_role_code && identityMapping.principal_code === decision.principal_code && ['operational_witness', 'recovery_authority', 'bootstrap_authority'].includes(binding.runtime_role_code)
+    const extensionValid = decision.identity_source_code === 'd940_authority_extension' && binding && binding.principal_kind_code === 'human' && binding.extension_role_code === decision.runtime_role_code && binding.principal_code === decision.principal_code && decision.runtime_role_code === 'd940_roster_adopter'
+    if (!baseValid && !extensionValid) fail('ROSTER_ADOPTION_ACTOR_REJECTED')
+    if (roster.assignments.some((entry) => entry.binding_code === binding.binding_code || (entry.principal_code !== null && entry.principal_code === decision.principal_code))) fail('ROSTER_SELF_ADOPTION_REJECTED')
+    const generationIssuedAt = decision.identity_source_code === 'd901_generation' ? bindings.issued_at : extension.issued_at
+    const generationExpiresAt = decision.identity_source_code === 'd901_generation' ? bindings.expires_at : extension.expires_at
+    if (decision.scope_sha256 !== scope || !(generationIssuedAt <= decision.decided_at && decision.decided_at < generationExpiresAt && binding.valid_from <= decision.decided_at && decision.decided_at < binding.valid_until && decision.decided_at <= record.adopted_at)) fail('ROSTER_ADOPTION_CHRONOLOGY_REJECTED')
     if (decision.decision_digest_sha256 !== canonicalSha256(Object.fromEntries(Object.entries(decision).filter(([key]) => key !== 'decision_digest_sha256')))) fail('ROSTER_ADOPTION_DECISION_DIGEST_MISMATCH')
     if (decisionBindings.has(binding.binding_code)) fail('ROSTER_INDEPENDENT_APPROVAL_REQUIRED')
-    if (decisionPrincipals.has(binding.atlas_principal_code)) fail('ROSTER_INDEPENDENT_APPROVAL_REQUIRED')
+    if (decisionPrincipals.has(decision.principal_code)) fail('ROSTER_INDEPENDENT_APPROVAL_REQUIRED')
     decisionBindings.add(binding.binding_code)
-    decisionPrincipals.add(binding.atlas_principal_code)
+    decisionPrincipals.add(decision.principal_code)
   }
   if (decisionBindings.size < 2 || decisionPrincipals.size < 2 || record.adopted_at < roster.valid_from || record.adopted_at >= roster.valid_until) fail('ROSTER_INDEPENDENT_APPROVAL_REQUIRED')
 }
@@ -292,22 +434,23 @@ function validateActor(actor, at = '2030-01-01T00:00:00.000Z') {
   const ref = actor.identity_binding
   if (ref.identity_bindings_record_digest_sha256 !== roster.identity_bindings_record_digest_sha256 || ref.binding_set_code !== roster.binding_set_code || ref.binding_generation !== roster.binding_generation) fail('IDENTITY_BINDING_GENERATION_MISMATCH')
   if (!(roster.valid_from <= at && adoption.adopted_at <= at && at < roster.valid_until)) fail('AUTHORITY_ROSTER_EXPIRED_OR_INACTIVE')
-  const assignment = roster.assignments.find((entry) => entry.binding_code === ref.binding_code)
+  const assignment = roster.assignments.find((entry) => entry.binding_code === ref.binding_code && entry.role_code === actor.role_code)
   if (!assignment) fail('ACTOR_BINDING_UNRESOLVED')
   const binding = bindings.bindings.find((entry) => entry.binding_code === ref.binding_code)
-  if (!binding || binding.runtime_role_code !== assignment.d901_runtime_role_code || binding.principal_kind_code !== assignment.actor_kind_code || binding.atlas_principal_code !== assignment.principal_code) fail('D901_IDENTITY_BINDING_UNRESOLVED')
+  if (!binding || binding.runtime_role_code !== assignment.d901_runtime_role_code || binding.principal_kind_code !== assignment.actor_kind_code) fail('D901_IDENTITY_BINDING_UNRESOLVED')
+  if (assignment.actor_kind_code === 'human' && !roster.human_identity_mappings.some((entry) => entry.binding_code === binding.binding_code && entry.principal_code === assignment.principal_code)) fail('D940_HUMAN_IDENTITY_UNRESOLVED')
   if (!(bindings.issued_at <= at && at < bindings.expires_at && binding.valid_from <= at && at < binding.valid_until)) fail('D901_IDENTITY_BINDING_EXPIRED_OR_INACTIVE')
-  for (const field of ['actor_kind_code', 'role_code', 'principal_code']) if (actor[field] !== assignment[field]) fail('ACTOR_CLAIM_MISMATCH')
+  for (const field of ['actor_kind_code', 'role_code', 'principal_code']) if (actor[field] !== assignment[field]) fail('ACTOR_CLAIM_MISMATCH', `${field} for ${ref.binding_code}`)
   if (actor.actor_kind_code === 'human' && actor.principal_code === null) fail('HUMAN_PRINCIPAL_REQUIRED')
   if (actor.actor_kind_code === 'service' && actor.role_code.endsWith('_authority')) fail('SERVICE_HUMAN_AUTHORITY_REJECTED')
 }
 
 function resolveD901Binding(code, expectedRole, at, expectedPrincipalKind = null) {
-  const bindings = validFixtures.records.identity_bindings
-  if (!(bindings.issued_at <= at && at < bindings.expires_at)) fail('D901_IDENTITY_BINDING_EXPIRED_OR_INACTIVE')
+  const bindings = validateD901IdentityGeneration()
+  if (!(bindings.issued_at <= at && at < bindings.expires_at)) fail('D901_IDENTITY_BINDING_EXPIRED_OR_INACTIVE', `${code} at ${at}`)
   const binding = bindings.bindings.find((entry) => entry.binding_code === code)
   if (!binding || binding.runtime_role_code !== expectedRole || (expectedPrincipalKind !== null && binding.principal_kind_code !== expectedPrincipalKind)) fail('D901_IDENTITY_BINDING_UNRESOLVED')
-  if (!(binding.valid_from <= at && at < binding.valid_until)) fail('D901_IDENTITY_BINDING_EXPIRED_OR_INACTIVE')
+  if (!(binding.valid_from <= at && at < binding.valid_until)) fail('D901_IDENTITY_BINDING_EXPIRED_OR_INACTIVE', `${code} at ${at}`)
   return binding
 }
 
@@ -595,8 +738,8 @@ d901ClearanceDecision.artifact = clone(subject.subject_payload.artifact)
 d901ClearanceDecision.identity_bindings_record_digest_sha256 = validFixtures.records.identity_bindings.record_digest_sha256
 d901ClearanceDecision.runtime_profile_record_digest_sha256 = validFixtures.records.identity_bindings.runtime_profile_record_digest_sha256
 d901ClearanceDecision.scanner_results.forEach((result, index) => { result.completed_at = `2030-01-01T00:00:${String(25 + index).padStart(2, '0')}.000Z` })
-d901ClearanceDecision.decided_by_binding_code = 'binding.clearance.decider.synthetic'
-d901ClearanceDecision.independently_checked_by_binding_code = 'binding.clearance.synthetic'
+d901ClearanceDecision.decided_by_binding_code = 'binding.privacy.synthetic'
+d901ClearanceDecision.independently_checked_by_binding_code = 'binding.records.synthetic'
 d901ClearanceDecision.decided_at = '2030-01-01T00:00:30.000Z'
 d901ClearanceDecision.not_before = '2030-01-01T00:00:31.000Z'
 d901ClearanceDecision.recorded_at = '2030-01-01T00:00:31.000Z'
@@ -805,8 +948,9 @@ function d930DescriptorDelivery(code, processCode, pid, capability, pair) {
     sealed_capability_record_digest_sha256: capability.issuance.record_digest_sha256,
     sealed_capability_consumed_transition_digest_sha256: capability.current_leaf.record_digest_sha256,
     producer_binding_code: 'binding.custody.synthetic', sender_binding_code: 'binding.importer.synthetic',
-    receiver_binding_code: 'binding.independent.verifier.synthetic', verifier_binding_code: 'binding.independent.verifier.synthetic', verifier_executable_sha256: '11'.repeat(32),
-    receiver_process: { process_instance_code: processCode, pid, uid: 62010, gid: 62010, start_time_ticks: pid + 1000, executable_device: 1, executable_inode: pid + 2000 },
+    receiver_binding_code: 'binding.independent.verifier.synthetic', verifier_binding_code: 'binding.independent.verifier.synthetic',
+    verifier_executable_sha256: validFixtures.records.identity_bindings.bindings.find((entry) => entry.binding_code === 'binding.independent.verifier.synthetic').executable_sha256,
+    receiver_process: { process_instance_code: processCode, pid, uid: 61011, gid: 61011, start_time_ticks: pid + 1000, executable_device: 1, executable_inode: pid + 2000 },
     descriptor_delivery_record_digest_sha256: null, verifier_result_record_digest_sha256: null,
     transport_code: 'launcher_supervised_scm_rights', descriptor_role_code: 'custody_source', access_code: 'read_only', file_type_code: 'regular_file',
     peer_credentials_verified: true, pidfd_supervision_active: true, verification_outcome_code: null, recomputed_artifact: null,
@@ -1255,8 +1399,8 @@ const knowledge = (persistedAt, sequence) => {
 
 const approvalBindings = {
   legal_records_authority: 'binding.records.synthetic', privacy_authority: 'binding.privacy.synthetic',
-  security_authority: 'binding.security.synthetic', clearance_authority: 'binding.clearance.synthetic',
-  deletion_authority: 'binding.deletion.approver.synthetic',
+  security_authority: 'binding.security.synthetic', clearance_authority: 'binding.privacy.synthetic',
+  deletion_authority: 'binding.filler.16',
 }
 function approval(code, role, principal, scope, binding = approvalBindings[role]) {
   return addDigest({
@@ -1268,6 +1412,16 @@ function approval(code, role, principal, scope, binding = approvalBindings[role]
     expires_at: '2030-01-02T00:03:00.000Z',
     record_digest_sha256: '',
   })
+}
+
+function approvalPrincipal(role) {
+  return {
+    legal_records_authority: 'person.records.synthetic',
+    privacy_authority: 'person.privacy.synthetic',
+    security_authority: 'person.security.synthetic',
+    clearance_authority: 'person.privacy.synthetic',
+    deletion_authority: 'person.deletion.approver.synthetic',
+  }[role]
 }
 
 const deletionRequest = clone(validFixtures.records.deletion_request)
@@ -1294,14 +1448,14 @@ Object.assign(deletionAuthorization, {
   record_kind_code: 'deletion_authorized',
   record_code: 'control.deletion-authorized.synthetic.001',
   chain: { stream_code: deletionRequest.chain.stream_code, sequence: 2, predecessor_record_digest_sha256: deletionRequest.record_digest_sha256 },
-  semantic_actor: actor('binding.deletion.synthetic', 'human', 'deletion_authority', 'person.deletion.synthetic'),
+  semantic_actor: actor('binding.bootstrap.authority.synthetic', 'human', 'deletion_authority', 'person.deletion.synthetic'),
   knowledge_boundary: knowledge('2030-01-01T00:03:09.000Z', 3),
   authorization_scope_sha256: authorizationScope,
   authorization_scope: clone(authorizationScopePayload),
   authorization_expires_at: '2030-01-02T00:03:00.000Z',
   human_approvals: [
     approval('approval.records.synthetic.001', 'legal_records_authority', 'person.records.synthetic', authorizationScope),
-    approval('approval.deletion.synthetic.001', 'deletion_authority', 'person.deletion.approver.synthetic', authorizationScope, 'binding.deletion.approver.synthetic'),
+    approval('approval.deletion.synthetic.001', 'deletion_authority', 'person.deletion.approver.synthetic', authorizationScope),
   ].map((entry) => { entry.decided_at = '2030-01-01T00:03:08.000Z'; return addDigest(entry) }),
   basis_record_digest_sha256: deletionRequest.record_digest_sha256,
 })
@@ -1323,7 +1477,7 @@ Object.assign(deletionAuthorizationRevocation, {
 const revocationApprovalScope = controlApprovalScope(deletionAuthorizationRevocation)
 deletionAuthorizationRevocation.human_approvals = [
   approval('approval.revocation.records.synthetic.001', 'legal_records_authority', 'person.records.synthetic', revocationApprovalScope),
-  approval('approval.revocation.deletion.synthetic.001', 'deletion_authority', 'person.deletion.approver.synthetic', revocationApprovalScope, 'binding.deletion.approver.synthetic'),
+  approval('approval.revocation.deletion.synthetic.001', 'deletion_authority', 'person.deletion.approver.synthetic', revocationApprovalScope),
 ].map((entry) => {
   entry.decided_at = '2030-01-01T00:03:11.000Z'
   return addDigest(entry)
@@ -1335,7 +1489,7 @@ Object.assign(tombstone, {
   record_kind_code: 'tombstone_applied',
   record_code: 'control.tombstone.synthetic.001',
   chain: { stream_code: deletionRequest.chain.stream_code, sequence: 3, predecessor_record_digest_sha256: deletionAuthorization.record_digest_sha256 },
-  semantic_actor: actor('binding.custody.synthetic', 'service', 'custody_operator'),
+  semantic_actor: actor('binding.filler.19', 'service', 'custody_operator'),
   knowledge_boundary: knowledge('2030-01-01T00:03:12.000Z', 4),
   restriction_scope_code: 'all_access',
   basis_record_digest_sha256: deletionAuthorization.record_digest_sha256,
@@ -1356,7 +1510,7 @@ function accessRecord(kind, code, streamCode, sequence, predecessor, time, recei
     descriptor_close_state_code: null, termination_disposition_code: null,
     semantic_actor: ['descriptor_termination_confirmed', 'descriptor_termination_failed'].includes(kind)
       ? actor('binding.filler.19', 'service', 'trusted_launcher')
-      : actor('binding.custody.synthetic', 'service', 'custody_operator'),
+      : actor('binding.filler.19', 'service', 'custody_operator'),
     persistence_actor: clone(journalActor), knowledge_boundary: knowledge(time, receiptSequence), record_digest_sha256: '',
   }
   return record
@@ -1487,7 +1641,7 @@ function executionRecord(kind, code, sequence, predecessor, method, outcome, tim
     execution: { method_code: method, target_name_removed: didRemove, directory_synced: didRemove,
       reopened_target_absent: outcome === 'primary_absence_verified', content_erase_claimed: false,
       complete_erasure_claimed: false, outcome_code: outcome },
-    semantic_actor: actor(semanticRole === 'deletion_executor' ? 'binding.deletion.executor.synthetic' : 'binding.independent.verifier.synthetic', 'service', semanticRole),
+    semantic_actor: actor(semanticRole === 'deletion_executor' ? 'binding.custody.synthetic' : 'binding.independent.verifier.synthetic', 'service', semanticRole),
     persistence_actor: clone(journalActor), knowledge_boundary: knowledge(time, 9 + sequence), record_digest_sha256: '',
   })
 }
@@ -1514,7 +1668,7 @@ const deletionReceipt = addDigest({
   d930_primary_durability_receipt_sha256: authorizationScopePayload.d930_primary_durability_receipt_sha256,
   safety_snapshot_sha256: absenceVerified.safety_snapshot.snapshot_sha256,
   control_ledger_head_receipt_digest_sha256: absenceVerified.safety_snapshot.control_ledger_head_receipt_digest_sha256,
-  executor: actor('binding.deletion.executor.synthetic', 'service', 'deletion_executor'),
+  executor: actor('binding.custody.synthetic', 'service', 'deletion_executor'),
   independent_verifier: actor('binding.independent.verifier.synthetic', 'service', 'independent_verifier'),
   outcome_code: 'primary_copy_absence_verified', proof_scope_code: 'approved_primary_namespace_observation_only',
   remaining_copy_classes: ['backup', 'derived', 'open_descriptor', 'replica', 'temporary', 'unknown'], metadata_retention_code: 'restricted_audit_digest_retained',
@@ -1728,7 +1882,15 @@ function assertCatalogAndFingerprints() {
   assert.deepEqual([...catalogSchemas.keys()].sort(), ['common-v1.schema.json', ...schemaFiles].sort())
   for (const [file, entry] of catalogSchemas) {
     assert.equal(rawSha(path.join(root, file)), entry.raw_sha256, file)
-    assert.equal(readJson(path.join(root, file)).$id, entry.schema_id)
+    const schema = readJson(path.join(root, file))
+    assert.equal(schema.$id, entry.schema_id)
+    if (file === 'common-v1.schema.json') {
+      assert.equal(entry.contract_format, undefined)
+      assert.equal(entry.contract_version, undefined)
+    } else {
+      assert.equal(entry.contract_format, schema.properties.format.const, `${file} contract format`)
+      assert.equal(entry.contract_version, schema.properties.format_version.const, `${file} contract version`)
+    }
   }
   for (const [key, record, digest] of [
     ['classifications', classifications, expected.classification],
@@ -1765,6 +1927,12 @@ function assertFieldRegistry() {
     assert.ok(entry.producer_role_codes.length && entry.consumer_role_codes.length)
     assert.ok(entry.storage_code && entry.confidentiality_code && entry.state_code)
   }
+  const allowedTrustRoles = new Set([
+    ...classifications.role_assignment_rules.map((entry) => entry.role_code),
+    'bootstrap_authority', 'd940_roster_adopter', 'operational_witness', 'release_administrator',
+  ])
+  const registeredTrustRoles = new Set(fieldRegistry.contracts.flatMap((entry) => [...entry.producer_role_codes, ...entry.consumer_role_codes]))
+  assert.deepEqual([...registeredTrustRoles].sort(), [...allowedTrustRoles].sort())
   assert.equal(fieldRegistry.mapping_semantics.unmapped_field_code, 'reject')
   assert.equal(fieldRegistry.mapping_semantics.unknown_field_code, 'reject')
 }
@@ -1968,9 +2136,9 @@ function syntheticControl(kind) {
   record.propagates_from_subject_identity_sha256 = kind === 'propagation_asserted' ? 'd1'.repeat(32) : null
   record.backup_directive_code = kind.includes('quarantine') || kind.includes('restriction') ? 'restrict_before_restore' : 'none'
   const actorChoice = {
-    restriction_released: ['binding.clearance.synthetic', 'human', 'clearance_authority', 'person.clearance.synthetic'],
-    quarantine_imposed: ['binding.custody.synthetic', 'service', 'custody_operator', null],
-    quarantine_released: ['binding.clearance.synthetic', 'human', 'clearance_authority', 'person.clearance.synthetic'],
+    restriction_released: ['binding.privacy.synthetic', 'human', 'clearance_authority', 'person.privacy.synthetic'],
+    quarantine_imposed: ['binding.filler.19', 'service', 'custody_operator', null],
+    quarantine_released: ['binding.privacy.synthetic', 'human', 'clearance_authority', 'person.privacy.synthetic'],
     hold_imposed: ['binding.security.synthetic', 'human', 'security_authority', 'person.security.synthetic'],
     hold_released: ['binding.privacy.synthetic', 'human', 'privacy_authority', 'person.privacy.synthetic'],
     clearance_revoked: ['binding.security.synthetic', 'human', 'security_authority', 'person.security.synthetic'],
@@ -1978,7 +2146,7 @@ function syntheticControl(kind) {
     deletion_authorization_revoked: ['binding.privacy.synthetic', 'human', 'privacy_authority', 'person.privacy.synthetic'],
     control_corrected: ['binding.privacy.synthetic', 'human', 'privacy_authority', 'person.privacy.synthetic'],
     control_withdrawn: ['binding.privacy.synthetic', 'human', 'privacy_authority', 'person.privacy.synthetic'],
-    propagation_asserted: ['binding.custody.synthetic', 'service', 'custody_operator', null],
+    propagation_asserted: ['binding.filler.19', 'service', 'custody_operator', null],
   }[kind] ?? ['binding.security.synthetic', 'human', 'security_authority', 'person.security.synthetic']
   record.semantic_actor = actor(...actorChoice)
   const approvalRoles = {
@@ -1990,21 +2158,155 @@ function syntheticControl(kind) {
   }[kind] ?? []
   const scope = controlApprovalScope(record)
   record.human_approvals = approvalRoles.map((role, index) => approval(`approval.${kind}.${index + 1}`, role,
-    role === 'legal_records_authority' ? 'person.records.synthetic' : role === 'security_authority' ? 'person.security.synthetic' : role === 'clearance_authority' ? 'person.clearance.synthetic' : 'person.deletion.approver.synthetic', scope))
+    approvalPrincipal(role), scope))
   return addDigest(record)
+}
+
+function assertD901D940IdentityCompatibility() {
+  const verifiedBindings = validateD901IdentityGeneration()
+  const verifiedExtension = validateAuthorityIdentityExtension()
+  const requiredRuntimeRoles = [
+    'backup_adapter', 'bootstrap_authority', 'bundle_importer', 'clearance_broker', 'clearance_checker',
+    'clearance_decider', 'cloner_promoter', 'collector', 'custody_adapter', 'database_writer',
+    'handoff_broker', 'human_submitter', 'independent_verifier', 'journal_broker', 'operational_witness',
+    'recovery_authority', 'recovery_operator', 'scanner', 'trusted_launcher',
+  ]
+  assert.deepEqual(verifiedBindings.bindings.map((entry) => entry.runtime_role_code), requiredRuntimeRoles)
+  assert.equal(verifiedBindings.bindings.length, 19)
+  assert.deepEqual(verifiedExtension.bindings.map((entry) => entry.extension_role_code), ['d940_roster_adopter'])
+
+  const expectIdentityMutationRejected = (mutate) => {
+    const changed = clone(validFixtures.records.identity_bindings)
+    mutate(changed)
+    changed.record_digest_sha256 = recordDigest(changed)
+    validateFrozenSchema(frozenD90IdentityBindingsSchema, changed)
+    expectCode(() => validateD901IdentityGeneration(changed), 'IDENTITY_BINDING_MISMATCH')
+  }
+  expectIdentityMutationRejected((record) => { record.bindings[1].runtime_role_code = record.bindings[0].runtime_role_code })
+  expectIdentityMutationRejected((record) => { record.bindings.pop(); record.bindings.push(clone(record.bindings.at(-1))) })
+  expectIdentityMutationRejected((record) => { record.bindings[2].runtime_role_code = 'collector' })
+  expectIdentityMutationRejected((record) => { [record.bindings[0], record.bindings[1]] = [record.bindings[1], record.bindings[0]] })
+  expectIdentityMutationRejected((record) => { record.bindings.find((entry) => entry.runtime_role_code === 'human_submitter').allowed_operation_modes = ['recovery'] })
+  expectIdentityMutationRejected((record) => { record.bindings.find((entry) => entry.runtime_role_code === 'custody_adapter').ipc_endpoint_code = 'ipc.substituted' })
+  expectIdentityMutationRejected((record) => { record.bindings.find((entry) => entry.runtime_role_code === 'custody_adapter').executable_sha256 = 'ef'.repeat(32) })
+
+  const missingRole = clone(validFixtures.records.identity_bindings)
+  missingRole.bindings.pop()
+  missingRole.record_digest_sha256 = recordDigest(missingRole)
+  assert.throws(() => validateD901IdentityGeneration(missingRole), 'missing D9.0.1 role must be rejected')
+
+  const collidingExtension = clone(verifiedExtension)
+  collidingExtension.bindings[0].unix_uid = verifiedBindings.bindings[0].unix_uid
+  collidingExtension.record_digest_sha256 = recordDigest(collidingExtension)
+  expectCode(() => validateAuthorityIdentityExtension(collidingExtension), 'AUTHORITY_EXTENSION_COLLIDES_WITH_D901')
+
+  const roster = validFixtures.records.authority_roster
+  validateAuthorityRoster(roster)
+  for (const assignment of roster.assignments) {
+    const binding = verifiedBindings.bindings.find((entry) => entry.binding_code === assignment.binding_code)
+    assert.ok(binding, assignment.binding_code)
+    assert.equal(binding.runtime_role_code, assignment.d901_runtime_role_code)
+    assert.equal(binding.principal_kind_code, assignment.actor_kind_code)
+  }
+  const adoption = validFixtures.records.authority_roster_adoption
+  validateAuthorityRosterAdoption(adoption, roster, verifiedBindings, verifiedExtension)
+  for (const decision of adoption.decisions) {
+    const source = decision.identity_source_code === 'd901_generation' ? verifiedBindings.bindings : verifiedExtension.bindings
+    assert.ok(source.some((entry) => entry.binding_code === decision.binding_code), decision.binding_code)
+  }
+
+  const nonexistent = clone(roster)
+  nonexistent.assignments[0].binding_code = 'binding.nonexistent.synthetic'
+  nonexistent.record_digest_sha256 = recordDigest(nonexistent)
+  expectCode(() => validateAuthorityRoster(nonexistent), 'ROLE_ASSIGNMENT_BINDING_UNRESOLVED')
+
+  const mismatched = clone(roster)
+  mismatched.assignments[1].binding_code = 'binding.privacy.synthetic'
+  mismatched.assignments[1].d901_runtime_role_code = 'clearance_decider'
+  mismatched.record_digest_sha256 = recordDigest(mismatched)
+  expectCode(() => validateAuthorityRoster(mismatched), 'ROLE_ASSIGNMENT_REJECTED')
+
+  const repeatedPrincipal = clone(roster)
+  repeatedPrincipal.human_identity_mappings[2].principal_code = repeatedPrincipal.human_identity_mappings[1].principal_code
+  repeatedPrincipal.record_digest_sha256 = recordDigest(repeatedPrincipal)
+  expectCode(() => validateAuthorityRoster(repeatedPrincipal), 'ROSTER_HUMAN_IDENTITY_COLLISION')
+
+  const duplicateDeletionAuthority = clone(roster)
+  const deletionAssignments = duplicateDeletionAuthority.assignments.filter((entry) => entry.role_code === 'deletion_authority')
+  Object.assign(deletionAssignments[1], clone(deletionAssignments[0]))
+  duplicateDeletionAuthority.record_digest_sha256 = recordDigest(duplicateDeletionAuthority)
+  expectCode(() => validateAuthorityRoster(duplicateDeletionAuthority), 'ROSTER_ROLE_DISTINCT_ASSIGNMENTS_REQUIRED')
+
+  const missingDeletionAuthority = clone(roster)
+  missingDeletionAuthority.assignments.splice(missingDeletionAuthority.assignments.findLastIndex((entry) => entry.role_code === 'deletion_authority'), 1)
+  missingDeletionAuthority.record_digest_sha256 = recordDigest(missingDeletionAuthority)
+  expectCode(() => validateAuthorityRoster(missingDeletionAuthority), 'ROSTER_ROLE_ORDER_REJECTED')
+
+  const reorderedDeletionAuthorities = clone(roster)
+  const firstDeletionIndex = reorderedDeletionAuthorities.assignments.findIndex((entry) => entry.role_code === 'deletion_authority')
+  ;[reorderedDeletionAuthorities.assignments[firstDeletionIndex], reorderedDeletionAuthorities.assignments[firstDeletionIndex + 1]] = [reorderedDeletionAuthorities.assignments[firstDeletionIndex + 1], reorderedDeletionAuthorities.assignments[firstDeletionIndex]]
+  reorderedDeletionAuthorities.record_digest_sha256 = recordDigest(reorderedDeletionAuthorities)
+  expectCode(() => validateAuthorityRoster(reorderedDeletionAuthorities), 'ROSTER_ROLE_EXACT_RUNTIME_SET_REQUIRED')
+
+  const rosterCollidingExtension = clone(verifiedExtension)
+  rosterCollidingExtension.bindings[0].principal_code = roster.human_identity_mappings[0].principal_code
+  rosterCollidingExtension.record_digest_sha256 = recordDigest(rosterCollidingExtension)
+  const rosterWithCollidingExtension = clone(roster)
+  rosterWithCollidingExtension.authority_identity_extension_record_digest_sha256 = rosterCollidingExtension.record_digest_sha256
+  rosterWithCollidingExtension.record_digest_sha256 = recordDigest(rosterWithCollidingExtension)
+  expectCode(() => validateAuthorityRoster(rosterWithCollidingExtension, rosterCollidingExtension), 'AUTHORITY_EXTENSION_COLLIDES_WITH_ROSTER')
+
+  const incompatibleServiceReuse = clone(roster)
+  const verifierAssignment = incompatibleServiceReuse.assignments.find((entry) => entry.role_code === 'independent_verifier')
+  verifierAssignment.binding_code = 'binding.custody.synthetic'
+  verifierAssignment.d901_runtime_role_code = 'custody_adapter'
+  incompatibleServiceReuse.record_digest_sha256 = recordDigest(incompatibleServiceReuse)
+  expectCode(() => validateAuthorityRoster(incompatibleServiceReuse), 'ROLE_ASSIGNMENT_REJECTED')
+
+  const mismatchedAdoptionSource = clone(adoption)
+  mismatchedAdoptionSource.decisions[1].identity_source_code = 'd901_generation'
+  mismatchedAdoptionSource.decisions[1].decision_digest_sha256 = canonicalSha256(Object.fromEntries(Object.entries(mismatchedAdoptionSource.decisions[1]).filter(([key]) => key !== 'decision_digest_sha256')))
+  mismatchedAdoptionSource.record_digest_sha256 = recordDigest(mismatchedAdoptionSource)
+  expectCode(() => validateAuthorityRosterAdoption(mismatchedAdoptionSource, roster, verifiedBindings, verifiedExtension), 'ROSTER_ADOPTION_ACTOR_REJECTED')
+
+  const personalDataAuthorization = clone(deletionAuthorization)
+  personalDataAuthorization.record_code = 'control.deletion-authorized.personal-data.synthetic.001'
+  personalDataAuthorization.reason_category_code = 'personal_data'
+  personalDataAuthorization.authorization_scope.reason_category_code = 'personal_data'
+  personalDataAuthorization.authorization_scope_sha256 = canonicalSha256(personalDataAuthorization.authorization_scope)
+  personalDataAuthorization.human_approvals = [
+    approval('approval.personal-data.records.synthetic.001', 'legal_records_authority', 'person.records.synthetic', personalDataAuthorization.authorization_scope_sha256),
+    approval('approval.personal-data.privacy.synthetic.001', 'privacy_authority', 'person.privacy.synthetic', personalDataAuthorization.authorization_scope_sha256),
+    approval('approval.personal-data.deletion.synthetic.001', 'deletion_authority', 'person.deletion.approver.synthetic', personalDataAuthorization.authorization_scope_sha256),
+  ].map((entry) => { entry.decided_at = '2030-01-01T00:03:08.000Z'; return addDigest(entry) })
+  personalDataAuthorization.record_digest_sha256 = recordDigest(personalDataAuthorization)
+  validateControl(personalDataAuthorization)
+  assert.equal(new Set(personalDataAuthorization.human_approvals.map((entry) => entry.actor.principal_code)).size, 3)
+
+  const repeatedApproval = clone(personalDataAuthorization)
+  repeatedApproval.human_approvals[2] = clone(repeatedApproval.human_approvals[0])
+  repeatedApproval.human_approvals[2].approval_code = 'approval.personal-data.repeated.synthetic.001'
+  repeatedApproval.human_approvals[2].record_digest_sha256 = recordDigest(repeatedApproval.human_approvals[2])
+  repeatedApproval.record_digest_sha256 = recordDigest(repeatedApproval)
+  expectCode(() => validateControl(repeatedApproval), 'DISTINCT_HUMANS_REQUIRED')
+
+  const insufficientApproval = clone(personalDataAuthorization)
+  insufficientApproval.human_approvals.pop()
+  insufficientApproval.record_digest_sha256 = recordDigest(insufficientApproval)
+  expectCode(() => validateControl(insufficientApproval), 'DELETION_APPROVAL_ROLES_MISSING')
 }
 
 function assertExhaustiveMatricesAndReviewMutants() {
   const preRuntimeBindings = clone(validFixtures.records.identity_bindings)
   preRuntimeBindings.issued_at = '2029-12-31T23:59:59.999Z'
   preRuntimeBindings.record_digest_sha256 = recordDigest(preRuntimeBindings)
-  expectCode(() => validateD901IdentityGeneration(preRuntimeBindings), 'D901_IDENTITY_BINDING_CHRONOLOGY_REJECTED')
+  expectCode(() => validateD901IdentityGeneration(preRuntimeBindings), 'IDENTITY_BINDING_MISMATCH')
   const aliasedBindings = clone(validFixtures.records.identity_bindings)
-  const executorBinding = aliasedBindings.bindings.find((entry) => entry.binding_code === 'binding.deletion.executor.synthetic')
+  const executorBinding = aliasedBindings.bindings.find((entry) => entry.binding_code === 'binding.custody.synthetic')
   const verifierBinding = aliasedBindings.bindings.find((entry) => entry.binding_code === 'binding.independent.verifier.synthetic')
   executorBinding.unix_uid = verifierBinding.unix_uid
   aliasedBindings.record_digest_sha256 = recordDigest(aliasedBindings)
-  expectCode(() => validateD901IdentityGeneration(aliasedBindings), 'D901_OS_SUBJECT_COLLISION')
+  expectCode(() => validateD901IdentityGeneration(aliasedBindings), 'IDENTITY_BINDING_MISMATCH')
 
   const controlKinds = schemas.get('custody-control-record-v1.schema.json').properties.record_kind_code.enum
   assert.deepEqual(controlKinds.slice().sort(), classifications.control_record_rules.map((entry) => entry.record_kind_code).sort())
@@ -2018,7 +2320,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
     record.authorization_scope_sha256 = canonicalSha256(record.authorization_scope)
     record.human_approvals = approvalRule.required_human_role_codes.map((role, index) => approval(
       `approval.reason.${approvalRule.reason_category_code}.${index + 1}`, role,
-      role === 'privacy_authority' ? 'person.privacy.synthetic' : role === 'security_authority' ? 'person.security.synthetic' : role === 'legal_records_authority' ? 'person.records.synthetic' : 'person.deletion.approver.synthetic',
+      approvalPrincipal(role),
       record.authorization_scope_sha256,
     )).map((entry) => { entry.decided_at = '2030-01-01T00:03:08.000Z'; return addDigest(entry) })
     record.record_digest_sha256 = recordDigest(record)
@@ -2044,7 +2346,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
   const actorSpoof = clone(validFixtures.records.restriction)
   actorSpoof.semantic_actor.role_code = 'legal_records_authority'
   actorSpoof.record_digest_sha256 = recordDigest(actorSpoof)
-  expectCode(() => validateControl(actorSpoof), 'ACTOR_CLAIM_MISMATCH')
+  expectCode(() => validateControl(actorSpoof), 'ACTOR_BINDING_UNRESOLVED')
 
   const badAdoptionDigest = clone(validFixtures.records.authority_roster_adoption)
   badAdoptionDigest.decisions[0].decision_digest_sha256 = 'ff'.repeat(32)
@@ -2261,7 +2563,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
     expectCode(() => resolveAccessShutdown(accessShutdownRecords, changedInventory), expectedCode)
   }
   const wrongReceiverUid = clone(sourceDescriptorOne)
-  wrongReceiverUid.receiver_process.uid = 62011
+  wrongReceiverUid.receiver_process.uid = 61008
   wrongReceiverUid.record_digest_sha256 = recordDigest(wrongReceiverUid)
   expectCode(() => resolveAccessShutdown(accessShutdownRecords, accessInventoryWith({ descriptors: [wrongReceiverUid, sourceDescriptorTwo] })), 'DESCRIPTOR_PROCESS_BINDING_MISMATCH')
   const missingConsumedDescriptor = accessInventoryWith({ descriptors: [sourceDescriptorOne] })
@@ -2307,35 +2609,8 @@ function assertExhaustiveMatricesAndReviewMutants() {
     mutate(response.payload)
     expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, sourceOpenPairOne.request, response, sourceDescriptorOne), 'DESCRIPTOR_ADAPTER_RESPONSE_SCOPE_MISMATCH')
   }
-  const alternateImporter = clone(validFixtures.records.identity_bindings.bindings.find((entry) => entry.binding_code === 'binding.importer.synthetic'))
-  alternateImporter.binding_code = 'binding.importer.alternate.synthetic'
-  alternateImporter.unix_uid = 62113
-  alternateImporter.executable_sha256 = 'ab'.repeat(32)
-  alternateImporter.ipc_endpoint_code = 'ipc.d940.importer.alternate'
-  const alternateAdapter = clone(validFixtures.records.identity_bindings.bindings.find((entry) => entry.binding_code === 'binding.custody.synthetic'))
-  alternateAdapter.binding_code = 'binding.custody.alternate.synthetic'
-  alternateAdapter.unix_uid = 62108
-  alternateAdapter.executable_sha256 = 'ac'.repeat(32)
-  alternateAdapter.ipc_endpoint_code = 'ipc.d940.custody.alternate'
-  validFixtures.records.identity_bindings.bindings.push(alternateImporter, alternateAdapter)
-  try {
-    resolveD901Binding(alternateImporter.binding_code, 'bundle_importer', sourceOpenPairOne.request.created_at, 'service')
-    resolveD901Binding(alternateAdapter.binding_code, 'custody_adapter', sourceOpenPairOne.request.created_at, 'service')
-    const alternateRequestSender = clone(sourceOpenPairOne.request)
-    alternateRequestSender.sender_binding_code = alternateImporter.binding_code
-    expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, alternateRequestSender, sourceOpenPairOne.response, sourceDescriptorOne), 'DESCRIPTOR_ADAPTER_REQUEST_SCOPE_MISMATCH')
-    const alternateRequestRecipient = clone(sourceOpenPairOne.request)
-    alternateRequestRecipient.recipient_binding_code = alternateAdapter.binding_code
-    expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, alternateRequestRecipient, sourceOpenPairOne.response, sourceDescriptorOne), 'DESCRIPTOR_ADAPTER_REQUEST_SCOPE_MISMATCH')
-    const alternateResponseSender = clone(sourceOpenPairOne.response)
-    alternateResponseSender.sender_binding_code = alternateAdapter.binding_code
-    expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, sourceOpenPairOne.request, alternateResponseSender, sourceDescriptorOne), 'DESCRIPTOR_ADAPTER_RESPONSE_SCOPE_MISMATCH')
-    const alternateDescriptorSender = clone(sourceDescriptorOne)
-    alternateDescriptorSender.sender_binding_code = alternateImporter.binding_code
-    expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, sourceOpenPairOne.request, sourceOpenPairOne.response, alternateDescriptorSender), 'DESCRIPTOR_D930_CONTEXT_MISMATCH')
-  } finally {
-    validFixtures.records.identity_bindings.bindings.splice(-2)
-  }
+  expectCode(() => resolveD901Binding('binding.importer.alternate.synthetic', 'bundle_importer', sourceOpenPairOne.request.created_at, 'service'), 'D901_IDENTITY_BINDING_UNRESOLVED')
+  expectCode(() => resolveD901Binding('binding.custody.alternate.synthetic', 'custody_adapter', sourceOpenPairOne.request.created_at, 'service'), 'D901_IDENTITY_BINDING_UNRESOLVED')
   const changedRequestPayload = clone(sourceOpenPairOne.request)
   changedRequestPayload.payload.purpose_code = 'processing'
   expectCode(() => validateExactOpenExchange(consumedCapabilityOne.issuance, consumedCapabilityOne.current_leaf, changedRequestPayload, sourceOpenPairOne.response, sourceDescriptorOne), 'DESCRIPTOR_ADAPTER_REQUEST_SCOPE_MISMATCH')
@@ -2358,7 +2633,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
   lateDescriptor.record_digest_sha256 = recordDigest(lateDescriptor)
   expectCode(() => resolveAccessShutdown(accessShutdownRecords, accessInventoryWith({ descriptors: [lateDescriptor, sourceDescriptorTwo] })), 'POST_RESTRICTION_ACCESS_CREATED')
   const forgedLauncherConfirmation = clone(terminationConfirmed)
-  forgedLauncherConfirmation.semantic_actor = actor('binding.custody.synthetic', 'service', 'custody_operator')
+  forgedLauncherConfirmation.semantic_actor = actor('binding.filler.19', 'service', 'custody_operator')
   forgedLauncherConfirmation.record_digest_sha256 = recordDigest(forgedLauncherConfirmation)
   expectCode(() => validateAccess(forgedLauncherConfirmation), 'ACCESS_ACTOR_REJECTED')
 
@@ -2395,7 +2670,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
   invalidReceiptOutcome.record_digest_sha256 = recordDigest(invalidReceiptOutcome)
   expectCode(() => validateReceipt(invalidReceiptOutcome), 'SCHEMA_REJECTED')
   const wrongReceiptActor = clone(deletionReceipt)
-  wrongReceiptActor.executor = actor('binding.custody.synthetic', 'service', 'custody_operator')
+  wrongReceiptActor.executor = actor('binding.filler.19', 'service', 'custody_operator')
   wrongReceiptActor.record_digest_sha256 = recordDigest(wrongReceiptActor)
   expectCode(() => resolveDeletionGraph({ deletionReceipt: wrongReceiptActor }), 'RECEIPT_ROLE_REJECTED')
   const earlyReceipt = clone(deletionReceipt)
@@ -2420,7 +2695,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
     record.operation_id = basis.operation_id; record.operation_nonce = basis.operation_nonce; record.subject = clone(basis.subject)
     record.basis_control_record_digest_sha256 = basis.record_digest_sha256
     const role = rule.semantic_role_codes[0]
-    record.semantic_actor = role === 'custody_operator' ? actor('binding.custody.synthetic', 'service', role) : actor('binding.records.synthetic', 'human', role, 'person.records.synthetic')
+    record.semantic_actor = role === 'custody_operator' ? actor('binding.filler.19', 'service', role) : actor('binding.records.synthetic', 'human', role, 'person.records.synthetic')
     record.record_digest_sha256 = recordDigest(record)
     validateBackup(record)
     validateBackupBasis(record, [validFixtures.records.restriction, deletionRequest, deletionAuthorization, tombstone])
@@ -2692,7 +2967,7 @@ function assertExhaustiveMatricesAndReviewMutants() {
   expectCode(() => preflightNoReplace([validFixtures.records.restriction, replay]), 'SEMANTIC_ACTION_REPLAY')
   const journalFork = clone(journalReceipts[1]); journalFork.record_code = 'journal.receipt.fork.002'; journalFork.record_digest_sha256 = recordDigest(journalFork)
   expectCode(() => preflightNoReplace([...journalReceipts, journalFork]), 'GLOBAL_RECEIPT_SEQUENCE_COLLISION')
-  for (const changedTime of [journalReceipts[0].persisted_at, '2030-01-01T00:00:30.000Z']) {
+  for (const changedTime of [journalReceipts[0].persisted_at, '2030-01-01T00:03:00.000Z']) {
     const reversed = clone(journalReceipts)
     reversed[1].persisted_at = changedTime
     reversed[1].record_digest_sha256 = recordDigest(reversed[1])
@@ -2778,23 +3053,29 @@ function assertDatabaseBoundary() {
   }
 }
 
-assertFrozenInputs()
-assertCatalogAndFingerprints()
-assertMatrixFingerprints()
-assertFieldRegistry()
-assertGoldenVectors()
-assertProjectionContracts()
-assertSchemasAndSemantics()
-assertProjectionAndKnowledgeTime()
-assertNegativeFixturesAndMutations()
-assertExhaustiveMatricesAndReviewMutants()
-assertSchemaMutationDetection()
-assertDatabaseBoundary()
+if (process.argv.includes('--identity-compatibility-only')) {
+  assertD901D940IdentityCompatibility()
+  console.log('D9.0.1 production-verifier and D9.4.0 authority compatibility tests passed.')
+} else {
+  assertFrozenInputs()
+  assertCatalogAndFingerprints()
+  assertMatrixFingerprints()
+  assertFieldRegistry()
+  assertGoldenVectors()
+  assertProjectionContracts()
+  assertD901D940IdentityCompatibility()
+  assertSchemasAndSemantics()
+  assertProjectionAndKnowledgeTime()
+  assertNegativeFixturesAndMutations()
+  assertExhaustiveMatricesAndReviewMutants()
+  assertSchemaMutationDetection()
+  assertDatabaseBoundary()
 
-console.log('D9.4.0 contract validation passed.')
-console.log(`Schemas: ${schemaFiles.length + 1}; top-level contracts: ${schemaFiles.length}; contract-root files: ${fs.readdirSync(root, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).length}.`)
-console.log(`Catalog: ${expected.catalog}`)
-console.log(`Classification: ${expected.classification}`)
-console.log(`Root inventory: ${expected.root_inventory}`)
-console.log('Restriction, access shutdown, separation of duty, primary-copy deletion, D9.5 coordination, and classification-only recovery matrices passed.')
-console.log('No runtime activation, physical deletion, evidence acceptance, legal authority, or publication behavior was exercised.')
+  console.log('D9.4.0 contract validation passed.')
+  console.log(`Schemas: ${schemaFiles.length + 1}; top-level contracts: ${schemaFiles.length}; contract-root files: ${fs.readdirSync(root, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).length}.`)
+  console.log(`Catalog: ${expected.catalog}`)
+  console.log(`Classification: ${expected.classification}`)
+  console.log(`Root inventory: ${expected.root_inventory}`)
+  console.log('Production-verified D9.0.1 identity compatibility, D9.4.0 authority reachability, three-human deletion, restriction, access shutdown, separation of duty, primary-copy deletion, D9.5 coordination, and classification-only recovery matrices passed.')
+  console.log('No runtime activation, physical deletion, evidence acceptance, legal authority, or publication behavior was exercised.')
+}

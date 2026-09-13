@@ -6,7 +6,7 @@ Status: **design-only proposal awaiting approval**. The fingerprinted catalog us
 
 D9.4 should be split into two separately reviewed milestones:
 
-1. **D9.4.0 — contract/design freeze:** this document, ten top-level machine contracts, closed registries, synthetic fixtures, fixed hashes, and an offline validator.
+1. **D9.4.0 — contract/design freeze:** this document, eleven top-level machine contracts, closed registries, synthetic fixtures, fixed hashes, and an offline validator.
 2. **D9.4.1 — synthetic, unactivated implementation:** a later implementation may enforce these controls against synthetic bytes and disposable protected stores only after D9.4.0 approval and a fresh audit of launcher privileges.
 
 Restriction is an immediate fail-closed access decision. Deletion is a different, slower process requiring scoped human authorization, confirmed access shutdown, a logical tombstone, exact inventory, a separate executor, and independent verification. D9.4 can describe and later verify deletion of the approved primary CAS name only. It cannot claim that backups, replicas, temporary files, open descriptors, storage media, or unknown copies have been erased. D9.5 alone may define and implement backup deletion, restore, and deletion-aware reconstruction.
@@ -24,6 +24,8 @@ The audit covered approved D9.0.1, D9.3.0, the approved synthetic D9.3.1 impleme
 One compatibility gap is explicit rather than hidden: the frozen D9.3.0 journal broker cannot carry D9.4 record formats. D9.4.0 therefore defines a separate, versioned, global append-receipt contract and namespace. It does not reinterpret or mutate the D9.3.0 journal. D9.4.1 would need a new protected broker implementing this exact ledger contract before any control could have effect.
 
 The current D9.0.1 seven operation-handle partitions do not grant a destructive administrative surface. That is correct for the approved importer. A future D9.4.1 implementation will require a separately reviewed administrative launcher/profile and exact restricted handles or an equivalently isolated control service. It must not widen the frozen importer partitions in place. This is an activation prerequisite, not a blocker to a separate design-only contract root.
+
+The production D9.0.1 verifier also requires exactly one binding for each of its 19 runtime roles in the frozen order, with exact modes, endpoints, executable releases, attribution rules, chronology, and uniqueness. That genuine generation contains seven humans. Reusing only those seven cannot simultaneously preserve two roster adopters outside every semantic authority assignment, a requester who cannot self-approve, a deletion semantic actor who cannot self-approve, and three distinct personal-data deletion approvers. D9.4.0 therefore adds one narrowly versioned, design-only identity extension containing exactly one additional human role, `d940_roster_adopter`. The extension is pinned to one production-verified D9.0.1 generation and cannot record controls, approve deletion, execute deletion, persist records, or fill a service role. It does not edit, override, or repurpose D9.0.1. The reviewed release administrator authors the extension bytes; the D9.0.1 operational witness's adoption decision covers the pinned extension digest, and the extension gains no authority before both external adoption decisions. The resulting combined authority context remains synthetic and unactivated.
 
 ## Trust boundary
 
@@ -47,18 +49,19 @@ flowchart LR
   Q -. later human legal gates .-> LA[Verified legal authority]
 ```
 
-The control broker, custody adapter, launcher, deletion executor, independent verifier, journal broker, and future backup operator are distinct runtime roles. A caller-supplied role, principal code, record digest, or reason category is never authentication or authorization.
+The trust diagram names conceptual boundaries, not additional identities that the frozen importer profile does not contain. Within the D9.0.1-compatible design fixture, `custody_operator` and `trusted_launcher` are two semantic labels on the one frozen `trusted_launcher` service binding, while `deletion_executor` is the deletion-only semantic label on the frozen `custody_adapter` binding. Those aliases cannot widen the bindings' frozen modes, endpoints, handles, or executables. The four mandatory separated service effects—deletion executor, independent verifier, journal broker, and backup operator—use four distinct verified bindings. A future D9.4.1 implementation must introduce separately versioned bindings/profile authority if it needs a new control broker or a deletion executor distinct from the custody adapter; it may not invent or repurpose one here. A caller-supplied role, principal code, record digest, or reason category is never authentication or authorization.
 
 ## Contract inventory and versioning
 
-The new root is `docs/schema/d9-4-0/`. It contains 18 files: eleven schemas (one shared and ten top-level), three registries, one catalog, and three synthetic fixture files. The validator is outside the fingerprinted root.
+The new root is `docs/schema/d9-4-0/`. It contains 19 files: twelve schemas (one shared and eleven top-level), three registries, one catalog, and three synthetic fixture files. The validator is outside the fingerprinted root.
 
 | File | Contract or role |
 |---|---|
 | `common-v1.schema.json` | Closed actor, subject, reason, human-approval, hash-chain, and knowledge-boundary definitions. |
 | `operational-profile-v1.schema.json` | Unactivated profile that pins D9.0.1, D9.3.0, the approved D9.3.1 tree, limits, precedence, deletion scope, and D9.5 unreachability. |
-| `authority-roster-v1.schema.json` | Unactivated, effective-dated mapping from one exact D9.0.1 identity-binding generation to closed D9.4 semantic roles; it is not authentication or a legal qualification. |
-| `authority-roster-adoption-v1.schema.json` | Two independently authenticated external-human decisions adopting the exact roster generation; roster members cannot adopt their own authority. |
+| `authority-identity-extension-v1.schema.json` | One design-only human `d940_roster_adopter` binding pinned to an exact D9.0.1 generation; it exists only to keep both adopters outside all semantic authority assignments and grants no operational or deletion authority. |
+| `authority-roster-v1.schema.json` | Unactivated, effective-dated mapping from one production-verified exact D9.0.1 identity-binding generation to closed D9.4 semantic roles; it pins the one-binding D9.4 extension but assigns no control role to it. It is not authentication or a legal qualification. |
+| `authority-roster-adoption-v1.schema.json` | Two distinct external-human identity decisions adopting the exact combined authority context: one eligible D9.0.1 human plus the single D9.4 adopter; roster members cannot adopt their own authority. Operational authentication remains a D9.4.1 prerequisite. |
 | `custody-control-record-v1.schema.json` | Append-only restrictions, holds, clearance revocations, deletion requests/decisions, tombstones, corrections, withdrawals, releases, and explicit propagation edges. |
 | `access-revocation-record-v1.schema.json` | Capability revocation and already-issued descriptor termination lifecycle. |
 | `deletion-execution-record-v1.schema.json` | Primary-copy inventory, unlink attempt, verification, failure, and reconciliation observations. |
@@ -78,16 +81,16 @@ Any semantic change requires a new versioned contract root or explicit correctio
 
 | Surface | SHA-256 |
 |---|---|
-| Exact catalog file | `7f36ca6922cc92ef32b01b0a5b5e896d78f7a359affd06a2bd943a9b28b6c2bc` |
-| Classification semantic record | `f929f22495ebbbc9849b76890ecc5d0eb4ee23cc0b1e2a6d528993c8063f8585` |
-| Digest-profile semantic record | `48e7bcb3941630df7e728995f3e48936e591eac3cb874ccb78a1ec77f710da8b` |
-| Field-registry semantic record | `bc707e9946b885c48bc6eaab59ddacaed5c8fbeec6739c3c15d097a6e7002991` |
+| Exact catalog file | `12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7` |
+| Classification semantic record | `be5b45a512538c50a6779566174304666c7b91b33aefed08940b3e8d9123e69d` |
+| Digest-profile semantic record | `86734fdc8add20399615d1d9f5d455118577509636e38f9fca20f955989eed90` |
+| Field-registry semantic record | `0dc62b99be6e879e2c5df8416ed8b9411902f7e6af4322a4aef95ed1ba2e6ef1` |
 | Subject matrix | `86557dc7eaeb3449ab5db26c93b2dbc125ae4f89c07deaef11e84a549cbbb745` |
-| Actor/separation matrix | `882a3523645dc95775ff312d15950102708777842f9f7054a70eba4290c528f0` |
+| Actor/separation matrix | `65a0a1aadfb0a430f58e06f623cbed1b6b8b3adb54dece0356380fc20d31a0ec` |
 | Restriction/access projection matrix | `ca4b30c5d3463e393193b20f219e81da5b046b4b1ba403b1bfdc72a122e6b752` |
 | Deletion lifecycle matrix | `daff0b0e4cc3b1ba4f094a8eb49ea8608d876df6769dab86611bfeebba3081fc` |
 | Recovery/backup matrix | `eb5214b374cca1dddb8a7fb76d17b3c645615d6bcc3c4067e98e57b870efbe16` |
-| Sorted 18-file contract-root inventory | `9ca5e3099e362c73f0a61616d02b81acc0df3cbd14fd3891b460e82875b4f64e` |
+| Sorted 19-file contract-root inventory | `764a79a61d5a8a774f6727106305b36f12c9d6269443e152ce0fcb98e2fe4269` |
 
 These are proposal anchors, not operational attestations.
 
@@ -158,6 +161,8 @@ New capabilities and opens are denied as soon as the earliest applicable, still-
 | Recover or reconcile | separate human recovery authority remains required | classification service may classify only | original executor cannot mint recovery authority |
 
 Human approval records pin the exact subject, scope digest, decision, time, expiry, binding, and principal. Each decision must exist by the control record's semantic recording time, and every mandatory approval must remain valid through the authorization's full exclusive validity interval; an authorization may not outlive an approval. Distinct humans are counted by authenticated binding plus principal mapping, never by caller-supplied text. Approval records themselves are immutable. Expired, mismatched, self-issued, or role-substituted approvals fail closed; any later invalidation must be a separately authorized, append-only authorization-revocation or control event. Active identity-generation, qualification-revocation, and authority-roster evaluation remain D9.4.1 prerequisites rather than an invented approval-revocation resolver in this design.
+
+The synthetic roster maps each D9.4 authority or execution role to a role that genuinely exists in the production-verified D9.0.1 generation. It preserves the frozen service endpoint, executable-release, operation-mode, chronology, and uniqueness bindings; semantic D9.4 role names do not widen those services. Privacy and clearance may share the one `clearance_decider` human, and security and recovery may share the one `recovery_operator` human, only within the explicit reuse groups. The two deletion-authority assignments are required to use the exact ordered `bootstrap_authority` and `recovery_authority` bindings with distinct humans. The second is used for approval when the first is the deletion semantic actor, preserving no-self-approval. The single D9.4 extension human may adopt the roster but cannot appear in its assignments or any control approval. Together with an external D9.0.1 `operational_witness`, this keeps both adopters outside every semantic authority assignment while the personal-data deletion gate remains satisfiable by three distinct D9.0.1 humans.
 
 ## Reason categories and holds
 
@@ -251,9 +256,9 @@ The offline validator:
 
 - pins migrations 001–005, D9.0.1 and D9.3.0 catalog/semantic fingerprints, and the approved D9.3.1 Git tree;
 - rejects missing, substituted, or extra contract-root artifacts through exact catalog and root-inventory fingerprints;
-- compiles all eleven schemas (one shared and ten top-level) and rejects unknown fields/versions/states;
+- compiles all twelve schemas (one shared and eleven top-level) and rejects unknown fields/versions/states;
 - validates canonical timestamps, safe strings, self-digests, exact subject identities, and independent golden canonical strings/hashes;
-- verifies complete field coverage, all matrix fingerprints, exact identity-binding/externally adopted authority-roster resolution, distinct human gates, knowledge chronology, global receipt order, chain gap/fork/backdating/replay/collision behavior, restriction precedence, exact D9.0.1 clearance and open-custody exchanges, complete capability/descriptor/message and D9.3.0 receipt-store snapshots, access shutdown, explicit authorization revocation, stale global safety heads, exact CAS references, deletion transitions, bounded receipt proof links, D9.5 unreachability, and classification-only recovery;
+- invokes the production D9.0.1 runtime-generation verifier before any D9.4 roster, adoption, actor, approval, access, or deletion evaluation; it then verifies the exact 19-role order, modes, endpoints, releases, chronology and uniqueness, the single non-colliding adopter extension, complete field coverage, all matrix fingerprints, exact combined-authority roster adoption, distinct human gates, knowledge chronology, global receipt order, chain gap/fork/backdating/replay/collision behavior, restriction precedence, exact D9.0.1 clearance and open-custody exchanges, complete capability/descriptor/message and D9.3.0 receipt-store snapshots, access shutdown, explicit authorization revocation, stale global safety heads, exact CAS references, deletion transitions, bounded receipt proof links, D9.5 unreachability, and classification-only recovery;
 - weakens representative schemas in memory to prove fixed raw hashes and semantic checks detect the weakened boundary;
 - applies migrations 001–005 to a disposable database, runs integrity/foreign-key checks, and confirms all 13 Atlas tables remain empty.
 
@@ -264,7 +269,8 @@ Passing validation proves only internal consistency of this design proposal and 
 The security/least-privilege review and the determinism/versioning review identified concrete blockers in the first draft. The proposal accepts and resolves them as follows:
 
 - human gate counts, distinct principals, self-approval, role substitution, approval expiry, and exact scope hashes are now evaluated rather than merely declared;
-- every actor resolves through one exact active D9.0.1 binding generation and an immutable, unactivated D9.4 authority roster; caller text is never trusted as identity or authority;
+- every D9.4 control, approval, execution, persistence, and recovery actor resolves through one exact production-verified D9.0.1 binding generation and an immutable, unactivated D9.4 authority roster; only the separate second roster-adoption decision resolves through the one-binding D9.4 adopter extension, which has no roster or operational authority; caller text is never trusted as identity or authority;
+- duplicated, missing, substituted, or reordered D9.0.1 roles; wrong modes, IPC endpoints, executable hashes, semantic-only identity generations, nonexistent or mismatched roster bindings, repeated principals, aliasing outside explicit reuse groups, extension collisions, and adoption-source substitution are rejected before any D9.4 authority evaluation;
 - deletion authorization now pins the requester, exact D9.3.0 custody profile and primary-durability receipt, subject, operation/nonce, projections, reason, interval, and request; explicit revocation blocks execution;
 - corrections and withdrawals require the same subject/operation/nonce/stream and current leaf; deletion authorization uses its own revocation transition and tombstones cannot be generically withdrawn;
 - the primary-deletion proof graph resolves exact request, authorization, tombstone, D9.3 custody facts, access shutdown, safety snapshot, execution, verification, receipt, global ledger head, and D9.5 directive;
@@ -283,7 +289,7 @@ The reviews rejected widening any frozen D9.0.1 importer partition, treating a c
 Before D9.4.1 may begin, approval must pin this exact root and a separate implementation task must resolve:
 
 1. a least-privilege administrative launcher/handle scope that does not widen importer authority;
-2. protected identity generations and role qualifications for human authorities;
+2. protected activation, revocation, runtime authentication, and qualification handling for both the production-verified D9.0.1 generation and the separately versioned one-binding D9.4 roster-adopter extension;
 3. append-only control/execution/receipt stores plus the separate D9.4 global ledger and rollback-resistant audit strategy;
 4. authenticated IPC for control, launcher termination, executor, verifier, and the new D9.4 journal broker;
 5. live descriptor/capability inventory, an operation lock, and an atomic cross-store knowledge snapshot whose exact ledger head cannot go stale before unlink;

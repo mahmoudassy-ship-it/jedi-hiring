@@ -1,6 +1,6 @@
 {
   "format": "jedi-atlas-d940-classifications",
-  "format_version": "1.0.0",
+  "format_version": "1.0.1",
   "base_contracts": {
     "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
     "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
@@ -33,19 +33,19 @@
     { "reason_category_code": "other_operational", "conclusion_code": "requires_human_classification", "blocks_deletion": true }
   ],
   "role_assignment_rules": [
-    { "role_code": "requester", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "legal_records_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "privacy_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "security_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "clearance_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter", "clearance_checker"] },
-    { "role_code": "deletion_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "custody_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["custody_adapter", "trusted_launcher"] },
-    { "role_code": "deletion_executor", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["custody_adapter"] },
-    { "role_code": "independent_verifier", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["independent_verifier"] },
-    { "role_code": "journal_broker", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["journal_broker"] },
-    { "role_code": "recovery_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"] },
-    { "role_code": "backup_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["backup_adapter"] }
-    ,{ "role_code": "trusted_launcher", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["trusted_launcher"] }
+    { "role_code": "requester", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["human_submitter"], "binding_reuse_group_code": "requester", "assignment_count": 1 },
+    { "role_code": "legal_records_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["clearance_checker"], "binding_reuse_group_code": "legal_records", "assignment_count": 1 },
+    { "role_code": "privacy_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["clearance_decider"], "binding_reuse_group_code": "privacy_clearance", "assignment_count": 1 },
+    { "role_code": "security_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["recovery_operator"], "binding_reuse_group_code": "security_deletion_recovery", "assignment_count": 1 },
+    { "role_code": "clearance_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["clearance_decider"], "binding_reuse_group_code": "privacy_clearance", "assignment_count": 1 },
+    { "role_code": "deletion_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["bootstrap_authority", "recovery_authority"], "required_d901_runtime_role_codes": ["bootstrap_authority", "recovery_authority"], "binding_reuse_group_code": "deletion_authority", "assignment_count": 2 },
+    { "role_code": "custody_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["trusted_launcher"], "binding_reuse_group_code": "launcher_control", "assignment_count": 1 },
+    { "role_code": "deletion_executor", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["custody_adapter"], "binding_reuse_group_code": "deletion_executor", "assignment_count": 1 },
+    { "role_code": "independent_verifier", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["independent_verifier"], "binding_reuse_group_code": "independent_verifier", "assignment_count": 1 },
+    { "role_code": "journal_broker", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["journal_broker"], "binding_reuse_group_code": "journal_broker", "assignment_count": 1 },
+    { "role_code": "recovery_authority", "actor_kind_code": "human", "allowed_d901_runtime_role_codes": ["recovery_operator"], "binding_reuse_group_code": "security_deletion_recovery", "assignment_count": 1 },
+    { "role_code": "backup_operator", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["backup_adapter"], "binding_reuse_group_code": "backup_operator", "assignment_count": 1 },
+    { "role_code": "trusted_launcher", "actor_kind_code": "service", "allowed_d901_runtime_role_codes": ["trusted_launcher"], "binding_reuse_group_code": "launcher_control", "assignment_count": 1 }
   ],
   "action_actor_rules": [
     { "record_kind_code": "restriction_imposed", "semantic_role_codes": ["requester", "security_authority", "clearance_authority"], "semantic_actor_kind_codes": ["human"], "minimum_distinct_human_approvals": 0, "required_approval_role_codes": [] },
@@ -74,10 +74,15 @@
   ],
   "identity_binding_rules": {
     "runtime_profile_resolution_code": "exact_frozen_d901_profile_digest_and_runtime_domain",
+    "d901_verification_code": "production_verify_runtime_generation_required_before_d940_resolution",
     "generation_chronology_code": "binding_generation_issued_at_or_after_runtime_profile_issued_at",
     "os_subject_uniqueness_code": "runtime_domain_subject_kind_and_unix_uid_unique_across_generation",
-    "service_identity_code": "non_null_pinned_executable_and_unique_ipc_endpoint",
-    "service_separation_code": "distinct_binding_code_and_distinct_authenticated_os_subject"
+    "service_identity_code": "pinned_verified_release_and_exact_closed_endpoint_and_operation_modes",
+    "d940_human_identity_code": "versioned_roster_mapping_over_exact_verified_d901_human_binding",
+    "d940_extension_code": "one_additional_human_binding_for_independent_roster_adoption_only",
+    "role_assignment_cardinality_code": "exact_classification_assignment_count_per_d940_role",
+    "binding_reuse_code": "same_binding_only_within_one_explicit_reuse_group",
+    "service_separation_code": "deletion_executor_independent_verifier_journal_broker_and_backup_operator_use_distinct_verified_bindings"
   },
   "deletion_approval_rules": [
     { "reason_category_code": "legal_hold", "authorization_code": "blocked_while_hold_active", "required_human_role_codes": [], "minimum_distinct_humans": 0 },
@@ -241,10 +246,10 @@
   },
   "matrix_fingerprints": {
     "subject_rules_sha256": "86557dc7eaeb3449ab5db26c93b2dbc125ae4f89c07deaef11e84a549cbbb745",
-    "role_and_separation_sha256": "882a3523645dc95775ff312d15950102708777842f9f7054a70eba4290c528f0",
+    "role_and_separation_sha256": "65a0a1aadfb0a430f58e06f623cbed1b6b8b3adb54dece0356380fc20d31a0ec",
     "restriction_projection_sha256": "ca4b30c5d3463e393193b20f219e81da5b046b4b1ba403b1bfdc72a122e6b752",
     "deletion_lifecycle_sha256": "daff0b0e4cc3b1ba4f094a8eb49ea8608d876df6769dab86611bfeebba3081fc",
     "recovery_and_backup_sha256": "eb5214b374cca1dddb8a7fb76d17b3c645615d6bcc3c4067e98e57b870efbe16"
   },
-  "record_digest_sha256": "f929f22495ebbbc9849b76890ecc5d0eb4ee23cc0b1e2a6d528993c8063f8585"
+  "record_digest_sha256": "be5b45a512538c50a6779566174304666c7b91b33aefed08940b3e8d9123e69d"
 }

@@ -22,7 +22,7 @@
   ],
   "properties": {
     "format": { "const": "jedi-atlas-d940-operational-profile" },
-    "format_version": { "const": "1.0.0" },
+    "format_version": { "const": "1.0.1" },
     "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
     "profile_code": { "const": "pilot_local_restriction_deletion_design_v1" },
     "generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
@@ -65,7 +65,7 @@
         "control_store_code": { "const": "protected_append_only_d940_control_store" },
         "receipt_store_code": { "const": "protected_append_only_d940_receipt_store" },
         "journal_linkage_code": { "const": "separate_d940_global_append_broker_v1" },
-        "identity_authority_code": { "const": "active_d901_binding_plus_d940_authority_roster" },
+        "identity_authority_code": { "const": "production_verified_d901_generation_plus_d940_semantic_authority_extension_v1" },
         "maximum_authorization_lifetime_ms": { "const": 86400000 },
         "maximum_descriptor_termination_ms": { "const": 30000 },
         "maximum_destructive_snapshot_age_ms": { "const": 1000 },

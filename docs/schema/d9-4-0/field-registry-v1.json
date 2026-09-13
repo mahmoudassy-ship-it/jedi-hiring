@@ -1,6 +1,6 @@
 {
   "format": "jedi-atlas-d940-field-registry",
-  "format_version": "1.0.0",
+  "format_version": "1.0.1",
   "mapping_semantics": {
     "coverage_code": "all_top_level_fields_plus_inherited_nested_classification",
     "unmapped_field_code": "reject",
@@ -18,22 +18,31 @@
       "field_codes": ["format", "format_version", "record_code", "profile_code", "generation", "issued_at", "base_d901_catalog_sha256", "base_d930_catalog_sha256", "base_d931_git_tree_oid", "d940_catalog_sha256", "d940_classification_fingerprint_sha256", "settings", "activation_state_code", "record_digest_sha256"]
     },
     {
+      "schema_file": "authority-identity-extension-v1.schema.json",
+      "producer_role_codes": ["release_administrator"],
+      "consumer_role_codes": ["trusted_launcher", "operational_witness", "d940_roster_adopter"],
+      "storage_code": "protected_d940_authority_store",
+      "confidentiality_code": "highly_restricted_personnel_security",
+      "state_code": "design_only_one_binding_roster_adopter_extension_not_operational_authority",
+      "field_codes": ["format", "format_version", "record_code", "extension_generation", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "issued_at", "expires_at", "bindings", "activation_state_code", "record_digest_sha256"]
+    },
+    {
       "schema_file": "authority-roster-v1.schema.json",
       "producer_role_codes": ["release_administrator", "operational_witness"],
       "consumer_role_codes": ["trusted_launcher", "journal_broker", "custody_operator", "deletion_executor", "independent_verifier"],
       "storage_code": "protected_d940_authority_store",
       "confidentiality_code": "highly_restricted_personnel_security",
       "state_code": "design_only_synthetic_authority_roster_not_active_authorization",
-      "field_codes": ["format", "format_version", "record_code", "roster_generation", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "valid_from", "valid_until", "assignments", "activation_state_code", "record_digest_sha256"]
+      "field_codes": ["format", "format_version", "record_code", "roster_generation", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "authority_identity_extension_record_digest_sha256", "authority_identity_extension_generation", "valid_from", "valid_until", "human_identity_mappings", "assignments", "activation_state_code", "record_digest_sha256"]
     },
     {
       "schema_file": "authority-roster-adoption-v1.schema.json",
-      "producer_role_codes": ["operational_witness", "recovery_authority", "bootstrap_authority"],
+      "producer_role_codes": ["operational_witness", "recovery_authority", "bootstrap_authority", "d940_roster_adopter"],
       "consumer_role_codes": ["trusted_launcher", "journal_broker"],
       "storage_code": "protected_d940_authority_store",
       "confidentiality_code": "highly_restricted_personnel_security",
-      "state_code": "independent_d901_bound_roster_adoption_design_only_unactivated",
-      "field_codes": ["format", "format_version", "record_code", "authority_roster_record_digest_sha256", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "scope_sha256", "decisions", "adopted_at", "activation_state_code", "record_digest_sha256"]
+      "state_code": "independent_combined_d901_d940_bound_roster_adoption_design_only_unactivated",
+      "field_codes": ["format", "format_version", "record_code", "authority_roster_record_digest_sha256", "identity_bindings_record_digest_sha256", "binding_set_code", "binding_generation", "authority_identity_extension_record_digest_sha256", "authority_identity_extension_generation", "scope_sha256", "decisions", "adopted_at", "activation_state_code", "record_digest_sha256"]
     },
     {
       "schema_file": "custody-control-record-v1.schema.json",
@@ -105,5 +114,5 @@
     { "field_suffix": "_principal_code", "confidentiality_code": "restricted_personnel", "public_projection_code": "omit" },
     { "field_suffix": "reason_summary", "confidentiality_code": "restricted_legal_security", "public_projection_code": "omit" }
   ],
-  "record_digest_sha256": "bc707e9946b885c48bc6eaab59ddacaed5c8fbeec6739c3c15d097a6e7002991"
+  "record_digest_sha256": "0dc62b99be6e879e2c5df8416ed8b9411902f7e6af4322a4aef95ed1ba2e6ef1"
 }
