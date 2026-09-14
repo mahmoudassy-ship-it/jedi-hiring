@@ -1,6 +1,6 @@
 # D9.4.0 restriction, security, and deletion-control contracts
 
-Status: **design-only proposal awaiting approval**. The fingerprinted catalog uses the permanent lifecycle-neutral value `design_only_contract_freeze`; approval, if granted, will be recorded externally and will not change the contract root. This proposal creates no executable restriction service, clearance process, deletion capability, custody effect, credential, Atlas row, evidence import, legal conclusion, API, export, search result, or frontend behavior.
+Status: **approved design-only contract freeze** at reviewed commit `7db408fb0f9083f4a17c89cbaf1cb1a06bc44416`. Approval is recorded externally in this documentation and does not alter the fingerprinted catalog's permanent lifecycle-neutral value `design_only_contract_freeze` or any contract-root artifact. It authorizes only the D9.4.0 design boundary: no executable restriction service, clearance process, deletion capability, custody effect, credential, Atlas row, evidence import, legal conclusion, API, export, search result, frontend behavior, runtime activation, or production use. D9.4.1 remains a separately reviewed synthetic implementation milestone.
 
 ## Plain-language decision
 
@@ -77,7 +77,7 @@ The new root is `docs/schema/d9-4-0/`. It contains 19 files: twelve schemas (one
 
 Any semantic change requires a new versioned contract root or explicit correction lineage, new hashes, review, and approval. Approved D9.0.1 and D9.3.0 files are never edited or aliased.
 
-### Proposal fingerprints
+### Approved design fingerprints
 
 | Surface | SHA-256 |
 |---|---|
@@ -92,7 +92,7 @@ Any semantic change requires a new versioned contract root or explicit correctio
 | Recovery/backup matrix | `eb5214b374cca1dddb8a7fb76d17b3c645615d6bcc3c4067e98e57b870efbe16` |
 | Sorted 19-file contract-root inventory | `764a79a61d5a8a774f6727106305b36f12c9d6269443e152ce0fcb98e2fe4269` |
 
-These are proposal anchors, not operational attestations.
+These fingerprints are approved design anchors, not operational attestations. Approval does not make the contracts executable or prove that any restriction, deletion, custody, evidence, or legal-authority effect occurred.
 
 ## Stable subject identity and propagation
 
@@ -302,4 +302,4 @@ D9.4.1, if later approved, remains synthetic and unactivated. D9.5 remains separ
 
 ## Approval boundary
 
-This proposal finishes in an **awaiting approval** state. Approval would freeze the machine contract and authorize only later consideration of D9.4.1. It would not activate a runtime, authorize deletion, populate Atlas, establish accepted evidence, verify legal authority, or make any public claim.
+This design is approved at reviewed commit `7db408fb0f9083f4a17c89cbaf1cb1a06bc44416` with the fingerprints above unchanged. Approval freezes the D9.4.0 machine contract and authorizes only later, separately reviewed consideration of D9.4.1. It does not activate a runtime, authorize restriction or deletion, populate Atlas, establish accepted evidence, verify legal authority, or make any public claim.
