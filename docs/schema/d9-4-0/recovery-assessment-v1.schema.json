@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-4-0/recovery-assessment-v1.schema.json",
+  "title": "JEDI Atlas D9.4.0 classification-only recovery assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "operation_id",
+    "operation_nonce",
+    "subject",
+    "snapshot_digest_sha256",
+    "snapshot",
+    "crash_boundary_code",
+    "inventory_state_code",
+    "access_state_code",
+    "control_state_code",
+    "classification_code",
+    "action_execution_code",
+    "recovery_authority_present",
+    "semantic_actor",
+    "persistence_actor",
+    "knowledge_boundary",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-d940-recovery-assessment" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/operationNonce" },
+    "subject": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/subject" },
+    "snapshot_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "journal_namespace_code",
+        "known_through_receipt_sequence",
+        "known_through_persisted_at",
+        "control_ledger_head_receipt_digest_sha256",
+        "control_head_projection_sha256",
+        "access_head_projection_sha256",
+        "subject_lineage_projection_sha256",
+        "inventory_snapshot_sha256",
+        "custody_leaf_projection_sha256"
+      ],
+      "properties": {
+        "journal_namespace_code": { "const": "d940.global.control-journal.v1" },
+        "known_through_receipt_sequence": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/positiveSafeInteger" },
+        "known_through_persisted_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/timestamp" },
+        "control_ledger_head_receipt_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "control_head_projection_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "access_head_projection_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "subject_lineage_projection_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "inventory_snapshot_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" },
+        "custody_leaf_projection_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+      }
+    },
+    "crash_boundary_code": {
+      "enum": [
+        "before_restriction_persisted",
+        "after_restriction_before_capability_revocation",
+        "after_revocation_before_descriptor_termination",
+        "after_tombstone_before_unlink",
+        "after_unlink_before_directory_sync",
+        "after_sync_before_verification",
+        "after_verification_before_receipt",
+        "after_receipt_before_journal_link"
+      ]
+    },
+    "inventory_state_code": { "enum": ["complete", "incomplete", "contradictory", "unavailable"] },
+    "access_state_code": { "enum": ["none_confirmed", "active_or_unknown", "termination_pending", "contradictory"] },
+    "control_state_code": { "enum": ["linear_complete", "gap", "fork", "collision", "unknown"] },
+    "classification_code": { "enum": ["safe_no_effect", "restriction_required", "retain_and_hold", "reconciliation_required", "human_decision_required"] },
+    "action_execution_code": { "const": "none_classification_only" },
+    "recovery_authority_present": { "const": false },
+    "semantic_actor": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/actor" },
+    "persistence_actor": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/actor" },
+    "knowledge_boundary": { "$ref": "https://jedi-hiring.invalid/schema/d9-4-0/common-v1.schema.json#/$defs/knowledgeBoundary" },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-0/common-v1.schema.json#/$defs/sha256" }
+  }
+}
