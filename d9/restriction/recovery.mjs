@@ -2,6 +2,7 @@ import { canonicalSha256 } from '../control-plane/canonical.mjs'
 import { sealD940Record, validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
 import { assertD941LedgerBroker } from './ledger.mjs'
+import { issueD941RecoveryClassificationProof } from './recovery-proof.mjs'
 
 const defaults = Object.freeze({
   before_restriction_persisted: 'safe_no_effect',
@@ -100,7 +101,8 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
   }
   const metadata = reconstructionMetadata.get(reconstruction)
   const currentHead = broker?.head?.()
-  if (!metadata || metadata.broker !== broker || !currentHead || currentHead.sequence !== metadata.head.sequence || currentHead.digest !== metadata.head.digest || reconstruction.protected_inventory_digest_sha256 !== metadata.inventoryDigest) {
+  const currentInventoryDigest = broker?.store?.inventory?.().digest
+  if (!metadata || metadata.broker !== broker || !currentHead || currentHead.sequence !== metadata.head.sequence || currentHead.digest !== metadata.head.digest || currentInventoryDigest !== metadata.inventoryDigest || reconstruction.protected_inventory_digest_sha256 !== metadata.inventoryDigest) {
     failD941('D941_RECOVERY_RECONSTRUCTION_STALE', 'classification reconstruction is stale or belongs to another protected store')
   }
   if (reconstruction.ledger_state_code !== 'linear_complete' && controlStateCode === 'linear_complete') {
@@ -131,5 +133,6 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
     classification_code: classificationCode, action_execution_code: 'none_classification_only', recovery_authority_present: false,
   })
   validateD940Record({ contractSet: authorityContext.contractSet, record: result })
+  issueD941RecoveryClassificationProof(result, reconstruction, broker)
   return Object.freeze(result)
 }

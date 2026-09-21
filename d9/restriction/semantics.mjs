@@ -1,6 +1,7 @@
 import { canonicalSha256, canonicalize } from '../control-plane/canonical.mjs'
 import { assertD941AccessEffectProof } from './access-control.mjs'
 import { assertD941PrimaryEffectProof } from './primary-delete.mjs'
+import { assertD941RecoveryClassificationProof } from './recovery-proof.mjs'
 import { failD941 } from './errors.mjs'
 
 function actorEquals(left, right) {
@@ -219,6 +220,7 @@ export function assertD941RuntimeSemantics({ contractSet, operationalProfile, re
     else if (['incomplete', 'unavailable'].includes(record.inventory_state_code)) derived = 'reconciliation_required'
     else derived = classifications.recovery_boundary_defaults.find((entry) => entry.crash_boundary_code === record.crash_boundary_code)?.classification_code
     if (!actorEquals(record.semantic_actor, semanticSession.actor) || record.semantic_actor.role_code !== 'independent_verifier' || record.semantic_actor.actor_kind_code !== 'service' || record.action_execution_code !== 'none_classification_only' || record.recovery_authority_present !== false || record.snapshot_digest_sha256 !== canonicalSha256(record.snapshot) || record.classification_code !== derived) failD941('D941_RECOVERY_ACTOR_REJECTED', 'recovery actor, snapshot, or deterministic classification is invalid')
+    assertD941RecoveryClassificationProof(runtimeProof, record)
     return
   }
   failD941('D941_LEDGER_TARGET_UNSUPPORTED', 'record format has no runtime semantic verifier')
