@@ -150,7 +150,7 @@ export async function executeSyntheticPrimaryDeletion({
     unlinkAppendResult = await lock.effectThenAppend({ record: unlinkRecord, semanticSession: executorSession, persistenceSession }, async () => {
       const unlinked = deleteRuntime.unlinkPrimary({ rootPath, artifact, inventory: observed, recordInventory: unlinkRecord.inventory, recordDigestSha256: unlinkRecord.record_digest_sha256, backendReference, operationNonce: unlinkRecord.operation_nonce })
       faultInjector?.('after_unlink_before_directory_sync')
-      const synced = deleteRuntime.syncParent({ rootPath, artifact, inventory: observed, operationNonce: unlinkRecord.operation_nonce })
+      const synced = deleteRuntime.syncParent({ rootPath, artifact, inventory: observed, recordInventory: unlinkRecord.inventory, recordDigestSha256: unlinkRecord.record_digest_sha256, operationNonce: unlinkRecord.operation_nonce })
       const effectProof = deleteRuntime.finalizeUnlinkEffect({ unlinkResult: unlinked, syncResult: synced, recordInventory: unlinkRecord.inventory, recordDigestSha256: unlinkRecord.record_digest_sha256, operationNonce: unlinkRecord.operation_nonce })
       removed = Object.freeze({ ...unlinked, effectProof: undefined, syncProof: undefined, directory_synced: synced.directory_synced, reopened_absent: synced.reopened_absent })
       faultInjector?.('after_unlink_before_lock_release')

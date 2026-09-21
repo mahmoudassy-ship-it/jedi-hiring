@@ -13,6 +13,7 @@ const defaults = Object.freeze({
   after_verification_before_receipt: 'reconciliation_required',
   after_receipt_before_journal_link: 'reconciliation_required',
 })
+const reconstructionStates = new WeakSet()
 
 // Reconstructs only the durable facts needed to classify an interrupted
 // operation. It never retries, repairs, restores, or writes a recovery record.
@@ -64,7 +65,9 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     const receipt = operation.receipts.at(-1) ?? null
     const executionDigest = receipt?.execution_record_digest_sha256 ?? null
     const verificationDigest = receipt?.verification_record_digest_sha256 ?? null
-    const hasExactReceiptBasis = receipt !== null && operation.execution.some((item) => item.record_digest_sha256 === executionDigest) &&
+    const streams = new Set(operation.execution.map((item) => item.chain?.stream_code))
+    const oneGaplessStream = streams.size === 1 && operation.execution.every((item, index) => item.chain?.sequence === index + 1)
+    const hasExactReceiptBasis = receipt !== null && oneGaplessStream && operation.execution.some((item) => item.record_digest_sha256 === executionDigest) &&
       operation.execution.some((item) => item.record_digest_sha256 === verificationDigest) &&
       operation.execution.every((item) => item.knowledge_boundary.receipt_sequence <= receipt.knowledge_boundary.receipt_sequence)
     const incomplete = operation.execution.length > 0 && !hasExactReceiptBasis
@@ -75,7 +78,7 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
   const selected = (incomplete.length === 1 ? incomplete[0] : summaries.sort((left, right) => right.latestSequence - left.latestSequence)[0]) ?? null
   const stage = selected?.lastExecution?.record_kind_code ?? (subjectRecords.some((item) => item.namespaceCode === 'access') ? 'access_shutdown' : 'none')
   if (incomplete.length > 1) ledgerStateCode = 'recovery_required'
-  return Object.freeze({
+  const result = Object.freeze({
     subject_identity_sha256: subjectIdentitySha256,
     ledger_state_code: ledgerStateCode,
     protected_inventory_digest_sha256: inventory.digest,
@@ -85,9 +88,20 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     physical_namespace_state_code: selected?.lastExecution?.record_kind_code === 'primary_absence_verified' ? 'primary_absence_observed' : selected?.lastExecution ? 'unknown_requires_independent_reconciliation' : 'not_observed',
     classification_only: true,
   })
+  reconstructionStates.add(result)
+  return result
 }
 
-export function classifyD941Recovery({ authorityContext, record, crashBoundaryCode, snapshot, inventoryStateCode, accessStateCode, controlStateCode }) {
+export function classifyD941Recovery({ authorityContext, record, reconstruction, crashBoundaryCode, snapshot, inventoryStateCode, accessStateCode, controlStateCode }) {
+  if (!reconstruction || !reconstructionStates.has(reconstruction) || reconstruction.subject_identity_sha256 !== record.subject.subject_identity_sha256) {
+    failD941('D941_RECOVERY_RECONSTRUCTION_UNTRUSTED', 'classification requires the fixed protected-state reconstruction')
+  }
+  if (reconstruction.ledger_state_code !== 'linear_complete' && controlStateCode === 'linear_complete') {
+    failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims linear completion despite protected recovery-required facts')
+  }
+  if (reconstruction.physical_namespace_state_code === 'unknown_requires_independent_reconciliation' && inventoryStateCode === 'complete') {
+    failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims complete inventory despite unknown physical namespace state')
+  }
   if (record.semantic_actor?.role_code !== 'independent_verifier' || record.semantic_actor?.actor_kind_code !== 'service' ||
     record.persistence_actor?.role_code !== 'journal_broker' || record.persistence_actor?.actor_kind_code !== 'service' ||
     record.semantic_actor.identity_binding.binding_code === record.persistence_actor.identity_binding.binding_code) {

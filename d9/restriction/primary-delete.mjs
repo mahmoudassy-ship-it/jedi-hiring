@@ -11,6 +11,7 @@ const source = fileURLToPath(new URL('./native/d9_primary_delete.c', import.meta
 const runtimes = new WeakSet()
 const effectProofs = new WeakSet()
 const syncProofs = new WeakSet()
+const consumedProofs = new WeakSet()
 
 function protectedTempRoot(rootPath) {
   const resolved = path.resolve(rootPath)
@@ -66,6 +67,7 @@ export function compileD941PrimaryDeleteRuntime() {
     return bytes
   }
   let pinnedRoot = null
+  const runtimeToken = Object.freeze({})
   const ownedRoots = new Map()
   function createSyntheticRoot() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jedi-d941-cas-'))
@@ -111,16 +113,16 @@ export function compileD941PrimaryDeleteRuntime() {
       const output = execute('unlink', rootPath, artifact, inventory, operationNonce)
       if (!output.removed || output.directory_synced || !output.reopened_absent || output.target_device !== inventory.targetDevice || output.target_inode !== inventory.targetInode) failD941('D941_UNLINK_RESULT_INVALID', 'native unlink result differs from the safety inventory')
       const result = Object.freeze(output)
-      const proof = Object.freeze({ effect_kind_code: 'primary_name_unlinked_pending_sync', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, target_device: result.target_device, target_inode: result.target_inode, inventory_digest_sha256: canonicalSha256(recordInventory), result_digest_sha256: canonicalSha256(result) })
+      const proof = Object.freeze({ runtimeToken, effect_kind_code: 'primary_name_unlinked_pending_sync', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, target_device: result.target_device, target_inode: result.target_inode, inventory_digest_sha256: canonicalSha256(recordInventory), result_digest_sha256: canonicalSha256(result) })
       effectProofs.add(proof)
       return Object.freeze({ ...result, effectProof: proof })
     },
-    syncParent({ rootPath, artifact, inventory, operationNonce }) {
+    syncParent({ rootPath, artifact, inventory, recordInventory = inventory, recordDigestSha256 = null, operationNonce }) {
       rootPath = rootFor(rootPath)
       const output = execute('sync-parent', rootPath, artifact, inventory, operationNonce)
       if (!output.directory_synced || !output.reopened_absent || output.parent_device !== inventory.parentDevice || output.parent_inode !== inventory.parentInode) failD941('D941_DIRECTORY_SYNC_FAILED', 'parent synchronization differs from the pinned inventory')
       const result = Object.freeze(output)
-      const syncProof = Object.freeze({ parent_device: result.parent_device, parent_inode: result.parent_inode, reopened_absent: result.reopened_absent, result_digest_sha256: canonicalSha256(result) })
+      const syncProof = Object.freeze({ runtimeToken, operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, inventory_digest_sha256: canonicalSha256(recordInventory), parent_device: result.parent_device, parent_inode: result.parent_inode, reopened_absent: result.reopened_absent, result_digest_sha256: canonicalSha256(result) })
       syncProofs.add(syncProof)
       return Object.freeze({ ...result, syncProof })
     },
@@ -129,16 +131,20 @@ export function compileD941PrimaryDeleteRuntime() {
       const output = execute('verify-absent', rootPath, artifact, inventory, operationNonce)
       if (!output.absent || output.parent_device !== inventory.parentDevice || output.parent_inode !== inventory.parentInode) failD941('D941_ABSENCE_UNVERIFIED', 'parent identity changed or target remains')
       const result = Object.freeze(output)
-      const proof = Object.freeze({ effect_kind_code: 'primary_absence_observed', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, parent_device: result.parent_device, parent_inode: result.parent_inode, inventory_digest_sha256: canonicalSha256(recordInventory), result_digest_sha256: canonicalSha256(result) })
+      const proof = Object.freeze({ runtimeToken, effect_kind_code: 'primary_absence_observed', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, parent_device: result.parent_device, parent_inode: result.parent_inode, inventory_digest_sha256: canonicalSha256(recordInventory), result_digest_sha256: canonicalSha256(result) })
       effectProofs.add(proof)
       return Object.freeze({ ...result, effectProof: proof })
     },
     finalizeUnlinkEffect({ unlinkResult, syncResult, recordInventory, recordDigestSha256, operationNonce }) {
-      if (!unlinkResult?.effectProof || !effectProofs.has(unlinkResult.effectProof) || !syncResult?.syncProof || !syncProofs.has(syncResult.syncProof) ||
-          unlinkResult.effectProof.effect_kind_code !== 'primary_name_unlinked_pending_sync' || syncResult.syncProof.reopened_absent !== true) {
+      const unlinkProof = unlinkResult?.effectProof; const syncProof = syncResult?.syncProof
+      if (!unlinkProof || !effectProofs.has(unlinkProof) || consumedProofs.has(unlinkProof) || !syncProof || !syncProofs.has(syncProof) || consumedProofs.has(syncProof) ||
+          unlinkProof.runtimeToken !== runtimeToken || syncProof.runtimeToken !== runtimeToken || unlinkProof.effect_kind_code !== 'primary_name_unlinked_pending_sync' || syncProof.reopened_absent !== true ||
+          unlinkProof.operation_nonce !== operationNonce || unlinkProof.record_digest_sha256 !== recordDigestSha256 || unlinkProof.inventory_digest_sha256 !== canonicalSha256(recordInventory) ||
+          syncProof.operation_nonce !== operationNonce || syncProof.record_digest_sha256 !== recordDigestSha256 || syncProof.inventory_digest_sha256 !== canonicalSha256(recordInventory)) {
         failD941('D941_DELETE_EFFECT_UNPROVEN', 'unlink effect was not followed by the fixed parent synchronization boundary')
       }
-      const proof = Object.freeze({ effect_kind_code: 'primary_name_unlinked_and_synced', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, inventory_digest_sha256: canonicalSha256(recordInventory), target_device: unlinkResult.effectProof.target_device, target_inode: unlinkResult.effectProof.target_inode, parent_device: syncResult.syncProof.parent_device, parent_inode: syncResult.syncProof.parent_inode, reopened_absent: true, unlink_result_digest_sha256: unlinkResult.effectProof.result_digest_sha256, sync_result_digest_sha256: syncResult.syncProof.result_digest_sha256 })
+      consumedProofs.add(unlinkProof); consumedProofs.add(syncProof)
+      const proof = Object.freeze({ runtimeToken, effect_kind_code: 'primary_name_unlinked_and_synced', operation_nonce: operationNonce, record_digest_sha256: recordDigestSha256, inventory_digest_sha256: canonicalSha256(recordInventory), target_device: unlinkProof.target_device, target_inode: unlinkProof.target_inode, parent_device: syncProof.parent_device, parent_inode: syncProof.parent_inode, reopened_absent: true, unlink_result_digest_sha256: unlinkProof.result_digest_sha256, sync_result_digest_sha256: syncProof.result_digest_sha256 })
       effectProofs.add(proof)
       return proof
     },
