@@ -1,0 +1,68 @@
+# D9.4.1 synthetic restriction and primary-name deletion runtime
+
+Status: **implementation candidate awaiting separate approval**. This branch implements only the synthetic, unactivated D9.4.1 vertical slice against generated identities, generated records, disposable protected stores, and newly created temporary CAS directories. It does not activate the D9.4.0 `design_only_unactivated` profile or authorize operational restriction, deletion, evidence handling, legal verification, publication, API, frontend, or production use.
+
+## Frozen-boundary audit
+
+The implementation loads D9.0.1, D9.3.0, and D9.4.0 through their production verification paths and pins the approved D9.4.0 fingerprints. No frozen contract or migration changes are required. D9.4.1 adds runtime modules and tests only. Its administrative descriptor partitions use new `d941_*` slot codes and are disjoint from all seven frozen importer partitions. The implementation does not reinterpret a D9.0.1 role: each D9.4 actor resolves through the exact verified generation, approved roster, and one-binding roster-adopter extension before a synthetic authority context may be selected.
+
+The selection event is deliberately named `synthetic_unactivated_test_runtime_only`. It is protected and revocable, but is not an operational activation. The extension can adopt a roster only; it cannot submit controls, approve deletion, execute deletion, persist a record, or act as a service.
+
+## Runtime components
+
+| Module | Closed responsibility |
+|---|---|
+| `contracts.mjs` | Pin and load frozen contracts; validate exact D9.0.1 generation, D9.4 extension, roster, adoption, schemas, hashes, role cardinalities and separation. |
+| `authority.mjs` | Protect immutable authority records and a gapless selection/revocation history; resolve a role only from verified kernel/build/endpoint facts. |
+| `admin-launcher.mjs` | Deliver only one exact D9.4.1 administrative partition through the existing Linux peer-credential, executable, endpoint, SCM_RIGHTS and receiver-termination boundary. |
+| `session.mjs` and `semantics.mjs` | Brand authenticated sessions and enforce the complete frozen control, access, execution, receipt, backup, recovery, approval-scope, chronology, and separation matrices at runtime. |
+| `ledger.mjs` | Persist control, access, execution, bounded-receipt, backup and recovery facts in separate append-only namespaces and link them through one gapless D9.4 global receipt chain. |
+| `projection.mjs` | Derive historical, receipt-sequence- and time-bounded subject state; unknown, missing, forked, stale or contradictory history fails closed. |
+| `access-control.mjs` and `operations.mjs` | Own the complete synthetic capability/receiver inventory, actually revoke the capability and terminate/reap the disposable receiver, and coordinate the fixed primary-name deletion sequence. |
+| `custody-evidence.mjs` | Validate an exact synthetic D9.3 operational profile and primary receipt and derive the pinned lineage/custody commitments; caller-supplied placeholder hashes are rejected. |
+| `primary-delete.mjs` plus native helper | Inspect and unlink only one exact content-addressed name below a newly created `jedi-d941-*` temporary root; verify inode, link count, bytes, directory identity, no-follow traversal, parent sync, and absence. |
+| `recovery.mjs` | Emit only a closed recovery classification. It has no retry, cleanup, restore, correction, or recovery-execution capability. |
+
+Attribution in a submitted record is never authentication. The launcher produces opaque authenticated sessions after kernel peer-credential and build checks, using a trusted launcher clock (the synthetic fixture injects a deterministic clock and a five-second test skew window; production defaults to no caller-directed future skew). Caller timestamps cannot predate or materially exceed that clock; authority persistence events are bounded by their trusted authority clock, and persistence/approval timestamps cannot predate their authenticated sessions. The broker compares the complete embedded actor to that session, re-evaluates the current authority generation and roster, validates distinct human approvals, and rejects caller-supplied grant substitutions. The semantic actor and persistence actor are distinct inputs. The journal broker cannot become a semantic authority.
+
+## Protected history and concurrency
+
+The protected store has the exact namespaces `authority`, `authority-events`, `control`, `access`, `execution`, `receipt`, `backup`, `recovery`, and `ledger`. Each file is immutable, no-replace, private, single-linked and durably published by the existing protected namespace-store primitive. Authentication nonce claims are also protected, so reconstructing the launcher cannot make a used nonce available again. The global receipt chain is strictly gapless, hash linked, monotonically persisted, and resolves every receipt to one exact target digest and subject. Operation/nonce claims are reconstructed from those persisted targets at each append. A target without its receipt is `recovery_required`; the runtime never guesses that an interrupted append completed. Exact response-loss replay is a no-op, while code/content, nonce/subject, predecessor, sequence, actor, approval, or timestamp drift fails closed.
+
+All broker writes and the destructive coordinator use the broker-owned kernel operation lock; callers cannot supply a second lock identity. Authority revocation participates in that same verified native lock rather than relying on a registry-local flag, so a second registry/process cannot append a revocation concurrently with the protected effect. Deletion first persists its start and bounded synthetic inventory, then holds that lock across full semantic preflight, current authority/session revalidation, the final D9.4 head/projection, resolved D9.3 profile/receipt/lineage/custody commitments, no-follow namespace observation, last authorization check, `unlinkat`, and parent synchronization. The broker rechecks the authority head after every locked effect before persisting its receipt; an authority change is therefore classified and cannot produce a successful receipt. The synthetic test path exercises revocation immediately before the effect. A production service-manager integration and external audit remain activation prerequisites and are not claimed here. The destructive event must fall at or after the pinned ledger head and no more than 1,000 milliseconds later. Unlink and directory synchronization are separate native boundaries so the post-unlink/pre-sync crash state is observable and has no success receipt. Later execution, separate fixed-function absence verification, and bounded receipt facts are appended separately. Recovery remains classification-only.
+
+Historical projection uses both `known_at` and `known_through_receipt_sequence`. Later restrictions, releases, revocations, corrections, tombstones or execution facts do not rewrite a prior bounded view. A tombstone withholds access but does not claim byte deletion.
+
+## Synthetic deletion guarantee
+
+The native helper accepts only `objects/sha256/<prefix>/<sha256>` derived from the declared retrieved-body artifact. The JavaScript boundary additionally requires a fresh, owned, mode-0700 directory directly under the system temporary directory with a `jedi-d941-` prefix. The root and helper executable are opened once, hash/identity pinned, passed as descriptors, and rechecked for every effect; replacing their configured names cannot redirect an operation. Directory components and the target are opened no-follow; the target must be a private regular file with exactly one link and the exact inode/device/length/hash and parent identity. The separate synthetic access registry proves its complete issued-capability/receiver set is revoked and terminated before deletion. The helper uses descriptor-relative `fstatat`, `unlinkat`, parent-directory `fsync`, and a separate child-process reopen/absence check.
+
+Successful output is only a bounded `primary_copy_absence_verified` receipt. It always states:
+
+- `complete_erasure_claimed=false`;
+- `backup_erasure_claimed=false`;
+- `legal_compliance_claimed=false`;
+- backup, derived, open-descriptor, replica, temporary and unknown copy classes remain outside the proof.
+
+No repository file, existing custody store, user path, canonical Atlas database, or real evidence can pass this synthetic root boundary. D9.5 backup deletion, restore, deletion-aware reconstruction and complete-erasure treatment remain unreachable.
+
+## Failure and test coverage
+
+Focused tests cover frozen generation/roster/extension substitution, authenticated selection/revocation and stale-session rejection; peer UID/build/endpoint/grant and restart-safe nonce replay; scope isolation; exact approval scope/digest/chronology and distinct-human gates; the exercised runtime actor and transition paths; global chain gaps, forks, backdating, restart replay and collisions; target-without-receipt recovery state; historical projections; live capability revocation and receiver termination/reaping; exact D9.3 profile/receipt linkage; exact CAS references; symlinks, hard links, configured-root replacement, unexpected names and external roots; broker-owned lock contention and stale/future snapshots; the post-unlink/pre-sync crash; bounded receipts; every approved recovery classification; fail-closed contradictory/incomplete recovery state; and D9.5 unreachability. The frozen D9.4.0 validator remains the exhaustive matrix check; runtime coverage is intentionally limited to the synthetic control/deletion paths listed here and does not claim operational execution of every future state variant.
+
+The approved D9.4.0 validator remains the exhaustive machine check for every closed contract matrix. D9.4.1 tests exercise the implemented control and destructive boundaries without changing that frozen validator.
+
+## Deliberate limitations and later gates
+
+- No operational credentials, service manager, external rollback-resistant ledger, alerting integration or production identity activation exists.
+- The tests use generated D9.0.1 bindings and native synthetic peers. They do not authorize any real principal.
+- Administrative descriptor grants remain a synthetic D9.1 peer-exchange test double: they validate exact slot metadata and receiver lifecycle, not a production service-manager resource sandbox.
+- The separate absence observer is a fixed-function child process reached only after the verifier session's authenticated launcher IPC exchange and coordinated by the synthetic runtime; the synthetic process is not a production service-manager boundary, so production-grade service isolation and external audit remain activation prerequisites.
+- Inventory completeness is bounded to the disposable CAS namespace and the runtime-owned synthetic access registry. It is not a claim about a host-wide descriptor table, hidden replica, or backup inventory.
+- No real bootstrap, evidence, custody object, Atlas row or legal record is read or written.
+- Recovery is classification-only; a human-authorized recovery executor is absent.
+- Whole-directory rollback, compromised root/kernel, storage-media remanence, hidden copies and unavailable inventories remain outside the proof and fail closed.
+- D9.5 must separately define backup/restore and deletion-aware reconstruction.
+- API, frontend, search, export and publication paths remain unchanged.
+
+Approval of this implementation candidate, if later granted, must remain limited to this synthetic, unactivated boundary.
