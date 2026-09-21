@@ -14,6 +14,7 @@ const defaults = Object.freeze({
   after_receipt_before_journal_link: 'reconciliation_required',
 })
 const reconstructionStates = new WeakSet()
+const reconstructionMetadata = new WeakMap()
 
 // Reconstructs only the durable facts needed to classify an interrupted
 // operation. It never retries, repairs, restores, or writes a recovery record.
@@ -89,12 +90,18 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     classification_only: true,
   })
   reconstructionStates.add(result)
+  reconstructionMetadata.set(result, Object.freeze({ broker, inventoryDigest: inventory.digest, head: broker.head() }))
   return result
 }
 
-export function classifyD941Recovery({ authorityContext, record, reconstruction, crashBoundaryCode, snapshot, inventoryStateCode, accessStateCode, controlStateCode }) {
+export function classifyD941Recovery({ authorityContext, broker, record, reconstruction, crashBoundaryCode, snapshot, inventoryStateCode, accessStateCode, controlStateCode }) {
   if (!reconstruction || !reconstructionStates.has(reconstruction) || reconstruction.subject_identity_sha256 !== record.subject.subject_identity_sha256) {
     failD941('D941_RECOVERY_RECONSTRUCTION_UNTRUSTED', 'classification requires the fixed protected-state reconstruction')
+  }
+  const metadata = reconstructionMetadata.get(reconstruction)
+  const currentHead = broker?.head?.()
+  if (!metadata || metadata.broker !== broker || !currentHead || currentHead.sequence !== metadata.head.sequence || currentHead.digest !== metadata.head.digest || reconstruction.protected_inventory_digest_sha256 !== metadata.inventoryDigest) {
+    failD941('D941_RECOVERY_RECONSTRUCTION_STALE', 'classification reconstruction is stale or belongs to another protected store')
   }
   if (reconstruction.ledger_state_code !== 'linear_complete' && controlStateCode === 'linear_complete') {
     failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims linear completion despite protected recovery-required facts')
