@@ -84,6 +84,8 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     subject_identity_sha256: subjectIdentitySha256,
     ledger_state_code: ledgerStateCode,
     protected_inventory_digest_sha256: inventory.digest,
+    protected_head_sequence: broker.head().sequence,
+    protected_head_digest_sha256: broker.head().digest,
     receipt_count: receipts.length,
     unreceipted_target: unreceiptedTarget,
     operation_stage_code: stage,
@@ -115,8 +117,12 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
   if (snapshot?.inventory_snapshot_sha256 !== reconstruction.protected_inventory_digest_sha256) {
     failD941('D941_RECOVERY_SNAPSHOT_MISMATCH', 'classification snapshot is not the exact protected inventory projection that was reconstructed')
   }
+  if (reconstruction.protected_head_sequence > 0 && (snapshot?.known_through_receipt_sequence !== reconstruction.protected_head_sequence ||
+      snapshot?.control_ledger_head_receipt_digest_sha256 !== reconstruction.protected_head_digest_sha256)) {
+    failD941('D941_RECOVERY_SNAPSHOT_MISMATCH', 'classification snapshot does not match the reconstructed ledger head')
+  }
   const earlyBoundaries = new Set(['before_restriction_persisted', 'after_restriction_before_capability_revocation', 'after_revocation_before_descriptor_termination', 'after_tombstone_before_unlink'])
-  if (earlyBoundaries.has(crashBoundaryCode) && ['inventory_observed', 'unlink_attempted', 'primary_absence_verified'].includes(reconstruction.operation_stage_code)) {
+  if (earlyBoundaries.has(crashBoundaryCode) && ['access_shutdown', 'inventory_observed', 'unlink_attempted', 'primary_absence_verified'].includes(reconstruction.operation_stage_code)) {
     failD941('D941_RECOVERY_BOUNDARY_CONTRADICTORY', 'caller crash boundary predates the protected operation stage')
   }
   if (record.semantic_actor?.role_code !== 'independent_verifier' || record.semantic_actor?.actor_kind_code !== 'service' ||

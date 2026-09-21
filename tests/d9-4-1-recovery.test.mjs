@@ -34,7 +34,8 @@ function baseRecord(subject, semanticActor, persistenceActor) {
 }
 
 function snapshot(fixture) {
-  return { journal_namespace_code: 'd940.global.control-journal.v1', known_through_receipt_sequence: 1, known_through_persisted_at: '2030-01-01T00:10:03.000Z', control_ledger_head_receipt_digest_sha256: '1'.repeat(64), control_head_projection_sha256: '2'.repeat(64), access_head_projection_sha256: '3'.repeat(64), subject_lineage_projection_sha256: '4'.repeat(64), inventory_snapshot_sha256: fixture.store.inventory().digest, custody_leaf_projection_sha256: '6'.repeat(64) }
+  const head = fixture.broker.head()
+  return { journal_namespace_code: 'd940.global.control-journal.v1', known_through_receipt_sequence: Math.max(1, head.sequence), known_through_persisted_at: head.persistedAt ?? '2030-01-01T00:10:03.000Z', control_ledger_head_receipt_digest_sha256: head.digest ?? '0'.repeat(64), control_head_projection_sha256: '2'.repeat(64), access_head_projection_sha256: '3'.repeat(64), subject_lineage_projection_sha256: '4'.repeat(64), inventory_snapshot_sha256: fixture.store.inventory().digest, custody_leaf_projection_sha256: '6'.repeat(64) }
 }
 
 function reconstructionFor(fixture, subject) {
