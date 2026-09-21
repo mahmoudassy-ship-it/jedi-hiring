@@ -33,8 +33,8 @@ function baseRecord(subject, semanticActor, persistenceActor) {
   }
 }
 
-function snapshot() {
-  return { journal_namespace_code: 'd940.global.control-journal.v1', known_through_receipt_sequence: 1, known_through_persisted_at: '2030-01-01T00:10:03.000Z', control_ledger_head_receipt_digest_sha256: '1'.repeat(64), control_head_projection_sha256: '2'.repeat(64), access_head_projection_sha256: '3'.repeat(64), subject_lineage_projection_sha256: '4'.repeat(64), inventory_snapshot_sha256: '5'.repeat(64), custody_leaf_projection_sha256: '6'.repeat(64) }
+function snapshot(fixture) {
+  return { journal_namespace_code: 'd940.global.control-journal.v1', known_through_receipt_sequence: 1, known_through_persisted_at: '2030-01-01T00:10:03.000Z', control_ledger_head_receipt_digest_sha256: '1'.repeat(64), control_head_projection_sha256: '2'.repeat(64), access_head_projection_sha256: '3'.repeat(64), subject_lineage_projection_sha256: '4'.repeat(64), inventory_snapshot_sha256: fixture.store.inventory().digest, custody_leaf_projection_sha256: '6'.repeat(64) }
 }
 
 function reconstructionFor(fixture, subject) {
@@ -47,7 +47,7 @@ for (const [boundary, classification] of Object.entries(expected)) {
     const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
     const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
     const subject = subjectFor().subject
-    const record = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: baseRecord(subject, verifier.actor, journal.actor), reconstruction: reconstructionFor(fixture, subject), crashBoundaryCode: boundary, snapshot: snapshot(), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+    const record = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: baseRecord(subject, verifier.actor, journal.actor), reconstruction: reconstructionFor(fixture, subject), crashBoundaryCode: boundary, snapshot: snapshot(fixture), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
     assert.equal(record.classification_code, classification)
     assert.equal(record.action_execution_code, 'none_classification_only')
     assert.equal(record.recovery_authority_present, false)
@@ -58,14 +58,14 @@ test('unknown, contradictory, incomplete, and forked state overrides optimistic 
   const fixture = await createD941Fixture(t); const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const record = baseRecord(subjectFor().subject, verifier.actor, journal.actor)
   const subject = record.subject
   const reconstruction = reconstructionFor(fixture, subject)
-  const fork = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'fork' })
+  const fork = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(fixture), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'fork' })
   assert.equal(fork.classification_code, 'human_decision_required')
-  const unknown = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: { ...record, record_code: 'recovery.synthetic.002' }, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(), inventoryStateCode: 'unavailable', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  const unknown = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: { ...record, record_code: 'recovery.synthetic.002' }, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(fixture), inventoryStateCode: 'unavailable', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
   assert.equal(unknown.classification_code, 'reconciliation_required')
 })
 
 test('D9.5 execution and complete-erasure outcomes remain structurally unreachable', async (t) => {
   const fixture = await createD941Fixture(t); const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
   const subject = subjectFor().subject
-  assert.throws(() => classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: baseRecord(subject, verifier.actor, journal.actor), reconstruction: reconstructionFor(fixture, subject), crashBoundaryCode: 'd9_5_restore', snapshot: snapshot(), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' }), /D941_RECOVERY_BOUNDARY_UNKNOWN/)
+  assert.throws(() => classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: baseRecord(subject, verifier.actor, journal.actor), reconstruction: reconstructionFor(fixture, subject), crashBoundaryCode: 'd9_5_restore', snapshot: snapshot(fixture), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' }), /D941_RECOVERY_BOUNDARY_UNKNOWN/)
 })

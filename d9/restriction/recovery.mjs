@@ -109,6 +109,9 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
   if (reconstruction.physical_namespace_state_code === 'unknown_requires_independent_reconciliation' && inventoryStateCode === 'complete') {
     failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims complete inventory despite unknown physical namespace state')
   }
+  if (snapshot?.inventory_snapshot_sha256 !== reconstruction.protected_inventory_digest_sha256) {
+    failD941('D941_RECOVERY_SNAPSHOT_MISMATCH', 'classification snapshot is not the exact protected inventory projection that was reconstructed')
+  }
   if (record.semantic_actor?.role_code !== 'independent_verifier' || record.semantic_actor?.actor_kind_code !== 'service' ||
     record.persistence_actor?.role_code !== 'journal_broker' || record.persistence_actor?.actor_kind_code !== 'service' ||
     record.semantic_actor.identity_binding.binding_code === record.persistence_actor.identity_binding.binding_code) {
