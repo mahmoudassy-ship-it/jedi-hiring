@@ -1,7 +1,7 @@
 import { canonicalSha256, canonicalize } from '../control-plane/canonical.mjs'
 import { assertD941AccessEffectProof } from './access-control.mjs'
 import { assertD941PrimaryEffectProof } from './primary-delete.mjs'
-import { assertD941RecoveryClassificationProof } from './recovery-proof.mjs'
+import { assertD941RecoveryClassificationProof } from './recovery.mjs'
 import { failD941 } from './errors.mjs'
 
 function actorEquals(left, right) {
