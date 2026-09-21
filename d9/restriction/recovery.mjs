@@ -62,7 +62,12 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     operation.receipts.sort((left, right) => left.knowledge_boundary.receipt_sequence - right.knowledge_boundary.receipt_sequence)
     const lastExecution = operation.execution.at(-1) ?? null
     const receipt = operation.receipts.at(-1) ?? null
-    const incomplete = operation.execution.length > 0 && receipt === null
+    const executionDigest = receipt?.execution_record_digest_sha256 ?? null
+    const verificationDigest = receipt?.verification_record_digest_sha256 ?? null
+    const hasExactReceiptBasis = receipt !== null && operation.execution.some((item) => item.record_digest_sha256 === executionDigest) &&
+      operation.execution.some((item) => item.record_digest_sha256 === verificationDigest) &&
+      operation.execution.every((item) => item.knowledge_boundary.receipt_sequence <= receipt.knowledge_boundary.receipt_sequence)
+    const incomplete = operation.execution.length > 0 && !hasExactReceiptBasis
     return { operation, lastExecution, receipt, incomplete, latestSequence: Math.max(...operation.records.map((item) => item.record.knowledge_boundary?.receipt_sequence ?? 0)) }
   })
   const incomplete = summaries.filter((summary) => summary.incomplete)

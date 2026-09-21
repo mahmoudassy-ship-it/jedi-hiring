@@ -102,6 +102,10 @@ test('direct broker appends cannot forge native deletion or absence facts', asyn
   head = context.fixture.broker.head(); projection = projectD941Subject({ broker: context.fixture.broker, subjectIdentitySha256: context.subjectData.subject.subject_identity_sha256, effectiveAsOf: '2030-01-01T00:10:08.500Z', knownAt: '2030-01-01T00:30:00.000Z', knownThroughSequence: head.sequence })
   const unlink = plan.records[2]({ head, projection, observed })
   await assert.rejects(context.fixture.broker.append({ record: unlink, semanticSession: context.executor, persistenceSession: context.journal }), /D941_DELETE_EFFECT_UNPROVEN/)
+  await assert.rejects(context.fixture.broker.withDestructiveLock(async (lock) => lock.effectThenAppend({ record: unlink, semanticSession: context.executor, persistenceSession: context.journal }, async () => {
+    const raw = context.fixture.deleteRuntime.unlinkPrimary({ rootPath: context.fixture.roots.cas, artifact: context.subjectData.artifact, backendReference: context.subjectData.backendReference, inventory: observed, recordInventory: unlink.inventory, recordDigestSha256: unlink.record_digest_sha256, operationNonce: unlink.operation_nonce })
+    return { runtimeProof: raw.effectProof, applied: true }
+  })), /D941_DELETE_EFFECT_UNPROVEN/)
 })
 
 test('hard links, symlinks, unexpected names and paths outside a synthetic root fail closed', async (t) => {
