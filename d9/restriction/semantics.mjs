@@ -144,7 +144,7 @@ function assertExecutionMatrix({ classifications, record, existingRecords, runti
   if (record.record_kind_code === 'primary_absence_verified' && (!record.execution.target_name_removed || !record.execution.directory_synced || !record.execution.reopened_target_absent || record.inventory.matching_primary_names !== 0)) failD941('D941_PRIMARY_ABSENCE_NOT_VERIFIED', 'absence result is incomplete')
 }
 
-export function assertD941RuntimeSemantics({ contractSet, operationalProfile, record, semanticSession, persistenceSession, approvalSessions, existingRecords, runtimeProof = null, allowPendingEffect = false }) {
+export function assertD941RuntimeSemantics({ contractSet, operationalProfile, record, semanticSession, persistenceSession, approvalSessions, existingRecords, broker = null, runtimeProof = null, allowPendingEffect = false }) {
   if (!actorEquals(record.persistence_actor, persistenceSession.actor) || persistenceSession.actor.role_code !== 'journal_broker') failD941('D941_PERSISTENCE_ACTOR_INVALID', 'persistence actor must be the authenticated journal broker')
   const classifications = contractSet.classifications
   if (record.format === 'jedi-atlas-custody-control-record') {
@@ -220,7 +220,7 @@ export function assertD941RuntimeSemantics({ contractSet, operationalProfile, re
     else if (['incomplete', 'unavailable'].includes(record.inventory_state_code)) derived = 'reconciliation_required'
     else derived = classifications.recovery_boundary_defaults.find((entry) => entry.crash_boundary_code === record.crash_boundary_code)?.classification_code
     if (!actorEquals(record.semantic_actor, semanticSession.actor) || record.semantic_actor.role_code !== 'independent_verifier' || record.semantic_actor.actor_kind_code !== 'service' || record.action_execution_code !== 'none_classification_only' || record.recovery_authority_present !== false || record.snapshot_digest_sha256 !== canonicalSha256(record.snapshot) || record.classification_code !== derived) failD941('D941_RECOVERY_ACTOR_REJECTED', 'recovery actor, snapshot, or deterministic classification is invalid')
-    assertD941RecoveryClassificationProof(runtimeProof, record)
+    assertD941RecoveryClassificationProof(runtimeProof, record, broker)
     return
   }
   failD941('D941_LEDGER_TARGET_UNSUPPORTED', 'record format has no runtime semantic verifier')

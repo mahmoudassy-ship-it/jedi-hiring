@@ -2,7 +2,7 @@ import { canonicalSha256 } from '../control-plane/canonical.mjs'
 import { sealD940Record, validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
 import { assertD941LedgerBroker } from './ledger.mjs'
-import { issueD941RecoveryClassificationProof } from './recovery-proof.mjs'
+import { issueD941RecoveryClassificationProof, registerD941Reconstruction } from './recovery-proof.mjs'
 
 const defaults = Object.freeze({
   before_restriction_persisted: 'safe_no_effect',
@@ -91,6 +91,7 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     classification_only: true,
   })
   reconstructionStates.add(result)
+  registerD941Reconstruction(result)
   reconstructionMetadata.set(result, Object.freeze({ broker, inventoryDigest: inventory.digest, head: broker.head() }))
   return result
 }
@@ -113,6 +114,10 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
   }
   if (snapshot?.inventory_snapshot_sha256 !== reconstruction.protected_inventory_digest_sha256) {
     failD941('D941_RECOVERY_SNAPSHOT_MISMATCH', 'classification snapshot is not the exact protected inventory projection that was reconstructed')
+  }
+  const earlyBoundaries = new Set(['before_restriction_persisted', 'after_restriction_before_capability_revocation', 'after_revocation_before_descriptor_termination', 'after_tombstone_before_unlink'])
+  if (earlyBoundaries.has(crashBoundaryCode) && ['inventory_observed', 'unlink_attempted', 'primary_absence_verified'].includes(reconstruction.operation_stage_code)) {
+    failD941('D941_RECOVERY_BOUNDARY_CONTRADICTORY', 'caller crash boundary predates the protected operation stage')
   }
   if (record.semantic_actor?.role_code !== 'independent_verifier' || record.semantic_actor?.actor_kind_code !== 'service' ||
     record.persistence_actor?.role_code !== 'journal_broker' || record.persistence_actor?.actor_kind_code !== 'service' ||

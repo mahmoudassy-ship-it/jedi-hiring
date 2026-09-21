@@ -123,7 +123,7 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
     if (priorClaim && priorClaim !== record.subject.subject_identity_sha256) failD941('D941_OPERATION_NONCE_COLLISION', 'operation/nonce was replayed for another subject')
 
     const existingRecords = Object.values(targetNamespaces).flatMap((namespace) => entries(store, namespace))
-    assertD941RuntimeSemantics({ contractSet, operationalProfile: authorityContext.operationalProfile, record, semanticSession, persistenceSession, approvalSessions, existingRecords, runtimeProof, allowPendingEffect })
+    assertD941RuntimeSemantics({ contractSet, operationalProfile: authorityContext.operationalProfile, record, semanticSession, persistenceSession, approvalSessions, existingRecords, broker, runtimeProof, allowPendingEffect })
     if (record.chain) {
       const stream = entries(store, namespaceCode).filter((item) => item.chain?.stream_code === record.chain.stream_code).sort((a, b) => a.chain.sequence - b.chain.sequence)
       const previous = stream.at(-1)
