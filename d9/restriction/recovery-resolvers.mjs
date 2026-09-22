@@ -11,6 +11,21 @@ import { assertD941SyntheticCustodyEvidence } from './custody-evidence.mjs'
 import { assertD941AuthorityRegistry } from './authority.mjs'
 import { validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
+import {
+  D941_IDENTITY_V13_NAMESPACES,
+  assertD941IdentityV13Schema,
+  createD941IdentityV13Checkpoint,
+  createD941IdentityV13Correspondence,
+  d941IdentityV13CollisionKeys,
+  d941IdentityV13CorrespondenceReference,
+  d941IdentityV13PayloadIdentity,
+  d941IdentityV13SourceHead,
+  deriveD941IdentityV13Material,
+  loadD941IdentityV13Contract,
+  sameD941IdentityV13,
+  sealD941IdentityV13Record,
+  validateD941IdentityV13Correspondence,
+} from './recovery-identity-v13.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const contractRoot = path.resolve(here, '../../docs/schema/d9-recovery-resolvers')
@@ -63,7 +78,14 @@ export const D941_RESOLVER_NAMESPACES = Object.freeze([
   'd9.resolver.assessment-links.v1.1',
   'd9.resolver.progression-intents.v1.2',
   'd9.resolver.checkpoint-transitions.v1.2',
+  ...D941_IDENTITY_V13_NAMESPACES,
 ])
+
+function resolverNamespaceVersion(namespaceCode) {
+  if (namespaceCode.endsWith('.v1.3')) return '1.3.0'
+  if (namespaceCode.endsWith('.v1.2')) return '1.2.0'
+  return '1.1.0'
+}
 
 export function createD941SyntheticResolverClock({ authorityRegistry, launcherSession, clock }) {
   assertD941AuthorityRegistry(authorityRegistry)
@@ -90,7 +112,7 @@ function assertResolverAppendEnvelope(envelope, namespaceCode, expectedSequence,
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope) ||
       !same(Object.keys(envelope).sort(), keys.sort()) ||
       envelope.format !== 'jedi-atlas-recovery-resolver-protected-append' ||
-      envelope.format_version !== (namespaceCode.endsWith('.v1.2') ? '1.2.0' : '1.1.0') || envelope.namespace_code !== namespaceCode ||
+      envelope.format_version !== resolverNamespaceVersion(namespaceCode) || envelope.namespace_code !== namespaceCode ||
       envelope.sequence !== expectedSequence ||
       envelope.predecessor_commit_sha256 !== expectedPredecessor ||
       !Array.isArray(envelope.records) || envelope.records.length === 0 ||
@@ -160,7 +182,7 @@ export function createD941ResolverDurabilityStore({ rootPath, expectedUid = proc
     const sequence = current.sequence + 1
     const envelope = {
       format: 'jedi-atlas-recovery-resolver-protected-append',
-      format_version: namespaceCode.endsWith('.v1.2') ? '1.2.0' : '1.1.0',
+      format_version: resolverNamespaceVersion(namespaceCode),
       namespace_code: namespaceCode,
       sequence,
       predecessor_commit_sha256: current.commit_sha256,
@@ -651,6 +673,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   const contract = loadContract()
   const durability = loadDurabilityContract()
   const progression = loadProgressionContract()
+  const identityV13 = loadD941IdentityV13Contract()
   const expectedGeneration = runtimeGeneration(authorityContext)
 
   const producerSessions = Object.freeze({ trusted_launcher: finalizerSession, independent_verifier: verifierSession, journal_broker: persistenceSession })
@@ -682,6 +705,35 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   function assertDurabilityActor(actor, role, at) {
     const expected = authenticatedActorFor(role, at)
     if (!same(actor, expected)) failD941('D941_RESOLVER_DURABILITY_ACTOR_INVALID', `${role} does not match the active verified binding generation`)
+  }
+
+  function assertIdentityActor(actor, role, at) {
+    assertDurabilityActor(actor, role, at)
+  }
+
+  function identitySchemaFile(payload) {
+    return {
+      'jedi-atlas-d940-source-head-receipt-correspondence': 'source-head-receipt-correspondence-v1-3.schema.json',
+      'jedi-atlas-recovery-checkpoint-source-identity': 'checkpoint-identity-v1-3.schema.json',
+      'jedi-atlas-recovery-assessment-append-request': 'assessment-append-request-v1-3.schema.json',
+      'jedi-atlas-recovery-assessment-append-broker-receipt': 'assessment-append-broker-receipt-v1-3.schema.json',
+      'jedi-atlas-recovery-checkpoint-transition': 'checkpoint-transition-v1-3.schema.json',
+      'jedi-atlas-recovery-assessment-source-identity-link': 'recovery-assessment-link-v1-3.schema.json',
+      'jedi-atlas-d940-control-access-projection': 'control-access-projection-v1-3.schema.json',
+    }[payload?.format] ?? null
+  }
+
+  function currentD940IdentityMaterial(sequence = broker.head().sequence) {
+    return deriveD941IdentityV13Material({ broker, authorityContext, sequence })
+  }
+
+  function validateIdentityProtectedReceipt(receipt, namespaceCode, expectedSequence, predecessorDigest, predecessorPersistedAt, payload, sourceCas) {
+    assertD941IdentityV13Schema(identityV13, 'protected-append-receipt-v1-3.schema.json', receipt, 'v1.3 protected append receipt')
+    if (receipt.namespace_code !== namespaceCode || receipt.sequence !== expectedSequence || receipt.predecessor_receipt_record_digest_sha256 !== predecessorDigest ||
+        receipt.payload_format !== payload.format || receipt.payload_record_digest_sha256 !== payload.record_digest_sha256 || receipt.source_head_cas_digest_sha256 !== sourceCas ||
+        receipt.accepted_at > receipt.persisted_at || (predecessorPersistedAt !== null && receipt.persisted_at < predecessorPersistedAt)) failD941('D941_IDENTITY_V13_PROTECTED_RECEIPT_INVALID', 'v1.3 receipt does not bind its exact namespace position, payload, source-head CAS, or monotonic persistence time')
+    assertIdentityActor(receipt.semantic_actor, 'independent_verifier', receipt.accepted_at)
+    assertIdentityActor(receipt.persistence_actor, 'journal_broker', receipt.persisted_at)
   }
 
   function validateReceipt(receipt, namespaceCode, expectedHead, payload, label) {
@@ -822,6 +874,142 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     assertExactSourceHeads(attestation.source_heads, 'd940_composite_snapshot', attestation.completed_at, 'append attestation')
   }
 
+  function validateIdentityState() {
+    const retained = []
+    const collisionKeys = new Set()
+    for (const namespaceCode of D941_IDENTITY_V13_NAMESPACES) {
+      const entries = durabilityStore.entries(namespaceCode)
+      let predecessor = null
+      let predecessorPersistedAt = null
+      for (const [index, entry] of entries.entries()) {
+        if (entry.records.length !== 1) failD941('D941_IDENTITY_V13_BATCH_INVALID', 'v1.3 protected appends contain exactly one payload')
+        const payload = entry.records[0]
+        const schemaFile = identitySchemaFile(payload)
+        if (schemaFile === null) failD941('D941_IDENTITY_V13_PAYLOAD_INVALID', 'v1.3 protected namespace contains an unsupported payload format')
+        assertD941IdentityV13Schema(identityV13, schemaFile, payload, 'retained v1.3 payload')
+        if (!same(payload.runtime_generation ?? expectedGeneration, expectedGeneration)) failD941('D941_IDENTITY_V13_GENERATION_INVALID', 'retained v1.3 payload belongs to another runtime generation')
+        validateIdentityProtectedReceipt(entry.append_receipt, namespaceCode, index + 1, predecessor, predecessorPersistedAt, payload, entry.append_receipt.source_head_cas_digest_sha256)
+        for (const key of d941IdentityV13CollisionKeys(payload)) {
+          if (collisionKeys.has(`${namespaceCode}:${key}`)) failD941('D941_IDENTITY_V13_REPLAY_COLLISION', 'v1.3 protected stable identity is duplicated')
+          collisionKeys.add(`${namespaceCode}:${key}`)
+        }
+        if (payload.format === 'jedi-atlas-d940-source-head-receipt-correspondence') {
+          validateD941IdentityV13Correspondence({ contract: identityV13, broker, authorityContext, value: payload, runtimeGeneration: expectedGeneration, assertActor: assertIdentityActor })
+          if (entry.append_receipt.source_head_cas_digest_sha256 !== payload.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'correspondence append is not bound to its independently derived state head')
+        }
+        predecessor = entry.append_receipt.record_digest_sha256
+        predecessorPersistedAt = entry.append_receipt.persisted_at
+        retained.push({ namespaceCode, payload, receipt: entry.append_receipt })
+      }
+    }
+
+    const correspondenceEntries = retained.filter((item) => item.payload.format === 'jedi-atlas-d940-source-head-receipt-correspondence')
+    const corrections = retained.filter((item) => item.namespaceCode === 'd9.resolver.identity-corrections.v1.3')
+    const byDigest = new Map(correspondenceEntries.map((item) => [item.payload.record_digest_sha256, item.payload]))
+    const resolveReference = (reference) => {
+      const correspondence = byDigest.get(reference.correspondence_record_digest_sha256)
+      if (!correspondence || !same(reference, d941IdentityV13CorrespondenceReference(correspondence))) failD941('D941_IDENTITY_V13_CORRESPONDENCE_REFERENCE_INVALID', 'v1.3 record does not resolve to one exact retained correspondence')
+      return correspondence
+    }
+    const requests = corrections.filter((item) => item.payload.format === 'jedi-atlas-recovery-assessment-append-request')
+    const brokerReceipts = corrections.filter((item) => item.payload.format === 'jedi-atlas-recovery-assessment-append-broker-receipt')
+    const transitions = corrections.filter((item) => item.payload.format === 'jedi-atlas-recovery-checkpoint-transition')
+    const checkpoints = corrections.filter((item) => item.payload.format === 'jedi-atlas-recovery-checkpoint-source-identity')
+    const links = corrections.filter((item) => item.payload.format === 'jedi-atlas-recovery-assessment-source-identity-link')
+    const projections = corrections.filter((item) => item.payload.format === 'jedi-atlas-d940-control-access-projection')
+    if (correspondenceEntries.length === 0 || checkpoints.length === 0) return deepFreeze({ retained, correspondences: correspondenceEntries, requests, brokerReceipts, transitions, checkpoints, links, projections, effectiveCorrespondence: null, effectiveCheckpoint: null })
+    let priorCheckpoint = null
+    for (const [index, item] of checkpoints.entries()) {
+      const checkpoint = item.payload
+      const correspondence = resolveReference(checkpoint.d940_correspondence)
+      if (checkpoint.checkpoint_sequence !== index || checkpoint.anchor_kind_code !== (index === 0 ? 'empty_runtime_genesis' : 'receipt_proven_transition') ||
+          checkpoint.predecessor_checkpoint_identity_record_digest_sha256 !== priorCheckpoint?.payload.record_digest_sha256 && !(index === 0 && checkpoint.predecessor_checkpoint_identity_record_digest_sha256 === null)) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'v1.3 checkpoint chain is gapped or has the wrong predecessor')
+      if (checkpoint.checkpoint_cas_identity_sha256 !== canonicalSha256({ checkpoint_sequence: checkpoint.checkpoint_sequence, predecessor_checkpoint_identity_record_digest_sha256: checkpoint.predecessor_checkpoint_identity_record_digest_sha256, correspondence_record_digest_sha256: correspondence.record_digest_sha256, state_head_digest_sha256: correspondence.state_head.state_head_digest_sha256 })) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'v1.3 checkpoint CAS does not bind the exact state identity')
+      if (item.receipt.source_head_cas_digest_sha256 !== correspondence.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'v1.3 checkpoint protected receipt does not use the independently derived state-head CAS')
+      if (index === 0) {
+        if (checkpoint.predecessor_transition_receipt_record_digest_sha256 !== null) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'genesis checkpoint has an unauthorized predecessor transition')
+      } else {
+        const transitionItem = transitions.find((candidate) => candidate.payload.transition_sequence === index)
+        if (!transitionItem || checkpoint.predecessor_transition_receipt_record_digest_sha256 !== transitionItem.receipt.record_digest_sha256 || transitionItem.payload.post_checkpoint_cas_identity_sha256 !== checkpoint.checkpoint_cas_identity_sha256) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'v1.3 checkpoint does not follow its exact protected transition receipt')
+      }
+      priorCheckpoint = item
+    }
+    for (const requestItem of requests) {
+      const request = requestItem.payload
+      const pre = resolveReference(request.pre_append_correspondence)
+      const checkpoint = checkpoints.find((item) => item.payload.record_digest_sha256 === request.pre_append_checkpoint_identity_record_digest_sha256)?.payload
+      let assessment
+      try { assessment = parseStrictJson(Buffer.from(request.assessment_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'v1.3 request assessment bytes are unreadable', { cause: error.message }) }
+      validateD940Record({ contractSet: authorityContext.contractSet, record: assessment })
+      if (!checkpoint || !same(checkpoint.d940_correspondence, request.pre_append_correspondence) || request.expected_predecessor_receipt_sequence !== pre.journal_tip.receipt_sequence || request.expected_predecessor_receipt_record_digest_sha256 !== pre.journal_tip.receipt_record_digest_sha256 || request.target_receipt_sequence !== pre.journal_tip.receipt_sequence + 1 ||
+          canonicalize(assessment) !== request.assessment_canonical_utf8 || assessment.format !== request.assessment_format || assessment.record_code !== request.assessment_record_code || assessment.record_digest_sha256 !== request.target_assessment_record_digest_sha256 || assessment.operation_id !== request.operation_id || assessment.operation_nonce !== request.operation_nonce || assessment.subject.subject_kind_code !== request.subject.subject_kind_code || assessment.subject.subject_identity_sha256 !== request.subject.subject_identity_sha256 || request.authorized_at >= request.append_revalidate_by) failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'v1.3 request is not grounded in its exact checkpoint, correspondence, receipt position, and assessment subject identity')
+      assertIdentityActor(request.semantic_actor, 'independent_verifier', request.authorized_at)
+      assertIdentityActor(request.broker_recipient, 'journal_broker', request.append_revalidate_by)
+      if (requestItem.receipt.source_head_cas_digest_sha256 !== pre.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'v1.3 request used a receipt digest or stale value as its state CAS')
+    }
+    for (const brokerItem of brokerReceipts) {
+      const value = brokerItem.payload
+      const request = requests.find((item) => item.payload.record_digest_sha256 === value.append_request_record_digest_sha256)?.payload
+      const pre = resolveReference(value.pre_append_correspondence)
+      const post = resolveReference(value.post_append_correspondence)
+      let d940Receipt
+      try { d940Receipt = parseStrictJson(Buffer.from(value.d940_append_receipt_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_IDENTITY_V13_BROKER_RECEIPT_INVALID', 'v1.3 broker evidence is unreadable', { cause: error.message }) }
+      validateD940Record({ contractSet: authorityContext.contractSet, record: d940Receipt })
+      if (!request || value.operation_id !== request.operation_id || value.operation_nonce !== request.operation_nonce || !same(value.subject, request.subject) || !same(value.pre_append_correspondence, request.pre_append_correspondence) || d940Receipt.record_digest_sha256 !== value.d940_append_receipt_record_digest_sha256 || canonicalize(d940Receipt) !== value.d940_append_receipt_canonical_utf8 ||
+          d940Receipt.previous_receipt_record_digest_sha256 !== pre.journal_tip.receipt_record_digest_sha256 || d940Receipt.record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || d940Receipt.receipt_sequence !== request.target_receipt_sequence || d940Receipt.target_format !== request.assessment_format || d940Receipt.target_record_code !== request.assessment_record_code || d940Receipt.target_record_digest_sha256 !== request.target_assessment_record_digest_sha256 || d940Receipt.operation_id !== request.operation_id || d940Receipt.operation_nonce !== request.operation_nonce || d940Receipt.target_subject_identity_sha256 !== request.subject.subject_identity_sha256 || value.assessment_record_digest_sha256 !== request.target_assessment_record_digest_sha256 || value.accepted_at > value.persisted_at) failD941('D941_IDENTITY_V13_BROKER_RECEIPT_INVALID', 'v1.3 broker receipt does not prove the exact authorized journal append')
+      if (brokerItem.receipt.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'v1.3 broker protected receipt does not use the post-state CAS')
+      assertIdentityActor(value.broker_actor, 'journal_broker', value.persisted_at)
+      assertIdentityActor(value.semantic_verifier_actor, 'independent_verifier', value.accepted_at)
+    }
+    for (const transitionItem of transitions) {
+      const value = transitionItem.payload
+      const request = requests.find((item) => item.payload.record_digest_sha256 === value.append_request_record_digest_sha256)?.payload
+      const brokerReceipt = brokerReceipts.find((item) => item.payload.record_digest_sha256 === value.append_broker_receipt_record_digest_sha256)?.payload
+      const checkpoint = checkpoints.find((item) => item.payload.record_digest_sha256 === value.pre_append_checkpoint_identity_record_digest_sha256)?.payload
+      const pre = resolveReference(value.pre_append_correspondence)
+      const post = resolveReference(value.post_append_correspondence)
+      const expectedPostCheckpointCas = canonicalSha256({ checkpoint_sequence: value.post_checkpoint_sequence, predecessor_checkpoint_identity_record_digest_sha256: checkpoint.record_digest_sha256, correspondence_record_digest_sha256: post.record_digest_sha256, state_head_digest_sha256: post.state_head.state_head_digest_sha256 })
+      if (!request || !brokerReceipt || !checkpoint || value.operation_id !== request.operation_id || value.operation_nonce !== request.operation_nonce || !same(value.subject, request.subject) || brokerReceipt.operation_id !== request.operation_id || brokerReceipt.operation_nonce !== request.operation_nonce || !same(brokerReceipt.subject, request.subject) || value.transition_sequence !== checkpoint.checkpoint_sequence + 1 || value.post_checkpoint_sequence !== value.transition_sequence || value.post_checkpoint_cas_identity_sha256 !== expectedPostCheckpointCas || !same(value.pre_append_correspondence, request.pre_append_correspondence) || !same(value.post_append_correspondence, brokerReceipt.post_append_correspondence) || value.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256 || value.journal_tip_receipt_record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || value.source_head_cas_digest_sha256 === value.journal_tip_receipt_record_digest_sha256 || transitionItem.receipt.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_TRANSITION_INVALID', 'v1.3 transition conflates or misbinds state-head, journal-tip, operation, subject, broker, or post-checkpoint identity')
+      assertIdentityActor(value.finalizer_actor, 'trusted_launcher', value.persisted_at)
+      assertIdentityActor(value.semantic_actor, 'independent_verifier', value.persisted_at)
+      assertIdentityActor(value.persistence_actor, 'journal_broker', value.persisted_at)
+    }
+    for (const linkItem of links) {
+      const value = linkItem.payload
+      const post = resolveReference(value.post_append_correspondence)
+      const checkpoint = checkpoints.find((item) => item.payload.record_digest_sha256 === value.checkpoint_identity_record_digest_sha256)?.payload
+      const brokerReceipt = brokerReceipts.find((item) => item.payload.assessment_record_digest_sha256 === value.assessment_record_digest_sha256 && item.payload.d940_append_receipt_record_digest_sha256 === value.assessment_receipt_record_digest_sha256)?.payload
+      if (!checkpoint || !brokerReceipt || !same(checkpoint.d940_correspondence, value.post_append_correspondence) || value.assessment_receipt_record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || value.operation_id !== brokerReceipt.operation_id || value.operation_nonce !== brokerReceipt.operation_nonce || !same(value.subject, brokerReceipt.subject) || linkItem.receipt.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256 || value.classified_at > value.persisted_at) failD941('D941_IDENTITY_V13_LINK_INVALID', 'v1.3 assessment link does not bind its exact post correspondence, operation, subject, broker evidence, and checkpoint')
+      assertIdentityActor(value.semantic_actor, 'independent_verifier', value.classified_at)
+      assertIdentityActor(value.persistence_actor, 'journal_broker', value.persisted_at)
+    }
+    for (const projectionItem of projections) {
+      const value = projectionItem.payload
+      const post = resolveReference(value.source_correspondence)
+      const link = links.find((item) => item.payload.operation_id === value.operation_id && item.payload.operation_nonce === value.operation_nonce)?.payload
+      const material = currentD940IdentityMaterial(post.journal_tip.receipt_sequence)
+      const controlRecords = material.items.map(({ receipt, record }) => ({ receipt_sequence: receipt.receipt_sequence, record_kind_code: record.format === 'jedi-atlas-d940-recovery-assessment' ? 'recovery_assessment' : record.record_kind_code, record_digest_sha256: record.record_digest_sha256 }))
+      const expectedAccessProjection = canonicalSha256({ subject: value.subject, known_through_receipt_sequence: post.journal_tip.receipt_sequence, access_records: [] })
+      if (!link || !same(value.subject, link.subject) || !same(value.source_correspondence, link.post_append_correspondence) || value.known_through_receipt_sequence !== post.journal_tip.receipt_sequence || value.known_through_persisted_at !== post.journal_tip.receipt_persisted_at || value.control_ledger_head_receipt_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || value.d940_state_head_digest_sha256 !== post.state_head.state_head_digest_sha256 || value.control_ledger_head_receipt_digest_sha256 === value.d940_state_head_digest_sha256 || value.control_head_projection_sha256 !== canonicalSha256(controlRecords) || value.access_head_projection_sha256 !== expectedAccessProjection || projectionItem.receipt.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256) failD941('D941_IDENTITY_V13_PROJECTION_INVALID', 'v1.3 projection does not preserve exact workflow, subject, state-head, receipt, control, and access identities')
+      assertIdentityActor(value.semantic_actor, 'independent_verifier', value.observed_at)
+    }
+    for (const requestItem of requests) {
+      const request = requestItem.payload
+      const brokerItem = brokerReceipts.find((item) => item.payload.append_request_record_digest_sha256 === request.record_digest_sha256)
+      const postCorrespondenceItem = correspondenceEntries.find((item) => item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce && item.payload.journal_tip.receipt_sequence === request.target_receipt_sequence)
+      const transitionItem = transitions.find((item) => item.payload.append_request_record_digest_sha256 === request.record_digest_sha256)
+      const checkpointItem = transitionItem ? checkpoints.find((item) => item.payload.checkpoint_sequence === transitionItem.payload.post_checkpoint_sequence && item.payload.predecessor_checkpoint_identity_record_digest_sha256 === transitionItem.payload.pre_append_checkpoint_identity_record_digest_sha256) : null
+      const linkItem = links.find((item) => item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce)
+      const projectionItem = projections.find((item) => item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce)
+      if ((!postCorrespondenceItem && (brokerItem || transitionItem || checkpointItem || linkItem || projectionItem)) || (!brokerItem && (transitionItem || checkpointItem || linkItem || projectionItem)) || (!transitionItem && (checkpointItem || linkItem || projectionItem)) || (!checkpointItem && (linkItem || projectionItem)) || (!linkItem && projectionItem)) failD941('D941_IDENTITY_V13_WORKFLOW_PREFIX_INVALID', 'retained v1.3 operation is not a valid request/correspondence/broker/transition/checkpoint/link/projection prefix')
+      const orderedTimes = [requestItem.receipt.persisted_at, postCorrespondenceItem?.receipt.persisted_at, brokerItem?.receipt.persisted_at, transitionItem?.receipt.persisted_at, checkpointItem?.receipt.persisted_at, linkItem?.receipt.persisted_at, projectionItem?.receipt.persisted_at].filter(Boolean)
+      if (orderedTimes.some((time, index) => index > 0 && time < orderedTimes[index - 1])) failD941('D941_IDENTITY_V13_WORKFLOW_PREFIX_INVALID', 'retained v1.3 operation stages are backdated or reordered')
+    }
+    const effectiveCheckpoint = checkpoints.at(-1)?.payload ?? null
+    const effectiveCorrespondence = effectiveCheckpoint ? resolveReference(effectiveCheckpoint.d940_correspondence) : null
+    return deepFreeze({ retained, correspondences: correspondenceEntries, requests, brokerReceipts, transitions, checkpoints, links, projections, effectiveCorrespondence, effectiveCheckpoint })
+  }
+
   function validateDurableState() {
     const checkpointEntries = durabilityStore.entries('d9.resolver.checkpoints.v1.1')
     const recordEntries = durabilityStore.entries('d9.resolver.records.v1.1')
@@ -882,6 +1070,26 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     }
     if (checkpoints.length > 1) failD941('D941_RESOLVER_PRE_RECEIPT_ADVANCE_REJECTED', 'v1.2 permits only the v1.1 bootstrap anchor; post-assessment progression must use receipt-proven v1.2 transitions')
 
+    const identityState = validateIdentityState()
+    const identityCheckpointReferences = identityState.checkpoints
+      .filter((item) => item.payload.checkpoint_sequence > 0)
+      .map((item) => {
+        const checkpoint = item.payload
+        const correspondence = identityState.correspondences.find((candidate) => candidate.payload.record_digest_sha256 === checkpoint.d940_correspondence.correspondence_record_digest_sha256)?.payload
+        if (!correspondence) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'selected v1.3 checkpoint lacks its exact correspondence')
+        const sourceHeads = clone(checkpoints[0].source_heads)
+        const d940Index = sourceHeads.findIndex((head) => head.source_namespace_code === 'd940.global.control-journal.v1')
+        if (d940Index < 0) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'selected v1.3 checkpoint lacks the frozen D9.4 observation route')
+        sourceHeads[d940Index] = deriveD940ProtectedHead(contract, broker, correspondence.journal_tip.receipt_sequence)
+        return {
+          checkpoint_contract_version: '1.3.0', checkpoint_namespace_code: 'd9.resolver.identity-corrections.v1.3',
+          checkpoint_sequence: checkpoint.checkpoint_sequence + 1,
+          checkpoint_record_digest_sha256: checkpoint.record_digest_sha256,
+          checkpoint_append_receipt_record_digest_sha256: item.receipt.record_digest_sha256,
+          source_heads: sourceHeads, source_heads_digest_sha256: canonicalSha256(sourceHeads),
+        }
+      })
+
     const durableRecords = []
     let recordHead = { namespace_code: 'd9.resolver.records.v1.1', sequence: 0, record_digest_sha256: null, commit_sha256: null }
     for (const entry of recordEntries) {
@@ -892,7 +1100,8 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       assertDurabilityActor(wrapper.semantic_actor, 'independent_verifier', wrapper.accepted_at)
       assertDurabilityActor(wrapper.persistence_actor, 'journal_broker', wrapper.persisted_at)
       const checkpoint = checkpoints.find((item) => item.sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256) ??
-        transitionEntries.flatMap((entry) => entry.records).find((item) => item.format === 'jedi-atlas-recovery-checkpoint-transition' && item.transition_sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256)
+        transitionEntries.flatMap((entry) => entry.records).find((item) => item.format === 'jedi-atlas-recovery-checkpoint-transition' && item.transition_sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256) ??
+        identityCheckpointReferences.find((item) => item.checkpoint_sequence === wrapper.checkpoint_sequence && item.checkpoint_record_digest_sha256 === wrapper.checkpoint_record_digest_sha256)
       if (!checkpoint) failD941('D941_RESOLVER_DURABLE_CHECKPOINT_INVALID', 'durable resolver wrapper references an unknown checkpoint')
       let payload
       try { payload = parseStrictJson(Buffer.from(wrapper.payload_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_RESOLVER_DURABLE_PAYLOAD_INVALID', 'durable resolver payload is not strict canonical JSON', { cause: error.message }) }
@@ -1059,8 +1268,8 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       checkpoint_append_receipt_record_digest_sha256: checkpointEntries[index].append_receipt.record_digest_sha256,
       source_heads: checkpoint.source_heads,
       source_heads_digest_sha256: canonicalSha256(checkpoint.source_heads),
-    })).concat(transitions.map((item) => checkpointReference(item.transition, item.receipt)))
-    return deepFreeze({ checkpoints, transitions, pendingProgressionRecords, checkpointReferences, durableRecords, links, heads: { checkpoint: checkpointHead, records: recordHead, links: linkHead, intents: intentHead, transitions: transitionHead } })
+    })).concat(transitions.map((item) => checkpointReference(item.transition, item.receipt))).concat(identityCheckpointReferences)
+    return deepFreeze({ checkpoints, transitions, pendingProgressionRecords, checkpointReferences, durableRecords, links, identityState, heads: { checkpoint: checkpointHead, records: recordHead, links: linkHead, intents: intentHead, transitions: transitionHead } })
   }
 
   function collectStable(kind, subjectIdentitySha256, requestedAt) {
@@ -1146,6 +1355,170 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       : { payload: state.transitions.find((item) => item.transition.record_digest_sha256 === payload.record_digest_sha256)?.transition, receipt: state.transitions.find((item) => item.transition.record_digest_sha256 === payload.record_digest_sha256)?.receipt }
   }
 
+  function preflightIdentityV13Payload(state, payload) {
+    if (Object.hasOwn(payload, 'runtime_generation') && !same(payload.runtime_generation, expectedGeneration)) failD941('D941_IDENTITY_V13_GENERATION_INVALID', 'v1.3 candidate payload belongs to another runtime generation')
+    const correspondenceFor = (reference, code) => {
+      const item = state.correspondences.find((candidate) => candidate.payload.record_digest_sha256 === reference?.correspondence_record_digest_sha256)
+      if (!item || !same(reference, d941IdentityV13CorrespondenceReference(item.payload))) failD941(code, 'v1.3 candidate does not resolve to one exact retained correspondence')
+      return item.payload
+    }
+    if (payload.format === 'jedi-atlas-d940-source-head-receipt-correspondence') {
+      validateD941IdentityV13Correspondence({ contract: identityV13, broker, authorityContext, value: payload, runtimeGeneration: expectedGeneration, assertActor: assertIdentityActor })
+      return
+    }
+    if (payload.format === 'jedi-atlas-recovery-assessment-append-request') {
+      const pre = correspondenceFor(payload.pre_append_correspondence, 'D941_IDENTITY_V13_REQUEST_INVALID')
+      const checkpoint = state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.pre_append_checkpoint_identity_record_digest_sha256)?.payload
+      let assessment
+      try { assessment = parseStrictJson(Buffer.from(payload.assessment_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'v1.3 candidate assessment bytes are unreadable', { cause: error.message }) }
+      validateD940Record({ contractSet: authorityContext.contractSet, record: assessment })
+      if (!checkpoint || !same(checkpoint.d940_correspondence, payload.pre_append_correspondence) || payload.expected_predecessor_receipt_sequence !== pre.journal_tip.receipt_sequence || payload.expected_predecessor_receipt_record_digest_sha256 !== pre.journal_tip.receipt_record_digest_sha256 || payload.target_receipt_sequence !== pre.journal_tip.receipt_sequence + 1 || canonicalize(assessment) !== payload.assessment_canonical_utf8 || assessment.format !== payload.assessment_format || assessment.record_code !== payload.assessment_record_code || assessment.record_digest_sha256 !== payload.target_assessment_record_digest_sha256 || assessment.operation_id !== payload.operation_id || assessment.operation_nonce !== payload.operation_nonce || assessment.subject.subject_kind_code !== payload.subject.subject_kind_code || assessment.subject.subject_identity_sha256 !== payload.subject.subject_identity_sha256 || payload.authorized_at >= payload.append_revalidate_by) failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'v1.3 candidate request is not grounded in its exact checkpoint, correspondence, receipt position, and assessment subject identity')
+      assertIdentityActor(payload.semantic_actor, 'independent_verifier', payload.authorized_at)
+      assertIdentityActor(payload.broker_recipient, 'journal_broker', payload.append_revalidate_by)
+      return
+    }
+    if (payload.format === 'jedi-atlas-recovery-assessment-append-broker-receipt') {
+      const request = state.requests.find((item) => item.payload.record_digest_sha256 === payload.append_request_record_digest_sha256)?.payload
+      const pre = correspondenceFor(payload.pre_append_correspondence, 'D941_IDENTITY_V13_BROKER_RECEIPT_INVALID')
+      const post = correspondenceFor(payload.post_append_correspondence, 'D941_IDENTITY_V13_BROKER_RECEIPT_INVALID')
+      let receipt
+      try { receipt = parseStrictJson(Buffer.from(payload.d940_append_receipt_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_IDENTITY_V13_BROKER_RECEIPT_INVALID', 'v1.3 candidate broker evidence is unreadable', { cause: error.message }) }
+      validateD940Record({ contractSet: authorityContext.contractSet, record: receipt })
+      if (!request || payload.operation_id !== request.operation_id || payload.operation_nonce !== request.operation_nonce || !same(payload.subject, request.subject) || !same(payload.pre_append_correspondence, request.pre_append_correspondence) || canonicalize(receipt) !== payload.d940_append_receipt_canonical_utf8 || receipt.record_digest_sha256 !== payload.d940_append_receipt_record_digest_sha256 || receipt.previous_receipt_record_digest_sha256 !== pre.journal_tip.receipt_record_digest_sha256 || receipt.record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || receipt.receipt_sequence !== request.target_receipt_sequence || receipt.target_format !== request.assessment_format || receipt.target_record_code !== request.assessment_record_code || receipt.target_record_digest_sha256 !== request.target_assessment_record_digest_sha256 || receipt.operation_id !== request.operation_id || receipt.operation_nonce !== request.operation_nonce || receipt.target_subject_identity_sha256 !== request.subject.subject_identity_sha256 || payload.assessment_record_digest_sha256 !== request.target_assessment_record_digest_sha256 || payload.accepted_at > payload.persisted_at) failD941('D941_IDENTITY_V13_BROKER_RECEIPT_INVALID', 'v1.3 candidate broker receipt does not prove the exact requested journal append')
+      assertIdentityActor(payload.broker_actor, 'journal_broker', payload.persisted_at)
+      assertIdentityActor(payload.semantic_verifier_actor, 'independent_verifier', payload.accepted_at)
+      return
+    }
+    if (payload.format === 'jedi-atlas-recovery-checkpoint-transition') {
+      const request = state.requests.find((item) => item.payload.record_digest_sha256 === payload.append_request_record_digest_sha256)?.payload
+      const brokerReceipt = state.brokerReceipts.find((item) => item.payload.record_digest_sha256 === payload.append_broker_receipt_record_digest_sha256)?.payload
+      const checkpoint = state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.pre_append_checkpoint_identity_record_digest_sha256)?.payload
+      correspondenceFor(payload.pre_append_correspondence, 'D941_IDENTITY_V13_TRANSITION_INVALID')
+      const post = correspondenceFor(payload.post_append_correspondence, 'D941_IDENTITY_V13_TRANSITION_INVALID')
+      const expectedPostCheckpointCas = checkpoint ? canonicalSha256({ checkpoint_sequence: payload.post_checkpoint_sequence, predecessor_checkpoint_identity_record_digest_sha256: checkpoint.record_digest_sha256, correspondence_record_digest_sha256: post.record_digest_sha256, state_head_digest_sha256: post.state_head.state_head_digest_sha256 }) : null
+      if (!request || !brokerReceipt || !checkpoint || payload.operation_id !== request.operation_id || payload.operation_nonce !== request.operation_nonce || !same(payload.subject, request.subject) || brokerReceipt.operation_id !== request.operation_id || brokerReceipt.operation_nonce !== request.operation_nonce || !same(brokerReceipt.subject, request.subject) || payload.transition_sequence !== checkpoint.checkpoint_sequence + 1 || payload.post_checkpoint_sequence !== payload.transition_sequence || payload.post_checkpoint_cas_identity_sha256 !== expectedPostCheckpointCas || !same(payload.pre_append_correspondence, request.pre_append_correspondence) || !same(payload.post_append_correspondence, brokerReceipt.post_append_correspondence) || payload.source_head_cas_digest_sha256 !== post.state_head.state_head_digest_sha256 || payload.journal_tip_receipt_record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || payload.source_head_cas_digest_sha256 === payload.journal_tip_receipt_record_digest_sha256) failD941('D941_IDENTITY_V13_TRANSITION_INVALID', 'v1.3 candidate transition misbinds its exact state, receipt, operation, subject, or post-checkpoint identity')
+      assertIdentityActor(payload.finalizer_actor, 'trusted_launcher', payload.persisted_at)
+      assertIdentityActor(payload.semantic_actor, 'independent_verifier', payload.persisted_at)
+      assertIdentityActor(payload.persistence_actor, 'journal_broker', payload.persisted_at)
+      return
+    }
+    if (payload.format === 'jedi-atlas-recovery-checkpoint-source-identity') {
+      const correspondence = correspondenceFor(payload.d940_correspondence, 'D941_IDENTITY_V13_CHECKPOINT_INVALID')
+      const predecessor = payload.checkpoint_sequence === 0 ? null : state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.predecessor_checkpoint_identity_record_digest_sha256)
+      const transition = payload.checkpoint_sequence === 0 ? null : state.transitions.find((item) => item.receipt.record_digest_sha256 === payload.predecessor_transition_receipt_record_digest_sha256)
+      const expectedCas = canonicalSha256({ checkpoint_sequence: payload.checkpoint_sequence, predecessor_checkpoint_identity_record_digest_sha256: payload.predecessor_checkpoint_identity_record_digest_sha256, correspondence_record_digest_sha256: correspondence.record_digest_sha256, state_head_digest_sha256: correspondence.state_head.state_head_digest_sha256 })
+      if (payload.checkpoint_cas_identity_sha256 !== expectedCas || (payload.checkpoint_sequence === 0 ? payload.anchor_kind_code !== 'empty_runtime_genesis' || payload.predecessor_checkpoint_identity_record_digest_sha256 !== null || payload.predecessor_transition_receipt_record_digest_sha256 !== null : payload.anchor_kind_code !== 'receipt_proven_transition' || !predecessor || predecessor.payload.checkpoint_sequence + 1 !== payload.checkpoint_sequence || !transition || transition.payload.post_checkpoint_cas_identity_sha256 !== payload.checkpoint_cas_identity_sha256)) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'v1.3 candidate checkpoint does not follow the exact correspondence, transition receipt, and checkpoint identity')
+      return
+    }
+    if (payload.format === 'jedi-atlas-recovery-assessment-source-identity-link') {
+      const post = correspondenceFor(payload.post_append_correspondence, 'D941_IDENTITY_V13_LINK_INVALID')
+      const checkpoint = state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.checkpoint_identity_record_digest_sha256)?.payload
+      const brokerReceipt = state.brokerReceipts.find((item) => item.payload.assessment_record_digest_sha256 === payload.assessment_record_digest_sha256 && item.payload.d940_append_receipt_record_digest_sha256 === payload.assessment_receipt_record_digest_sha256)?.payload
+      if (!checkpoint || !brokerReceipt || !same(checkpoint.d940_correspondence, payload.post_append_correspondence) || payload.assessment_receipt_record_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || payload.operation_id !== brokerReceipt.operation_id || payload.operation_nonce !== brokerReceipt.operation_nonce || !same(payload.subject, brokerReceipt.subject) || payload.classified_at > payload.persisted_at) failD941('D941_IDENTITY_V13_LINK_INVALID', 'v1.3 candidate link does not bind the exact assessment, receipt, correspondence, checkpoint, operation, and subject')
+      assertIdentityActor(payload.semantic_actor, 'independent_verifier', payload.classified_at)
+      assertIdentityActor(payload.persistence_actor, 'journal_broker', payload.persisted_at)
+      return
+    }
+    if (payload.format === 'jedi-atlas-d940-control-access-projection') {
+      const post = correspondenceFor(payload.source_correspondence, 'D941_IDENTITY_V13_PROJECTION_INVALID')
+      const link = state.links.find((item) => item.payload.operation_id === payload.operation_id && item.payload.operation_nonce === payload.operation_nonce)?.payload
+      const material = currentD940IdentityMaterial(post.journal_tip.receipt_sequence)
+      const controlRecords = material.items.map(({ receipt, record }) => ({ receipt_sequence: receipt.receipt_sequence, record_kind_code: record.format === 'jedi-atlas-d940-recovery-assessment' ? 'recovery_assessment' : record.record_kind_code, record_digest_sha256: record.record_digest_sha256 }))
+      if (!link || !same(payload.subject, link.subject) || !same(payload.source_correspondence, link.post_append_correspondence) || payload.known_through_receipt_sequence !== post.journal_tip.receipt_sequence || payload.known_through_persisted_at !== post.journal_tip.receipt_persisted_at || payload.control_ledger_head_receipt_digest_sha256 !== post.journal_tip.receipt_record_digest_sha256 || payload.d940_state_head_digest_sha256 !== post.state_head.state_head_digest_sha256 || payload.control_ledger_head_receipt_digest_sha256 === payload.d940_state_head_digest_sha256 || payload.control_head_projection_sha256 !== canonicalSha256(controlRecords) || payload.access_head_projection_sha256 !== canonicalSha256({ subject: payload.subject, known_through_receipt_sequence: post.journal_tip.receipt_sequence, access_records: [] })) failD941('D941_IDENTITY_V13_PROJECTION_INVALID', 'v1.3 candidate projection does not preserve the exact workflow, subject, state, receipt, control, and access identities')
+      assertIdentityActor(payload.semantic_actor, 'independent_verifier', payload.observed_at)
+    }
+  }
+
+  function identityV13PersistenceTime(payload) {
+    return {
+      'jedi-atlas-d940-source-head-receipt-correspondence': payload.observed_at,
+      'jedi-atlas-recovery-assessment-append-request': payload.authorized_at,
+      'jedi-atlas-recovery-assessment-append-broker-receipt': payload.persisted_at,
+      'jedi-atlas-recovery-checkpoint-transition': payload.persisted_at,
+      'jedi-atlas-recovery-checkpoint-source-identity': payload.created_at,
+      'jedi-atlas-recovery-assessment-source-identity-link': payload.persisted_at,
+      'jedi-atlas-d940-control-access-projection': payload.observed_at,
+    }[payload.format]
+  }
+
+  function persistIdentityV13(namespaceCode, payload, sourceHeadCasDigestSha256, persistedAt) {
+    if (!D941_IDENTITY_V13_NAMESPACES.includes(namespaceCode)) failD941('D941_IDENTITY_V13_NAMESPACE_INVALID', 'v1.3 append requested an unapproved namespace')
+    const schemaFile = identitySchemaFile(payload)
+    if (schemaFile === null) failD941('D941_IDENTITY_V13_PAYLOAD_INVALID', 'v1.3 append requested an unsupported payload')
+    faultInjector?.('before_identity_v13_semantic_preflight', { namespaceCode, payloadRecord: payload })
+    assertD941IdentityV13Schema(identityV13, schemaFile, payload, 'v1.3 append payload')
+    if (identityV13PersistenceTime(payload) !== persistedAt) failD941('D941_IDENTITY_V13_TIME_INVALID', 'v1.3 append time differs from the canonical payload persistence event')
+    const state = validateIdentityState()
+    const existing = state.retained.find((item) => item.namespaceCode === namespaceCode && d941IdentityV13PayloadIdentity(item.payload) === d941IdentityV13PayloadIdentity(payload))
+    if (existing) {
+      if (!sameD941IdentityV13(existing.payload, payload) || existing.receipt.source_head_cas_digest_sha256 !== sourceHeadCasDigestSha256) failD941('D941_IDENTITY_V13_REPLAY_COLLISION', 'v1.3 replay differs from retained payload or source-head CAS')
+      const replayObserved = currentD940IdentityMaterial()
+      if (replayObserved.stateHead.state_head_digest_sha256 !== sourceHeadCasDigestSha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'v1.3 exact replay no longer matches the current independently derived source state')
+      return existing
+    }
+    const claimed = new Set(d941IdentityV13CollisionKeys(payload))
+    if (state.retained.some((item) => item.namespaceCode === namespaceCode && d941IdentityV13CollisionKeys(item.payload).some((key) => claimed.has(key)))) failD941('D941_IDENTITY_V13_REPLAY_COLLISION', 'v1.3 stable identity collides with a retained record')
+    preflightIdentityV13Payload(state, payload)
+    const requiredPredecessors = []
+    if (payload.format === 'jedi-atlas-d940-source-head-receipt-correspondence' && state.retained.length > 0) {
+      const request = state.requests.find((item) => item.payload.operation_id === payload.operation_id && item.payload.operation_nonce === payload.operation_nonce)
+      if (!request) failD941('D941_IDENTITY_V13_WORKFLOW_PREFIX_INVALID', 'post-append correspondence has no exact protected request predecessor')
+      requiredPredecessors.push(request.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-recovery-assessment-append-request') {
+      const checkpoint = state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.pre_append_checkpoint_identity_record_digest_sha256)
+      if (!checkpoint) failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'append request has no exact checkpoint predecessor')
+      requiredPredecessors.push(checkpoint.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-recovery-assessment-append-broker-receipt') {
+      const request = state.requests.find((item) => item.payload.record_digest_sha256 === payload.append_request_record_digest_sha256)
+      const correspondence = state.correspondences.find((item) => item.payload.record_digest_sha256 === payload.post_append_correspondence.correspondence_record_digest_sha256)
+      if (!request || !correspondence) failD941('D941_IDENTITY_V13_BROKER_RECEIPT_INVALID', 'broker receipt has no exact request and correspondence predecessors')
+      requiredPredecessors.push(request.receipt.persisted_at, correspondence.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-recovery-checkpoint-transition') {
+      const brokerReceipt = state.brokerReceipts.find((item) => item.payload.record_digest_sha256 === payload.append_broker_receipt_record_digest_sha256)
+      if (!brokerReceipt) failD941('D941_IDENTITY_V13_TRANSITION_INVALID', 'transition has no exact broker-receipt predecessor')
+      requiredPredecessors.push(brokerReceipt.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-recovery-checkpoint-source-identity') {
+      const correspondence = state.correspondences.find((item) => item.payload.record_digest_sha256 === payload.d940_correspondence.correspondence_record_digest_sha256)
+      const transition = payload.checkpoint_sequence === 0 ? null : state.transitions.find((item) => item.receipt.record_digest_sha256 === payload.predecessor_transition_receipt_record_digest_sha256)
+      if (!correspondence || (payload.checkpoint_sequence > 0 && !transition)) failD941('D941_IDENTITY_V13_CHECKPOINT_INVALID', 'checkpoint has no exact correspondence and transition predecessors')
+      requiredPredecessors.push(correspondence.receipt.persisted_at)
+      if (transition) requiredPredecessors.push(transition.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-recovery-assessment-source-identity-link') {
+      const checkpoint = state.checkpoints.find((item) => item.payload.record_digest_sha256 === payload.checkpoint_identity_record_digest_sha256)
+      if (!checkpoint) failD941('D941_IDENTITY_V13_LINK_INVALID', 'assessment link has no exact checkpoint predecessor')
+      requiredPredecessors.push(checkpoint.receipt.persisted_at)
+    } else if (payload.format === 'jedi-atlas-d940-control-access-projection') {
+      const link = state.links.find((item) => item.payload.operation_id === payload.operation_id && item.payload.operation_nonce === payload.operation_nonce)
+      if (!link) failD941('D941_IDENTITY_V13_PROJECTION_INVALID', 'control/access projection has no exact assessment-link predecessor')
+      requiredPredecessors.push(link.receipt.persisted_at)
+    }
+    if (requiredPredecessors.some((time) => persistedAt < time)) failD941('D941_IDENTITY_V13_TIME_INVALID', 'v1.3 protected append would backdate its namespace or workflow predecessor')
+    const observed = currentD940IdentityMaterial()
+    if (observed.stateHead.state_head_digest_sha256 !== sourceHeadCasDigestSha256) failD941('D941_IDENTITY_V13_SOURCE_CAS_INVALID', 'v1.3 append source-head CAS does not equal the independently derived current state')
+    const expectedHead = durabilityStore.head(namespaceCode)
+    const priorEntry = durabilityStore.entries(namespaceCode).at(-1) ?? null
+    const receipt = sealD941IdentityV13Record({
+      format: 'jedi-atlas-recovery-source-identity-protected-append-receipt', format_version: '1.3.0',
+      receipt_code: `identity.receipt.${namespaceCode.includes('source-head') ? 'correspondence' : 'correction'}.${String(expectedHead.sequence + 1).padStart(8, '0')}`,
+      namespace_code: namespaceCode, sequence: expectedHead.sequence + 1,
+      predecessor_receipt_record_digest_sha256: priorEntry?.append_receipt.record_digest_sha256 ?? null,
+      payload_format: payload.format, payload_record_digest_sha256: payload.record_digest_sha256,
+      source_head_cas_digest_sha256: sourceHeadCasDigestSha256,
+      semantic_actor: authenticatedActorFor('independent_verifier', persistedAt), persistence_actor: authenticatedActorFor('journal_broker', persistedAt),
+      accepted_at: persistedAt, persisted_at: persistedAt, record_digest_sha256: null,
+    })
+    validateIdentityProtectedReceipt(receipt, namespaceCode, expectedHead.sequence + 1, priorEntry?.append_receipt.record_digest_sha256 ?? null, priorEntry?.append_receipt.persisted_at ?? null, payload, sourceHeadCasDigestSha256)
+    assertAuthorityActive(persistedAt)
+    authorityRegistry.revalidateSession(persistenceSession, persistedAt)
+    const writer = durabilityWriters.get(durabilityStore)
+    if (!writer) failD941('D941_RESOLVER_DURABLE_STORE_UNTRUSTED', 'resolver durability writer capability is unavailable')
+    writer({ namespaceCode, expectedHead, records: [payload], appendReceipt: receipt })
+    faultInjector?.('after_identity_v13_atomic_append_before_response', { namespaceCode, payloadRecord: payload })
+    const retained = validateIdentityState().retained.find((item) => item.namespaceCode === namespaceCode && item.payload.record_digest_sha256 === payload.record_digest_sha256)
+    if (!retained) failD941('D941_IDENTITY_V13_DURABLE_COMMIT_INVALID', 'v1.3 payload is absent after protected append')
+    return retained
+  }
+
   function bootstrapDurability() {
     const checkpointHead = durabilityStore.head('d9.resolver.checkpoints.v1.1')
     if (checkpointHead.sequence !== 0) return validateDurableState()
@@ -1187,6 +1560,39 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     assertDurabilitySchema(durability, 'checkpoint-record-v1-1.schema.json', checkpoint, 'bootstrap checkpoint')
     persistBatch('d9.resolver.checkpoints.v1.1', [...observations, permit, checkpoint], checkpoint, now, now)
     return validateDurableState()
+  }
+
+  function bootstrapIdentityV13() {
+    let state = validateIdentityState()
+    if (state.effectiveCheckpoint !== null) return state
+    if (state.retained.length === 1 && state.correspondences.length === 1 && state.checkpoints.length === 0) {
+      const retainedCorrespondence = state.correspondences[0].payload
+      const current = currentD940IdentityMaterial()
+      if (retainedCorrespondence.state_head.state_head_digest_sha256 !== current.stateHead.state_head_digest_sha256 || retainedCorrespondence.journal_tip.receipt_record_digest_sha256 !== current.journalTip.receipt_record_digest_sha256) failD941('D941_IDENTITY_V13_BOOTSTRAP_INCOMPLETE', 'partial v1.3 genesis cannot be completed after source movement')
+      const recoveredCheckpoint = createD941IdentityV13Checkpoint({ sequence: 0, correspondence: retainedCorrespondence, predecessorCheckpointDigest: null, predecessorTransitionReceiptDigest: null, createdAt: retainedCorrespondence.observed_at })
+      persistIdentityV13('d9.resolver.identity-corrections.v1.3', recoveredCheckpoint, retainedCorrespondence.state_head.state_head_digest_sha256, retainedCorrespondence.observed_at)
+      state = validateIdentityState()
+      if (!state.effectiveCheckpoint) failD941('D941_IDENTITY_V13_BOOTSTRAP_INCOMPLETE', 'partial v1.3 genesis checkpoint repair did not become durable')
+      return state
+    }
+    if (state.retained.length !== 0) failD941('D941_IDENTITY_V13_BOOTSTRAP_INCOMPLETE', 'partial v1.3 identity bootstrap is ambiguous and requires reconciliation')
+    const observedAt = timestamp(trustedClock(), 'v1.3 identity bootstrap observation time')
+    const operationId = `resolver.identity.bootstrap.${expectedGeneration.binding_generation}`
+    const operationNonce = canonicalSha256({ operationId, generation: expectedGeneration, source: broker.head() })
+    const correspondence = createD941IdentityV13Correspondence({
+      broker, authorityContext, runtimeGeneration: expectedGeneration, observedAt,
+      semanticVerifierActor: authenticatedActorFor('independent_verifier', observedAt),
+      persistenceBrokerActor: authenticatedActorFor('journal_broker', observedAt),
+      emptyOperationId: operationId, emptyOperationNonce: operationNonce,
+    })
+    validateD941IdentityV13Correspondence({ contract: identityV13, broker, authorityContext, value: correspondence, runtimeGeneration: expectedGeneration, assertActor: assertIdentityActor })
+    persistIdentityV13('d9.resolver.source-head-correspondence.v1.3', correspondence, correspondence.state_head.state_head_digest_sha256, observedAt)
+    const checkpoint = createD941IdentityV13Checkpoint({ sequence: 0, correspondence, predecessorCheckpointDigest: null, predecessorTransitionReceiptDigest: null, createdAt: observedAt })
+    assertD941IdentityV13Schema(identityV13, 'checkpoint-identity-v1-3.schema.json', checkpoint, 'v1.3 genesis checkpoint')
+    persistIdentityV13('d9.resolver.identity-corrections.v1.3', checkpoint, correspondence.state_head.state_head_digest_sha256, observedAt)
+    state = validateIdentityState()
+    if (!state.effectiveCheckpoint || state.effectiveCheckpoint.checkpoint_sequence !== 0) failD941('D941_IDENTITY_V13_BOOTSTRAP_INCOMPLETE', 'v1.3 genesis checkpoint was not reconstructed')
+    return state
   }
 
   // These are deliberately closed, in-process synthetic adapters. They model
@@ -1300,6 +1706,8 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   }
 
   function revalidateAtAppend({ compositeResponse, assessment, completedAt }) {
+    broker.assertRecoveryAppendLock(assessment)
+    bootstrapIdentityV13()
     let state = validateDurableState()
     const durableResponse = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.payload.record_digest_sha256 === compositeResponse.record_digest_sha256)
     const durableRequest = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === compositeResponse.request_record_digest_sha256)
@@ -1312,7 +1720,6 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     const priorCheckpoint = state.checkpointReferences.find((item) => item.checkpoint_sequence === durableResponse.wrapper.checkpoint_sequence && item.checkpoint_record_digest_sha256 === durableResponse.wrapper.checkpoint_record_digest_sha256)
     if (!priorCheckpoint) failD941('D941_RESOLVER_DURABLE_CHECKPOINT_INVALID', 'durable response checkpoint cannot be resolved')
     const existingAttestation = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'append_attestation' && item.wrapper.operation_id === compositeResponse.operation_id && item.wrapper.operation_nonce === compositeResponse.operation_nonce)
-    const existingRequestEntry = [...state.pendingProgressionRecords, ...state.transitions.map((item) => ({ payload: item.request, receipt: item.requestReceipt }))].find((item) => item.payload.assessment_record_digest_sha256 === assessment.record_digest_sha256)
     if (completedAt < compositeResponse.responded_at || completedAt > compositeResponse.append_revalidate_by) failD941('D941_RECOVERY_APPEND_REVALIDATION_EXPIRED', 'append occurs outside the resolver freshness window')
     const before = observe(compositeResponse.subject.subject_identity_sha256)
     const current = observe(compositeResponse.subject.subject_identity_sha256)
@@ -1336,35 +1743,152 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     state = validateDurableState()
     const currentCheckpoint = state.checkpointReferences.at(-1)
     if (!same(currentCheckpoint, priorCheckpoint) || !same(durableRequest.payload.prior_accepted_source_heads, priorCheckpoint.source_heads)) failD941('D941_RESOLVER_CHECKPOINT_HEAD_MISMATCH', 'effective checkpoint advanced or source basis changed before append authorization')
-    const componentResolutionAttestations = ['d901_control_access', 'd920_accepted_evidence', 'd930_custody'].map((kind) => {
-      const component = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code === kind && item.wrapper.operation_id === assessment.operation_id && item.wrapper.operation_nonce === assessment.operation_nonce)
-      if (!component) failD941('D941_RESOLVER_PROGRESSION_EVIDENCE_MISSING', `missing durable ${kind} response`)
-      return { resolver_kind_code: kind, component_response_record_digest_sha256: component.payload.record_digest_sha256, component_response_durable_record_digest_sha256: component.wrapper.record_digest_sha256 }
-    })
-    const position = expectedD940Position(priorCheckpoint, assessment)
-    const progressionRequest = sealRecord({
-      format: 'jedi-atlas-recovery-checkpoint-assessment-append-request', format_version: '1.2.0',
-      request_code: `progression.request.${canonicalSha256({ operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce }).slice(0, 20)}`,
-      operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, idempotency_key_sha256: canonicalSha256({ operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, prior_checkpoint_record_digest_sha256: priorCheckpoint.checkpoint_record_digest_sha256, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: position }),
-      runtime_generation: expectedGeneration, subject: compositeResponse.subject, prior_checkpoint: priorCheckpoint,
-      component_resolution_attestations: componentResolutionAttestations,
-      composite_response_record_digest_sha256: compositeResponse.record_digest_sha256, composite_response_durable_record_digest_sha256: durableResponse.wrapper.record_digest_sha256,
-      composite_append_attestation_record_digest_sha256: attestation.record_digest_sha256, composite_append_attestation_durable_record_digest_sha256: durableAttestation.wrapper.record_digest_sha256,
-      assessment_format: assessment.format, assessment_record_code: assessment.record_code, assessment_canonical_utf8: canonicalize(assessment), assessment_record_digest_sha256: assessment.record_digest_sha256,
-      expected_d940_append_position: position, pre_append_source_heads: priorCheckpoint.source_heads, pre_append_source_heads_digest_sha256: canonicalSha256(priorCheckpoint.source_heads), authorized_delta_namespace_code: 'd940.global.control-journal.v1',
-      semantic_actor: authenticatedActorFor('independent_verifier', completedAt), broker_recipient: authenticatedActorFor('journal_broker', completedAt), authorized_at: completedAt, append_revalidate_by: compositeResponse.append_revalidate_by,
+    const identityState = validateIdentityState()
+    const identityCheckpoint = identityState.effectiveCheckpoint
+    const preCorrespondence = identityState.effectiveCorrespondence
+    const currentIdentity = currentD940IdentityMaterial()
+    if (!identityCheckpoint || !preCorrespondence || preCorrespondence.state_head.state_head_digest_sha256 !== currentIdentity.stateHead.state_head_digest_sha256 || preCorrespondence.journal_tip.receipt_record_digest_sha256 !== currentIdentity.journalTip.receipt_record_digest_sha256) failD941('D941_IDENTITY_V13_RECONCILIATION_REQUIRED', 'append authorization requires one current v1.3 checkpoint with distinct verified state and receipt identities')
+    const identityRequest = sealD941IdentityV13Record({
+      format: 'jedi-atlas-recovery-assessment-append-request', format_version: '1.3.0',
+      request_code: `identity.request.${canonicalSha256({ operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce }).slice(0, 20)}`,
+      operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, runtime_generation: expectedGeneration,
+      subject: compositeResponse.subject,
+      pre_append_checkpoint_identity_record_digest_sha256: identityCheckpoint.record_digest_sha256,
+      pre_append_correspondence: d941IdentityV13CorrespondenceReference(preCorrespondence),
+      expected_predecessor_receipt_sequence: preCorrespondence.journal_tip.receipt_sequence,
+      expected_predecessor_receipt_record_digest_sha256: preCorrespondence.journal_tip.receipt_record_digest_sha256,
+      target_receipt_sequence: preCorrespondence.journal_tip.receipt_sequence + 1,
+      assessment_format: assessment.format, assessment_record_code: assessment.record_code,
+      assessment_canonical_utf8: canonicalize(assessment), target_assessment_record_digest_sha256: assessment.record_digest_sha256,
+      semantic_actor: authenticatedActorFor('independent_verifier', completedAt), broker_recipient: authenticatedActorFor('journal_broker', completedAt),
+      authorized_at: completedAt, append_revalidate_by: compositeResponse.append_revalidate_by,
       technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
     })
-    assertProgressionSchema('assessment-append-request-v1-2.schema.json', progressionRequest, 'assessment append request')
-    if (existingRequestEntry && !same(existingRequestEntry.payload, progressionRequest)) failD941('D941_RESOLVER_PROGRESSION_REPLAY_COLLISION', 'retained progression request differs from the fully revalidated exact request')
-    const progressionRequestEntry = existingRequestEntry ?? persistProgression('d9.resolver.progression-intents.v1.2', progressionRequest, completedAt)
-    return deepFreeze({ attestation, durableRequest: durableRequest.wrapper, durableResponse: durableResponse.wrapper, durableAttestation: durableAttestation.wrapper, checkpoint: priorCheckpoint, progressionRequest, progressionRequestReceipt: progressionRequestEntry.receipt })
+    assertD941IdentityV13Schema(identityV13, 'assessment-append-request-v1-3.schema.json', identityRequest, 'v1.3 assessment append request')
+    const identityRequestEntry = persistIdentityV13('d9.resolver.identity-corrections.v1.3', identityRequest, preCorrespondence.state_head.state_head_digest_sha256, completedAt)
+    return deepFreeze({ attestation, durableRequest: durableRequest.wrapper, durableResponse: durableResponse.wrapper, durableAttestation: durableAttestation.wrapper, checkpoint: priorCheckpoint, identityCheckpoint, preCorrespondence, identityRequest, identityRequestReceipt: identityRequestEntry.receipt })
   }
 
-  function finalizeProgression({ revalidation, assessment, assessmentReceipt }) {
+  function finalizeIdentityV13({ revalidation, assessment, assessmentReceipt }) {
+    let identityState = validateIdentityState()
+    const requestItem = identityState.requests.find((item) => item.payload.target_assessment_record_digest_sha256 === assessment.record_digest_sha256)
+    if (!requestItem || (revalidation?.identityRequest && (!same(requestItem.payload, revalidation.identityRequest) || !same(requestItem.receipt, revalidation.identityRequestReceipt)))) failD941('D941_IDENTITY_V13_REQUEST_INVALID', 'v1.3 finalization cannot resolve the exact protected append request')
+    const request = requestItem.payload
+    const pre = identityState.correspondences.find((item) => item.payload.record_digest_sha256 === request.pre_append_correspondence.correspondence_record_digest_sha256)?.payload
+    const preCheckpoint = identityState.checkpoints.find((item) => item.payload.record_digest_sha256 === request.pre_append_checkpoint_identity_record_digest_sha256)?.payload
+    const retainedReceipt = broker.validate().find((item) => item.record_digest_sha256 === assessmentReceipt.record_digest_sha256)
+    if (!pre || !preCheckpoint || !retainedReceipt || !same(retainedReceipt, assessmentReceipt) || assessmentReceipt.receipt_sequence !== request.target_receipt_sequence || assessmentReceipt.previous_receipt_record_digest_sha256 !== request.expected_predecessor_receipt_record_digest_sha256 || assessmentReceipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || assessmentReceipt.operation_id !== request.operation_id || assessmentReceipt.operation_nonce !== request.operation_nonce) failD941('D941_IDENTITY_V13_D940_RECEIPT_INVALID', 'v1.3 finalization requires the exact requested durable D9.4 receipt')
+    const retainedPostItem = identityState.correspondences.find((item) => item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce && item.payload.journal_tip.receipt_sequence === request.target_receipt_sequence)
+    const observedAt = retainedPostItem?.payload.observed_at ?? timestamp(trustedClock(), 'v1.3 post-append correspondence observation time')
+    if (observedAt < assessmentReceipt.persisted_at) failD941('D941_IDENTITY_V13_TIME_INVALID', 'v1.3 post-append observation precedes the D9.4 receipt')
+    const post = retainedPostItem?.payload ?? createD941IdentityV13Correspondence({
+      broker, authorityContext, runtimeGeneration: expectedGeneration, observedAt,
+      semanticVerifierActor: authenticatedActorFor('independent_verifier', observedAt), persistenceBrokerActor: authenticatedActorFor('journal_broker', observedAt),
+      emptyOperationId: request.operation_id, emptyOperationNonce: request.operation_nonce,
+    })
+    validateD941IdentityV13Correspondence({ contract: identityV13, broker, authorityContext, value: post, runtimeGeneration: expectedGeneration, assertActor: assertIdentityActor })
+    if (post.journal_tip.receipt_sequence !== request.target_receipt_sequence || post.journal_tip.receipt_record_digest_sha256 !== assessmentReceipt.record_digest_sha256 || post.state_head.state_head_digest_sha256 === post.journal_tip.receipt_record_digest_sha256) failD941('D941_IDENTITY_V13_CORRESPONDENCE_INVALID', 'post correspondence does not preserve the exact distinct state and receipt identities')
+    if (!retainedPostItem) persistIdentityV13('d9.resolver.source-head-correspondence.v1.3', post, post.state_head.state_head_digest_sha256, observedAt)
+
+    identityState = validateIdentityState()
+    let brokerItem = identityState.brokerReceipts.find((item) => item.payload.append_request_record_digest_sha256 === request.record_digest_sha256)
+    if (!brokerItem) {
+      const brokerRecord = sealD941IdentityV13Record({
+        format: 'jedi-atlas-recovery-assessment-append-broker-receipt', format_version: '1.3.0',
+        receipt_code: `identity.broker.${canonicalSha256({ request: request.record_digest_sha256 }).slice(0, 20)}`,
+        operation_id: request.operation_id, operation_nonce: request.operation_nonce, runtime_generation: expectedGeneration, subject: request.subject,
+        append_request_record_digest_sha256: request.record_digest_sha256,
+        pre_append_correspondence: d941IdentityV13CorrespondenceReference(pre), post_append_correspondence: d941IdentityV13CorrespondenceReference(post),
+        d940_append_receipt_canonical_utf8: canonicalize(assessmentReceipt), d940_append_receipt_record_digest_sha256: assessmentReceipt.record_digest_sha256,
+        assessment_record_digest_sha256: assessment.record_digest_sha256,
+        broker_actor: authenticatedActorFor('journal_broker', observedAt), semantic_verifier_actor: authenticatedActorFor('independent_verifier', observedAt),
+        accepted_at: observedAt, persisted_at: observedAt, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+      })
+      assertD941IdentityV13Schema(identityV13, 'assessment-append-broker-receipt-v1-3.schema.json', brokerRecord, 'v1.3 assessment broker receipt')
+      brokerItem = persistIdentityV13('d9.resolver.identity-corrections.v1.3', brokerRecord, post.state_head.state_head_digest_sha256, observedAt)
+    }
+
+    identityState = validateIdentityState()
+    let transitionItem = identityState.transitions.find((item) => item.payload.append_request_record_digest_sha256 === request.record_digest_sha256)
+    if (!transitionItem) {
+      const transitionAt = timestamp(trustedClock(), 'v1.3 transition persistence time')
+      if (transitionAt < observedAt) failD941('D941_IDENTITY_V13_TIME_INVALID', 'v1.3 transition persistence precedes correspondence observation')
+      const postCheckpointSequence = preCheckpoint.checkpoint_sequence + 1
+      const postReference = d941IdentityV13CorrespondenceReference(post)
+      const transition = sealD941IdentityV13Record({
+        format: 'jedi-atlas-recovery-checkpoint-transition', format_version: '1.3.0',
+        transition_code: `identity.transition.${canonicalSha256({ request: request.record_digest_sha256 }).slice(0, 20)}`,
+        transition_sequence: postCheckpointSequence, operation_id: request.operation_id, operation_nonce: request.operation_nonce,
+        runtime_generation: expectedGeneration, subject: request.subject,
+        append_request_record_digest_sha256: request.record_digest_sha256, append_broker_receipt_record_digest_sha256: brokerItem.payload.record_digest_sha256,
+        pre_append_checkpoint_identity_record_digest_sha256: preCheckpoint.record_digest_sha256, post_checkpoint_sequence: postCheckpointSequence,
+        post_checkpoint_cas_identity_sha256: canonicalSha256({ checkpoint_sequence: postCheckpointSequence, predecessor_checkpoint_identity_record_digest_sha256: preCheckpoint.record_digest_sha256, correspondence_record_digest_sha256: postReference.correspondence_record_digest_sha256, state_head_digest_sha256: postReference.state_head_digest_sha256 }),
+        pre_append_correspondence: d941IdentityV13CorrespondenceReference(pre), post_append_correspondence: postReference,
+        source_head_cas_digest_sha256: post.state_head.state_head_digest_sha256,
+        journal_tip_receipt_record_digest_sha256: post.journal_tip.receipt_record_digest_sha256,
+        finalizer_actor: authenticatedActorFor('trusted_launcher', transitionAt), semantic_actor: authenticatedActorFor('independent_verifier', transitionAt), persistence_actor: authenticatedActorFor('journal_broker', transitionAt),
+        persisted_at: transitionAt, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+      })
+      assertD941IdentityV13Schema(identityV13, 'checkpoint-transition-v1-3.schema.json', transition, 'v1.3 checkpoint transition')
+      transitionItem = persistIdentityV13('d9.resolver.identity-corrections.v1.3', transition, post.state_head.state_head_digest_sha256, transitionAt)
+    }
+
+    identityState = validateIdentityState()
+    let postCheckpointItem = identityState.checkpoints.find((item) => item.payload.checkpoint_sequence === preCheckpoint.checkpoint_sequence + 1)
+    if (!postCheckpointItem) {
+      const checkpointAt = timestamp(trustedClock(), 'v1.3 checkpoint persistence time')
+      const postCheckpoint = createD941IdentityV13Checkpoint({ sequence: preCheckpoint.checkpoint_sequence + 1, correspondence: post, predecessorCheckpointDigest: preCheckpoint.record_digest_sha256, predecessorTransitionReceiptDigest: transitionItem.receipt.record_digest_sha256, createdAt: checkpointAt })
+      assertD941IdentityV13Schema(identityV13, 'checkpoint-identity-v1-3.schema.json', postCheckpoint, 'v1.3 post-append checkpoint')
+      postCheckpointItem = persistIdentityV13('d9.resolver.identity-corrections.v1.3', postCheckpoint, post.state_head.state_head_digest_sha256, checkpointAt)
+    }
+
+    identityState = validateIdentityState()
+    let linkItem = identityState.links.find((item) => item.payload.assessment_record_digest_sha256 === assessment.record_digest_sha256)
+    if (!linkItem) {
+      const linkAt = timestamp(trustedClock(), 'v1.3 assessment-link persistence time')
+      const link = sealD941IdentityV13Record({
+        format: 'jedi-atlas-recovery-assessment-source-identity-link', format_version: '1.3.0',
+        link_code: `identity.link.${assessment.record_digest_sha256.slice(0, 24)}`,
+        operation_id: request.operation_id, operation_nonce: request.operation_nonce, runtime_generation: expectedGeneration, subject: request.subject,
+        assessment_record_digest_sha256: assessment.record_digest_sha256, assessment_receipt_record_digest_sha256: assessmentReceipt.record_digest_sha256,
+        post_append_correspondence: d941IdentityV13CorrespondenceReference(post), checkpoint_identity_record_digest_sha256: postCheckpointItem.payload.record_digest_sha256,
+        semantic_actor: authenticatedActorFor('independent_verifier', assessment.knowledge_boundary.recorded_at), persistence_actor: authenticatedActorFor('journal_broker', linkAt),
+        classified_at: assessment.knowledge_boundary.recorded_at, persisted_at: linkAt,
+        technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+      })
+      assertD941IdentityV13Schema(identityV13, 'recovery-assessment-link-v1-3.schema.json', link, 'v1.3 assessment link')
+      linkItem = persistIdentityV13('d9.resolver.identity-corrections.v1.3', link, post.state_head.state_head_digest_sha256, linkAt)
+    }
+
+    identityState = validateIdentityState()
+    let projectionItem = identityState.projections.find((item) => item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce)
+    if (!projectionItem) {
+      const projectionAt = timestamp(trustedClock(), 'v1.3 projection persistence time')
+      const material = currentD940IdentityMaterial(post.journal_tip.receipt_sequence)
+      const controlRecords = material.items.map(({ receipt, record }) => ({ receipt_sequence: receipt.receipt_sequence, record_kind_code: record.format === 'jedi-atlas-d940-recovery-assessment' ? 'recovery_assessment' : record.record_kind_code, record_digest_sha256: record.record_digest_sha256 }))
+      const projection = sealD941IdentityV13Record({
+        format: 'jedi-atlas-d940-control-access-projection', format_version: '1.3.0',
+        projection_code: `identity.projection.${canonicalSha256({ operation_id: request.operation_id, operation_nonce: request.operation_nonce }).slice(0, 20)}`,
+        operation_id: request.operation_id, operation_nonce: request.operation_nonce, runtime_generation: expectedGeneration, subject: request.subject,
+        source_correspondence: d941IdentityV13CorrespondenceReference(post), journal_namespace_code: 'd940.global.control-journal.v1',
+        known_through_receipt_sequence: post.journal_tip.receipt_sequence, known_through_persisted_at: post.journal_tip.receipt_persisted_at,
+        control_ledger_head_receipt_digest_sha256: post.journal_tip.receipt_record_digest_sha256,
+        d940_state_head_digest_sha256: post.state_head.state_head_digest_sha256,
+        control_head_projection_sha256: canonicalSha256(controlRecords),
+        access_head_projection_sha256: canonicalSha256({ subject: request.subject, known_through_receipt_sequence: post.journal_tip.receipt_sequence, access_records: [] }),
+        semantic_actor: authenticatedActorFor('independent_verifier', projectionAt), observed_at: projectionAt,
+        technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+      })
+      assertD941IdentityV13Schema(identityV13, 'control-access-projection-v1-3.schema.json', projection, 'v1.3 control/access projection')
+      projectionItem = persistIdentityV13('d9.resolver.identity-corrections.v1.3', projection, post.state_head.state_head_digest_sha256, projectionAt)
+    }
+    return deepFreeze({ correspondence: post, brokerReceipt: brokerItem.payload, transition: transitionItem.payload, checkpoint: postCheckpointItem.payload, link: linkItem.payload, projection: projectionItem.payload })
+  }
+
+  function finalizeLegacyV12Progression({ revalidation, assessment, assessmentReceipt }) {
     let state = validateDurableState()
     const existing = state.transitions.find((item) => item.assessment.record_digest_sha256 === assessment.record_digest_sha256)
-    if (existing) return existing
+    if (existing) return deepFreeze({ ...existing, identityV13: finalizeIdentityV13({ revalidation, assessment, assessmentReceipt }) })
     const requestEntry = state.pendingProgressionRecords.find((item) => item.payload.format === 'jedi-atlas-recovery-checkpoint-assessment-append-request' && item.payload.assessment_record_digest_sha256 === assessment.record_digest_sha256)
     if (!requestEntry || (revalidation != null && (!same(requestEntry.payload, revalidation.progressionRequest) || !same(requestEntry.receipt, revalidation.progressionRequestReceipt)))) failD941('D941_RESOLVER_PROGRESSION_REQUEST_INVALID', 'post-append finalization cannot resolve the exact durable progression request')
     const request = requestEntry.payload
@@ -1426,7 +1950,12 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     })
     assertProgressionSchema('checkpoint-transition-v1-2.schema.json', transition, 'checkpoint transition')
     persistProgression('d9.resolver.checkpoint-transitions.v1.2', transition, persistedAt, postD940)
-    return validateDurableState().transitions.find((item) => item.transition.record_digest_sha256 === transition.record_digest_sha256)
+    const retainedTransition = validateDurableState().transitions.find((item) => item.transition.record_digest_sha256 === transition.record_digest_sha256)
+    return deepFreeze({ ...retainedTransition, identityV13: finalizeIdentityV13({ revalidation, assessment, assessmentReceipt }) })
+  }
+
+  function finalizeProgression(input) {
+    return finalizeIdentityV13(input)
   }
 
   function retainedRevalidationFor(state, assessment) {
@@ -1445,11 +1974,12 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     return deepFreeze({ attestation: attestation.payload, durableRequest: request.wrapper, durableResponse: response.wrapper, durableAttestation: attestation.wrapper, checkpoint })
   }
 
-  function persistAssessmentLink({ revalidation, assessment, assessmentReceipt }) {
+  function persistLegacyV11AssessmentLink({ revalidation, assessment, assessmentReceipt }) {
     let state = validateDurableState()
     const existing = state.links.find((item) => item.assessment.record_digest_sha256 === assessment.record_digest_sha256)
     if (existing) {
       if (!same(existing.assessment, assessment) || !same(existing.assessmentReceipt, assessmentReceipt)) failD941('D941_RESOLVER_ASSESSMENT_LINK_COLLISION', 'assessment replay differs from the retained durable link')
+      finalizeIdentityV13({ revalidation, assessment, assessmentReceipt })
       return existing
     }
     if (assessment.format !== 'jedi-atlas-d940-recovery-assessment' || assessmentReceipt.target_format !== assessment.format || assessmentReceipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || assessmentReceipt.target_subject_identity_sha256 !== assessment.subject.subject_identity_sha256 || assessmentReceipt.operation_id !== assessment.operation_id || assessmentReceipt.operation_nonce !== assessment.operation_nonce) failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'D9.4 assessment receipt does not bind the exact assessment')
@@ -1486,6 +2016,12 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     persistBatch('d9.resolver.assessment-links.v1.1', [link], link, persistedAt, persistedAt)
     state = validateDurableState()
     return state.links.find((item) => item.link.record_digest_sha256 === link.record_digest_sha256)
+  }
+
+  function persistAssessmentLink({ revalidation, assessment, assessmentReceipt }) {
+    broker.assertRecoveryAppendLock(assessment)
+    if (assessment.format !== 'jedi-atlas-d940-recovery-assessment' || assessmentReceipt.target_format !== assessment.format || assessmentReceipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || assessmentReceipt.target_subject_identity_sha256 !== assessment.subject.subject_identity_sha256 || assessmentReceipt.operation_id !== assessment.operation_id || assessmentReceipt.operation_nonce !== assessment.operation_nonce) failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'D9.4 assessment receipt does not bind the exact assessment')
+    return finalizeProgression({ revalidation, assessment, assessmentReceipt })
   }
 
   bootstrapDurability()

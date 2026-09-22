@@ -77,6 +77,7 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
   assertD941AuthorityRegistry(authorityRegistry)
   assertD941AuthorityLockBinding(authorityRegistry, { linuxEnforcement, operationLockRootPath, operationLockLeaf })
   assertLinuxEnforcement(linuxEnforcement).probe()
+  let operationLockContext = null
 
   function persistedNonceClaims() {
     const claims = new Map()
@@ -168,12 +169,24 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
   }
 
   function appendLocked(input) {
-    const prepared = prepareAppend(input)
-    const result = prepared.replay ?? persistPrepared(input.record, prepared)
-    if (input.record.format === 'jedi-atlas-d940-recovery-assessment') {
-      persistD941RecoveryAssessmentLink(input.runtimeProof ?? getD941RecoveryClassificationProof(input.record), input.record, result.receipt, broker)
-    }
-    return result
+    const previousContext = operationLockContext
+    operationLockContext = Object.freeze({
+      kind: 'ledger_append',
+      format: input.record?.format,
+      recordCode: input.record?.record_code,
+      recordDigestSha256: input.record?.record_digest_sha256,
+      operationId: input.record?.operation_id,
+      operationNonce: input.record?.operation_nonce,
+      subjectIdentitySha256: input.record?.subject?.subject_identity_sha256,
+    })
+    try {
+      const prepared = prepareAppend(input)
+      const result = prepared.replay ?? persistPrepared(input.record, prepared)
+      if (input.record.format === 'jedi-atlas-d940-recovery-assessment') {
+        persistD941RecoveryAssessmentLink(input.runtimeProof ?? getD941RecoveryClassificationProof(input.record), input.record, result.receipt, broker)
+      }
+      return result
+    } finally { operationLockContext = previousContext }
   }
 
   async function append(input) {
@@ -185,29 +198,74 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
 
   async function withDestructiveLock(callback) {
     const lease = await linuxEnforcement.holdOperationLock({ rootPath: operationLockRootPath, relativePath: operationLockLeaf })
+    const leaseToken = Object.freeze({})
+    const pending = new Set()
+    let active = true
+    let accepting = true
+    operationLockContext = Object.freeze({ kind: 'destructive_operation', leaseToken })
     setD941DestructiveLockHeld(authorityRegistry, true)
+    const assertLeaseActive = () => {
+      if (!active || operationLockContext?.kind !== 'destructive_operation' || operationLockContext.leaseToken !== leaseToken) failD941('D941_OPERATION_LOCK_REQUIRED', 'retained destructive-lock capability is inactive or no longer owns the kernel lease')
+    }
+    const assertAccepting = () => {
+      assertLeaseActive()
+      if (!accepting) failD941('D941_OPERATION_LOCK_REQUIRED', 'destructive-lock callback has settled and accepts no new capability work')
+    }
+    const track = (promise) => {
+      pending.add(promise)
+      void promise.then(() => pending.delete(promise), () => pending.delete(promise))
+      return promise
+    }
     const context = Object.freeze({
       lock_identity_sha256: canonicalSha256({ operationLockRootPath, operationLockLeaf }),
       authority_head_digest_sha256: authorityRegistry.head().digest,
       assertAuthorityHead() {
+        assertAccepting()
         const current = authorityRegistry.head().digest
         if (current !== context.authority_head_digest_sha256) failD941('D941_AUTHORITY_HEAD_CHANGED', 'authority state changed while the destructive lock was held')
         return true
       },
-      appendLocked,
-      async effectThenAppend(input, effect) {
-        const prepared = prepareAppend({ ...input, runtimeProof: null, allowPendingEffect: true })
-        if (prepared.replay) return prepared.replay
-        const effectResult = await effect()
-        if (authorityRegistry.head().digest !== context.authority_head_digest_sha256) failD941('D941_AUTHORITY_HEAD_CHANGED', 'authority state changed during the protected effect')
-        const finalized = prepareAppend({ ...input, runtimeProof: effectResult?.runtimeProof ?? input.runtimeProof ?? null, expectedPersistedAt: prepared.expectedPersistedAt })
-        if (finalized.replay) return finalized
-        return Object.freeze({ append: persistPrepared(input.record, finalized), effectResult })
+      appendLocked(input) {
+        assertAccepting()
+        return appendLocked(input)
+      },
+      effectThenAppend(input, effect) {
+        assertAccepting()
+        const work = (async () => {
+          const prepared = prepareAppend({ ...input, runtimeProof: null, allowPendingEffect: true })
+          if (prepared.replay) return prepared.replay
+          assertLeaseActive()
+          const effectResult = await effect()
+          assertLeaseActive()
+          if (authorityRegistry.head().digest !== context.authority_head_digest_sha256) failD941('D941_AUTHORITY_HEAD_CHANGED', 'authority state changed during the protected effect')
+          const finalized = prepareAppend({ ...input, runtimeProof: effectResult?.runtimeProof ?? input.runtimeProof ?? null, expectedPersistedAt: prepared.expectedPersistedAt })
+          if (finalized.replay) return finalized
+          assertLeaseActive()
+          return Object.freeze({ append: persistPrepared(input.record, finalized), effectResult })
+        })()
+        return track(work)
       },
     })
-    try { return await callback(context) } finally { setD941DestructiveLockHeld(authorityRegistry, false); await lease.release() }
+    try { return await callback(context) } finally {
+      accepting = false
+      while (pending.size !== 0) await Promise.allSettled([...pending])
+      active = false
+      operationLockContext = null
+      setD941DestructiveLockHeld(authorityRegistry, false)
+      await lease.release()
+    }
   }
-  const broker = Object.freeze({ append, head, authorityHead: () => authorityRegistry.head(), revalidateSession: (session, at) => authorityRegistry.revalidateSession(session, at), validate: () => validateReceiptChain(store, contractSet), store, withDestructiveLock })
+  function assertRecoveryAppendLock(record) {
+    const context = operationLockContext
+    if (!context || context.kind !== 'ledger_append' || record?.format !== 'jedi-atlas-d940-recovery-assessment' ||
+        context.format !== record.format || context.recordCode !== record.record_code || context.recordDigestSha256 !== record.record_digest_sha256 ||
+        context.operationId !== record.operation_id || context.operationNonce !== record.operation_nonce ||
+        context.subjectIdentitySha256 !== record.subject?.subject_identity_sha256) {
+      failD941('D941_OPERATION_LOCK_REQUIRED', 'D9.4 recovery source-CAS persistence requires the exact operation-bound assessment append lock')
+    }
+    return true
+  }
+  const broker = Object.freeze({ append, head, authorityHead: () => authorityRegistry.head(), revalidateSession: (session, at) => authorityRegistry.revalidateSession(session, at), validate: () => validateReceiptChain(store, contractSet), store, withDestructiveLock, assertRecoveryAppendLock })
   brokers.add(broker)
   return broker
 }
