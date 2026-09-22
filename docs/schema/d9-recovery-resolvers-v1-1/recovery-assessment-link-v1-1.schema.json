@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/recovery-assessment-link-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "link_code", "operation_id", "operation_nonce", "runtime_generation", "subject_identity_sha256", "request_durable_record_digest_sha256", "response_durable_record_digest_sha256", "attestation_durable_record_digest_sha256", "composite_response_record_digest_sha256", "append_attestation_record_digest_sha256", "checkpoint_sequence", "checkpoint_record_digest_sha256", "recovery_assessment_canonical_utf8", "recovery_assessment_record_digest_sha256", "d940_assessment_receipt_canonical_utf8", "d940_assessment_receipt_sequence", "d940_assessment_receipt_record_digest_sha256", "d940_assessment_journal_head_digest_sha256", "semantic_actor", "persistence_actor", "classified_at", "persisted_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-assessment-resolver-link" }, "format_version": { "const": "1.1.0" },
+    "link_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" }, "operation_id": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-1.schema.json#/$defs/operationNonce" }, "runtime_generation": { "$ref": "common-v1-1.schema.json#/$defs/runtimeGeneration" },
+    "request_durable_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "response_durable_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "attestation_durable_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "subject_identity_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "composite_response_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "append_attestation_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "checkpoint_sequence": { "$ref": "common-v1-1.schema.json#/$defs/positiveInteger" },
+    "checkpoint_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "recovery_assessment_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 }, "recovery_assessment_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "d940_assessment_receipt_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 }, "d940_assessment_receipt_sequence": { "$ref": "common-v1-1.schema.json#/$defs/positiveInteger" }, "d940_assessment_receipt_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "d940_assessment_journal_head_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "semantic_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" }, "persistence_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "classified_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" }, "persisted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true }, "authority_granted": { "const": false }, "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}

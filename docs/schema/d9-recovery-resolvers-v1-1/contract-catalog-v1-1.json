@@ -1,0 +1,55 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-contract-catalog",
+  "format_version": "1.1.0",
+  "status_code": "design_only_contract_freeze",
+  "authority_code": "technical_recovery_evidence_only_no_operational_authority",
+  "supersedes_contract_version": "1.0.0",
+  "supersedes_scope": "checkpoint_durability_replay_and_assessment_linkage_only",
+  "preserved_v1_contract": {
+    "catalog_sha256": "df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3",
+    "classifications_sha256": "9f137c1ca9905b5a02754292a1b828bbdd7174af78bd385b3b4a3584fd1abe04",
+    "digest_profiles_sha256": "b7adfc736b04ef5c657e94bf2a621a602e518165cbf9b08f2b3c0653963abf90",
+    "field_registry_sha256": "d6f9ec22ae8fdb6bbb998374680f13a89f02ffef2431d9eb8c6003294a3db1d8",
+    "projection_profiles_sha256": "c9c7a09c4a29814b1a6b55112e9b11075f1e1cc654e393561e6e3d79ad1ae6ff",
+    "root_inventory_sha256": "93832dc8a6f12ae030515781169fd8ac9dd5431aa68f62699168469da3da6f31"
+  },
+  "approved_dependencies": {
+    "semantic_verifier_path": "docs/schema/validate-d9-recovery-resolvers.mjs",
+    "semantic_verifier_sha256": "bc36de4475ee6d8b9fd354f80163799f431496ae91765b5dd4903fdde9763ef5",
+    "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+    "d940_catalog_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+    "d91_implementation_commit": "79046c27dfa6923383be33a1d0aaa5a7641f5d1f",
+    "d92_implementation_commit": "460547b7fe75a94f689dabc97fd91ee6f803934a",
+    "d931_implementation_commit": "d960a03f4b8ac8a78d3f6b40ba909eb24b5f3442"
+  },
+  "schemas": [
+    { "file": "common-v1-1.schema.json", "raw_sha256": "04c6d64b790c569b672aead27046b9a3e8c96811f2090edc86155abc34b11b32" },
+    { "file": "bootstrap-source-observation-v1-1.schema.json", "raw_sha256": "014c9fbe48543c56edc2869618d6bd0b3104aa4917a47eb6e5fbbda903ba08c0" },
+    { "file": "checkpoint-bootstrap-permit-v1-1.schema.json", "raw_sha256": "d006d25e80a4a3d7335c563d8d0c83681954a7b7cec1315bb61a4bbe262e77a2" },
+    { "file": "checkpoint-record-v1-1.schema.json", "raw_sha256": "e350df6bd3f2b8270121384e60e45401d0c37103a34b6f72ec7080b654acfe0d" },
+    { "file": "durable-resolver-record-v1-1.schema.json", "raw_sha256": "99f08dc1de562e14d37f702d7c818c9ab6b9504346f25cc19a7cad9d5a66df88" },
+    { "file": "append-receipt-v1-1.schema.json", "raw_sha256": "563708cfc7f06f79d2f35f3ef508262b6c3437fc4357a99db655cc394ceb708a" },
+    { "file": "append-result-v1-1.schema.json", "raw_sha256": "83110ac5b3e916db85e67b00b9703901a458767d4a62dc60e9dfe8e53e2b5641" },
+    { "file": "recovery-assessment-link-v1-1.schema.json", "raw_sha256": "d15bf8f84da314f392cf5c6520e17ef74d49acb254b36664b8cd06a7f770348a" }
+  ],
+  "registries": [
+    { "file": "classifications-v1-1.json", "raw_sha256": "62972ec8950fe4faea53ddb51343f31d3623ca02e159ea5eee41ebcfc2b0903c" },
+    { "file": "digest-profiles-v1-1.json", "raw_sha256": "e442c15574f6b7cffcc4f1576ad549ed06f96bf4e14460690a6cbb3182629522" },
+    { "file": "field-source-registry-v1-1.json", "raw_sha256": "71b377184580d9f8290e3726fca61505e282a0ac0f0d58c63dc27c891fece406" },
+    { "file": "storage-profiles-v1-1.json", "raw_sha256": "5fc9526f0f4cf740057a9036df94e28713ccd73b0479d31ea2b248434ad22cc7" }
+  ],
+  "fixtures": [
+    { "file": "fixtures/golden-vectors-v1-1.json", "raw_sha256": "a07bc80e56986b57a6106b660c6d11f5ddc7f8ab4dce57f2a790e232327bb326" },
+    { "file": "fixtures/invalid-contracts-v1-1.json", "raw_sha256": "45b538cc79c50962591a913ab46a6f0fb42151436936a7884f7d23cd452d094b" },
+    { "file": "fixtures/valid-contracts-v1-1.json", "raw_sha256": "854cc6e2cc396b90f7c49b6e7a75830ec40cf937169a85dac181ff42df8b9042" }
+  ],
+  "migration_sha256": {
+    "001_schema.sql": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094",
+    "002_reference_data.sql": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923",
+    "003_seed_eu_core.sql": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700",
+    "004_tranche_1a_foundations.sql": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2",
+    "005_tranche_2a_source_quarantine.sql": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+  },
+  "instance_policy": { "runtime_implementation_authorized": false, "operational_activation_authorized": false, "credentials_authorized": false, "atlas_writes_authorized": false, "recovery_actions_authorized": false, "legal_conclusions_authorized": false, "public_exposure_authorized": false }
+}

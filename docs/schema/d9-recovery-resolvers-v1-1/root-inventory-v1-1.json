@@ -1,0 +1,23 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-root-inventory",
+  "format_version": "1.1.0",
+  "self_exclusion": "root-inventory-v1-1.json",
+  "files": [
+    { "path": "append-receipt-v1-1.schema.json", "raw_sha256": "563708cfc7f06f79d2f35f3ef508262b6c3437fc4357a99db655cc394ceb708a" },
+    { "path": "append-result-v1-1.schema.json", "raw_sha256": "83110ac5b3e916db85e67b00b9703901a458767d4a62dc60e9dfe8e53e2b5641" },
+    { "path": "bootstrap-source-observation-v1-1.schema.json", "raw_sha256": "014c9fbe48543c56edc2869618d6bd0b3104aa4917a47eb6e5fbbda903ba08c0" },
+    { "path": "checkpoint-bootstrap-permit-v1-1.schema.json", "raw_sha256": "d006d25e80a4a3d7335c563d8d0c83681954a7b7cec1315bb61a4bbe262e77a2" },
+    { "path": "checkpoint-record-v1-1.schema.json", "raw_sha256": "e350df6bd3f2b8270121384e60e45401d0c37103a34b6f72ec7080b654acfe0d" },
+    { "path": "classifications-v1-1.json", "raw_sha256": "62972ec8950fe4faea53ddb51343f31d3623ca02e159ea5eee41ebcfc2b0903c" },
+    { "path": "common-v1-1.schema.json", "raw_sha256": "04c6d64b790c569b672aead27046b9a3e8c96811f2090edc86155abc34b11b32" },
+    { "path": "contract-catalog-v1-1.json", "raw_sha256": "aa846c01c5d055050c810249316d11eba7a48d1080681f9538be3e71d371bb26" },
+    { "path": "digest-profiles-v1-1.json", "raw_sha256": "e442c15574f6b7cffcc4f1576ad549ed06f96bf4e14460690a6cbb3182629522" },
+    { "path": "durable-resolver-record-v1-1.schema.json", "raw_sha256": "99f08dc1de562e14d37f702d7c818c9ab6b9504346f25cc19a7cad9d5a66df88" },
+    { "path": "field-source-registry-v1-1.json", "raw_sha256": "71b377184580d9f8290e3726fca61505e282a0ac0f0d58c63dc27c891fece406" },
+    { "path": "fixtures/golden-vectors-v1-1.json", "raw_sha256": "a07bc80e56986b57a6106b660c6d11f5ddc7f8ab4dce57f2a790e232327bb326" },
+    { "path": "fixtures/invalid-contracts-v1-1.json", "raw_sha256": "45b538cc79c50962591a913ab46a6f0fb42151436936a7884f7d23cd452d094b" },
+    { "path": "fixtures/valid-contracts-v1-1.json", "raw_sha256": "854cc6e2cc396b90f7c49b6e7a75830ec40cf937169a85dac181ff42df8b9042" },
+    { "path": "recovery-assessment-link-v1-1.schema.json", "raw_sha256": "d15bf8f84da314f392cf5c6520e17ef74d49acb254b36664b8cd06a7f770348a" },
+    { "path": "storage-profiles-v1-1.json", "raw_sha256": "5fc9526f0f4cf740057a9036df94e28713ccd73b0479d31ea2b248434ad22cc7" }
+  ]
+}

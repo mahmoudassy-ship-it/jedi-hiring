@@ -1,0 +1,10 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-golden-vectors",
+  "format_version": "1.1.0",
+  "vectors": [
+    { "vector_code": "arrays_null_unicode", "canonical_utf8": "{\"a\":null,\"arr\":[3,2,1],\"z\":\"Ω\"}", "sha256": "f80d3d21a1559aa06be5ccdceb68021122581e5a2ab03a37bf0e3cea89d35d2c" },
+    { "vector_code": "astral_bmp_values", "canonical_utf8": "{\"astral\":\"😀\",\"bmp\":\"\",\"z\":0}", "sha256": "7e371b48a5c15cee0a9544839579d1bd0d07b021e6d0167c2e339562f0fb2c64" },
+    { "vector_code": "journal_identity", "canonical_utf8": "{\"namespace_code\":\"d9.resolver.records.v1.1\",\"sequence\":1,\"value\":\"fixed\"}", "sha256": "d4d417546c725b410c1daa074930a53579467f66c5a6e7cff57ef75f683b56d1" },
+    { "vector_code": "complete_append_result", "canonical_utf8": "{\"authority_granted\":false,\"durable_receipt_record_digest_sha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"error_code\":null,\"format\":\"jedi-atlas-recovery-resolver-append-result\",\"format_version\":\"1.1.0\",\"observed_at\":\"2030-01-01T00:10:01.010Z\",\"operation_id\":\"operation.synthetic.1\",\"outcome_code\":\"exact_replay_no_op\",\"payload_record_digest_sha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"record_digest_sha256\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"result_code\":\"result.exact-replay\",\"technical_evidence_only\":true}", "sha256": "38c6cf27e3171cc3e39701ddd6d69bf5e21166317f9a29ae18714dab4628a6cb" }
+  ]
+}

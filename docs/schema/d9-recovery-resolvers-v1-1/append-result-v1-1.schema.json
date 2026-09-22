@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/append-result-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "result_code", "operation_id", "payload_record_digest_sha256", "outcome_code", "error_code", "durable_receipt_record_digest_sha256", "observed_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-resolver-append-result" }, "format_version": { "const": "1.1.0" }, "result_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" }, "payload_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "outcome_code": { "enum": ["persisted", "exact_replay_no_op", "rejected"] }, "error_code": { "type": ["string", "null"], "enum": [null, "head_mismatch", "fork", "gap", "rollback", "replay_collision", "expired", "corrupt_state", "ambiguous_state"] },
+    "durable_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-1.schema.json#/$defs/sha256" }, { "type": "null" }] }, "observed_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true }, "authority_granted": { "const": false }, "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}

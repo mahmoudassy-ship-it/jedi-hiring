@@ -1,0 +1,18 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-field-source-registry",
+  "format_version": "1.1.0",
+  "default_confidentiality_code": "highly_restricted_integrity",
+  "unknown_field_code": "reject",
+  "fields": [
+    { "path_family": "bootstrap_observation.*", "trusted_producer": "authenticated_independent_verifier_from_bootstrap_only_fixed_function_source_adapter", "consumer": "trusted_launcher_and_journal_broker", "storage": "d9.resolver.checkpoints.v1.1_atomic_bootstrap_batch", "caller_claim": false },
+    { "path_family": "checkpoint.source_heads", "trusted_producer": "authenticated_source_adapters_observed_by_independent_verifier", "consumer": "resolver_and_append_revalidator", "storage": "d9.resolver.checkpoints.v1.1", "caller_claim": false },
+    { "path_family": "checkpoint.bootstrap_permit", "trusted_producer": "trusted_launcher_after_empty_store_and_generation_verification", "consumer": "independent_verifier_and_journal_broker", "storage": "d9.resolver.checkpoints.v1.1", "caller_claim": false },
+    { "path_family": "semantic_actor", "trusted_producer": "authenticated_runtime_binding_resolver", "consumer": "journal_broker", "storage": "all_v1_1_namespaces", "caller_claim": false },
+    { "path_family": "persistence_actor|persisted_at|journal_sequence", "trusted_producer": "authenticated_journal_broker_and_trusted_clock", "consumer": "all_reconstructors", "storage": "all_v1_1_namespaces", "caller_claim": false },
+    { "path_family": "resolver_payload_canonical_utf8_and_digest", "trusted_producer": "verified_v1_route_component_and_fixed_canonicalizer", "consumer": "independent_semantic_verifier_journal_broker_and_recovery_classifier", "storage": "d9.resolver.records.v1.1", "caller_claim": false },
+    { "path_family": "payload_producer", "trusted_producer": "authenticated_frozen_v1_route_binding", "consumer": "independent_semantic_verifier_and_journal_broker", "storage": "d9.resolver.records.v1.1", "caller_claim": false },
+    { "path_family": "append_result", "trusted_producer": "journal_broker_from_durable_state", "consumer": "authenticated_requester", "storage": "operational_return_not_canonical_journal_state", "caller_claim": false },
+    { "path_family": "assessment_link", "trusted_producer": "authenticated_independent_verifier", "consumer": "journal_broker_and_recovery_auditor", "storage": "d9.resolver.assessment-links.v1.1", "caller_claim": false },
+    { "path_family": "authority_boundary", "trusted_producer": "reviewed_contract_constant", "consumer": "all_components", "storage": "all_v1_1_namespaces", "caller_claim": false }
+  ]
+}

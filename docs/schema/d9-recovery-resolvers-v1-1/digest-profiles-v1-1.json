@@ -1,0 +1,11 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-digest-profiles",
+  "format_version": "1.1.0",
+  "canonicalization": { "encoding": "utf-8", "unicode_normalization": "none", "object_key_order": "utf-16-code-unit-ascending", "array_order": "preserved", "number_policy": "nonnegative-safe-integers-only", "duplicate_keys": "reject", "line_ending": "none" },
+  "profiles": [
+    { "profile_code": "resolver_durable_record_v1_1", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "checkpoint_source_set_v1_1", "included_fields": ["source_namespace_code", "source_contract_fingerprint_sha256", "head_sequence", "head_digest_sha256", "head_persisted_at", "inventory_digest_sha256"], "ordering": "source_namespace_code_binary_ascending_unique" },
+    { "profile_code": "journal_chain_v1_1", "included_fields": ["namespace_code", "sequence", "predecessor_record_digest_sha256", "payload_record_digest_sha256", "persisted_at"] },
+    { "profile_code": "exact_file_bytes", "excluded_top_level_field": null }
+  ]
+}

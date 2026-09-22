@@ -1,0 +1,44 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-classifications",
+  "format_version": "1.1.0",
+  "status_code": "design_only_contract_freeze",
+  "namespaces": ["d9.resolver.records.v1.1", "d9.resolver.checkpoints.v1.1", "d9.resolver.assessment-links.v1.1"],
+  "record_kinds": ["bootstrap_observation", "bootstrap_permit", "request", "response", "append_attestation", "checkpoint", "assessment_link", "append_receipt"],
+  "checkpoint_kinds": ["bootstrap", "advance"],
+  "append_outcomes": ["persisted", "exact_replay_no_op", "rejected"],
+  "append_errors": ["head_mismatch", "fork", "gap", "rollback", "replay_collision", "expired", "corrupt_state", "ambiguous_state"],
+  "recovery_dispositions": ["complete", "response_lost_after_durable_append", "incomplete_before_durable_append", "reconciliation_required"],
+  "producer_matrix": [
+    { "record_family": "bootstrap_permit", "semantic_role": "trusted_launcher", "persistence_role": "journal_broker" },
+    { "record_family": "checkpoint", "semantic_role": "independent_verifier", "persistence_role": "journal_broker" },
+    { "record_family": "resolver_request", "semantic_role": "trusted_launcher_or_independent_verifier_per_v1_route", "persistence_role": "journal_broker" },
+    { "record_family": "resolver_response", "semantic_role": "verified_v1_route_responder", "persistence_role": "journal_broker" },
+    { "record_family": "append_attestation", "semantic_role": "independent_verifier", "persistence_role": "journal_broker" },
+    { "record_family": "assessment_link", "semantic_role": "independent_verifier", "persistence_role": "journal_broker" }
+  ],
+  "checkpoint_rules": {
+    "bootstrap": "empty_namespace_only_sequence_1_exact_six_double_observed_heads_one_time_per_generation",
+    "advance": "expected_current_predecessor_plus_one_exact_attested_heads_atomic_compare_and_append",
+    "duplicate": "identical_record_is_no_op_only_after_complete_projection_verification",
+    "conflict": "same_code_sequence_or_operation_with_different_bytes_reject",
+    "freshness_ms": 1000,
+    "monotonic_trusted_time": true
+  },
+  "cross_store_assessment_states": [
+    { "state_code": "d940_assessment_absent", "link_allowed": false, "disposition": "incomplete_before_d940_durable_append" },
+    { "state_code": "d940_assessment_durable_link_absent", "link_allowed": true, "disposition": "append_exact_link_or_replay_existing_link" },
+    { "state_code": "d940_assessment_and_link_durable", "link_allowed": false, "disposition": "exact_replay_no_op" },
+    { "state_code": "d940_assessment_or_link_ambiguous", "link_allowed": false, "disposition": "reconciliation_required" }
+  ],
+  "authority_boundary": {
+    "technical_recovery_evidence_only": true,
+    "recovery_authority_granted": false,
+    "evidence_acceptance_established": false,
+    "officiality_established": false,
+    "legal_identity_established": false,
+    "legal_effect_established": false,
+    "legal_verification_established": false,
+    "publication_eligibility_established": false,
+    "d95_authority_granted": false
+  }
+}

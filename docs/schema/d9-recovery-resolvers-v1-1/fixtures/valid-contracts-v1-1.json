@@ -1,0 +1,19 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-valid-fixtures",
+  "format_version": "1.1.0",
+  "fixture_policy": "synthetic_templates_resealed_by_offline_validator",
+  "actors": {
+    "launcher": { "runtime_role_code": "trusted_launcher", "binding_code": "binding.filler.19", "endpoint_code": "ipc.launcher", "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1", "binding_generation": 1 },
+    "verifier": { "runtime_role_code": "independent_verifier", "binding_code": "binding.independent.verifier.synthetic", "endpoint_code": "ipc.verifier", "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c", "binding_generation": 1 },
+    "broker": { "runtime_role_code": "journal_broker", "binding_code": "binding.journal.synthetic", "endpoint_code": "ipc.journal", "executable_build_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848", "binding_generation": 1 }
+  },
+  "runtime_generation": { "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86", "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752", "binding_generation": 1 },
+  "source_heads": [
+    { "source_namespace_code": "d901.capability-state.v1", "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12", "head_sequence": 1, "head_digest_sha256": "0101010101010101010101010101010101010101010101010101010101010101", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111" },
+    { "source_namespace_code": "d901.control-state.v1", "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12", "head_sequence": 1, "head_digest_sha256": "0202020202020202020202020202020202020202020202020202020202020202", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1212121212121212121212121212121212121212121212121212121212121212" },
+    { "source_namespace_code": "d920.accepted-evidence.v1", "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc", "head_sequence": 1, "head_digest_sha256": "0303030303030303030303030303030303030303030303030303030303030303", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1313131313131313131313131313131313131313131313131313131313131313" },
+    { "source_namespace_code": "d930.custody-journal.v1", "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099", "head_sequence": 1, "head_digest_sha256": "0404040404040404040404040404040404040404040404040404040404040404", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1414141414141414141414141414141414141414141414141414141414141414" },
+    { "source_namespace_code": "d930.primary-receipts.v1", "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099", "head_sequence": 1, "head_digest_sha256": "0505050505050505050505050505050505050505050505050505050505050505", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1515151515151515151515151515151515151515151515151515151515151515" },
+    { "source_namespace_code": "d940.global.control-journal.v1", "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7", "head_sequence": 1, "head_digest_sha256": "0606060606060606060606060606060606060606060606060606060606060606", "head_persisted_at": "2030-01-01T00:00:00.000Z", "inventory_digest_sha256": "1616161616161616161616161616161616161616161616161616161616161616" }
+  ]
+}

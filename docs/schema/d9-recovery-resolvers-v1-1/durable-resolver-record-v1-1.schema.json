@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/durable-resolver-record-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "record_code", "record_kind_code", "resolver_kind_code", "sequence", "predecessor_record_digest_sha256", "operation_id", "operation_nonce", "runtime_generation", "subject", "payload_format", "payload_canonical_utf8", "payload_record_digest_sha256", "semantic_verifier_code", "semantic_verifier_sha256", "request_record_digest_sha256", "response_record_digest_sha256", "attestation_record_digest_sha256", "payload_producer", "semantic_actor", "persistence_actor", "accepted_at", "persisted_at", "checkpoint_sequence", "checkpoint_record_digest_sha256", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-resolver-durable-record" }, "format_version": { "const": "1.1.0" },
+    "record_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "record_kind_code": { "enum": ["request", "response", "append_attestation"] },
+    "resolver_kind_code": { "enum": ["d901_control_access", "d920_accepted_evidence", "d930_custody", "d940_composite_snapshot"] },
+    "sequence": { "$ref": "common-v1-1.schema.json#/$defs/positiveInteger" },
+    "predecessor_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "operation_id": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-1.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-1.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-1.schema.json#/$defs/subject" },
+    "payload_format": { "enum": ["jedi-atlas-recovery-projection-resolution-request", "jedi-atlas-recovery-projection-resolution-response", "jedi-atlas-recovery-projection-append-revalidation-attestation"] },
+    "payload_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 },
+    "payload_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "semantic_verifier_code": { "const": "d9_recovery_resolvers_v1_0_full_semantics" },
+    "semantic_verifier_sha256": { "const": "bc36de4475ee6d8b9fd354f80163799f431496ae91765b5dd4903fdde9763ef5" },
+    "request_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "response_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "attestation_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-1.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "payload_producer": { "$ref": "common-v1-1.schema.json#/$defs/actor" }, "semantic_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" }, "persistence_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "accepted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" }, "persisted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "checkpoint_sequence": { "$ref": "common-v1-1.schema.json#/$defs/positiveInteger" }, "checkpoint_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "technical_evidence_only": { "const": true }, "authority_granted": { "const": false }, "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}
