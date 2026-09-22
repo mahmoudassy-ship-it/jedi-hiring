@@ -1,0 +1,79 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-root-inventory",
+  "format_version": "1.3.0",
+  "self_excluded_path": "root-inventory-v1-3.json",
+  "files": [
+    {
+      "path": "append-result-v1-3.schema.json",
+      "raw_sha256": "10cbac33854b3b5a5635357c1e04d4aa5ae7065743368bd6d266ce55b480cda7"
+    },
+    {
+      "path": "assessment-append-broker-receipt-v1-3.schema.json",
+      "raw_sha256": "77902e262b793976136ceb5bea45bf9b790761eca7130e4cae4f0d78aeac8b1a"
+    },
+    {
+      "path": "assessment-append-request-v1-3.schema.json",
+      "raw_sha256": "544c6920717c206e179b9b4e802cae0212aa8d912f766b18709c642ae374c51d"
+    },
+    {
+      "path": "checkpoint-identity-v1-3.schema.json",
+      "raw_sha256": "ada396355ee374e09c27d9bf24304f6b6ec52982d7c257f5d399ad4cf044d638"
+    },
+    {
+      "path": "checkpoint-transition-v1-3.schema.json",
+      "raw_sha256": "a1699a5ffee6028ad4ebd780d4491cba89c9f73aab570b0f5ee8076ed6ebfbdb"
+    },
+    {
+      "path": "classifications-v1-3.json",
+      "raw_sha256": "972615f6a1386e29e6d4a10b0018f9c0f50ac8c71a846821a92ad5b75d029d72"
+    },
+    {
+      "path": "common-v1-3.schema.json",
+      "raw_sha256": "07437d9a8197307e2f69f078e7b6820fb3b717218836ed0f3df8c26b8bea4aff"
+    },
+    {
+      "path": "contract-catalog-v1-3.json",
+      "raw_sha256": "0aa40744517d595cafca368852771345f52db4c0b2bda36751912607183bcc9a"
+    },
+    {
+      "path": "control-access-projection-v1-3.schema.json",
+      "raw_sha256": "410656a65be9f427b60928fd86dc51a8767be6229a17b2bf9275d87da00aaa20"
+    },
+    {
+      "path": "digest-profiles-v1-3.json",
+      "raw_sha256": "ea210c3606fa180f31fe7fd400515774ccf1a1f04e52490635e79146ab00b0c4"
+    },
+    {
+      "path": "field-source-registry-v1-3.json",
+      "raw_sha256": "e6f3501812e7b79e1369a2e70ddff768d577c9439b274eb0543c400f0e4b8de9"
+    },
+    {
+      "path": "fixtures/golden-vectors-v1-3.json",
+      "raw_sha256": "aee8347d2700aebfce57b05c92d00be863e01644f0a198b689fd0badd41a20fa"
+    },
+    {
+      "path": "fixtures/invalid-identity-correction-v1-3.json",
+      "raw_sha256": "5abe5b2f3eea7692ba0092741e8cc24b86479be53df7fd87d6b31c2f89bb8218"
+    },
+    {
+      "path": "fixtures/valid-identity-correction-v1-3.json",
+      "raw_sha256": "ae46ff8826b4cfe5aefcc9e9ce85c6e15cdb00ec72e34216433b733718985087"
+    },
+    {
+      "path": "protected-append-receipt-v1-3.schema.json",
+      "raw_sha256": "d1a3a011d474c5f3363984a92da2896fa7d2d67992fcb597a8906b66c8227469"
+    },
+    {
+      "path": "recovery-assessment-link-v1-3.schema.json",
+      "raw_sha256": "be02973a6c2f167e164a56a1137b583ed4e8f14939f1d3a7839e8e7f0e6bba68"
+    },
+    {
+      "path": "source-head-receipt-correspondence-v1-3.schema.json",
+      "raw_sha256": "d269b02d728c518fb163d6f9c79c983c3114e21b4008881776f1788481b5ff88"
+    },
+    {
+      "path": "storage-profiles-v1-3.json",
+      "raw_sha256": "47fb4f4dbbb965823c63b8f0dcceee7afcb55eea2deb9abd27751450e3850553"
+    }
+  ]
+}

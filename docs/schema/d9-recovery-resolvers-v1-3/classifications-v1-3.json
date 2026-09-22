@@ -1,0 +1,46 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-classifications",
+  "format_version": "1.3.0",
+  "status_code": "design_only_contract_freeze",
+  "identity_kinds": ["d940_state_head", "d940_journal_tip", "source_head_receipt_correspondence"],
+  "corrected_routes": ["d901_control_access_projection", "checkpoint_identity", "assessment_append_request", "assessment_append_broker_receipt", "checkpoint_transition", "recovery_assessment_link"],
+  "identity_usage": {
+    "checkpoint_equality": "exact_correspondence_reference_and_independently_derived_state_head",
+    "source_head_cas": "state_head_digest_sha256",
+    "control_access_projection": "actual_journal_tip_receipt_digest_plus_distinct_state_head_digest_and_correspondence",
+    "control_ledger_head_receipt_digest_sha256": "journal_tip.receipt_record_digest_sha256",
+    "append_request_predecessor": "journal_tip.receipt_sequence_and_receipt_record_digest_sha256",
+    "broker_receipt": "exact_d940_append_receipt_plus_pre_and_post_correspondence",
+    "checkpoint_transition": "state_head_cas_plus_exact_post_journal_tip",
+    "assessment_link": "exact_assessment_receipt_plus_post_correspondence",
+    "restart_and_replay": "reconstruct_both_identities_and_correspondence_from_authenticated_raw_prefix"
+  },
+  "compatibility": {
+    "frozen_v1_v1_1_v1_2_bytes_preserved": true,
+    "frozen_synthetic_records_remain_auditable": true,
+    "new_runtime_route": "v1_3_corrected_source_head_receipt_identity_required",
+    "production_migration_required": false,
+    "reason": "empty_unactivated_runtime_with_no_operational_v1_2_progression_records",
+    "state_digest_may_be_relabelled_as_receipt_digest": false,
+    "receipt_digest_may_be_relabelled_as_state_digest": false
+  },
+  "append_outcomes": ["persisted", "exact_replay_no_op", "reconciliation_required", "rejected"],
+  "append_errors": ["source_head_cas_mismatch", "replay_collision", "response_loss_ambiguous", "fork", "gap", "rollback", "corrupt_state", "incomplete_state"],
+  "crash_boundaries": {
+    "before_durable_append": "rejected_no_state_change",
+    "after_durable_append_before_response": "reconciliation_required_then_exact_replay_no_op_only",
+    "incomplete_or_corrupt_protected_state": "reconciliation_required_no_automatic_action",
+    "fork_gap_or_rollback": "reconciliation_required_no_automatic_action"
+  },
+  "closed_failures": ["wrong_tip", "wrong_target", "wrong_predecessor", "wrong_sequence", "wrong_time", "wrong_inventory", "wrong_raw_prefix", "wrong_producer", "wrong_build", "swapped_state_and_receipt", "accidental_equality", "fork", "gap", "rollback", "extra_append", "response_loss_ambiguous", "conflicting_replay", "source_head_cas_mismatch", "corrupt_state", "incomplete_state"],
+  "authority_boundary": {
+    "technical_journal_continuity_only": true,
+    "recovery_action_authorized": false,
+    "evidence_acceptance_established": false,
+    "legal_verification_established": false,
+    "deletion_authorized": false,
+    "restoration_authorized": false,
+    "publication_eligibility_established": false,
+    "d95_authority_granted": false
+  }
+}

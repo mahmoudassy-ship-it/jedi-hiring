@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/append-result-v1-3.schema.json",
+  "title": "Noncanonical v1.3 append operational result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "result_code", "payload_record_digest_sha256", "outcome_code", "error_code", "protected_append_receipt_record_digest_sha256", "observed_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-source-identity-append-result" },
+    "format_version": { "const": "1.3.0" },
+    "result_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "payload_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "outcome_code": { "enum": ["persisted", "exact_replay_no_op", "reconciliation_required", "rejected"] },
+    "error_code": { "type": ["string", "null"], "enum": [null, "source_head_cas_mismatch", "replay_collision", "response_loss_ambiguous", "fork", "gap", "rollback", "corrupt_state", "incomplete_state"] },
+    "protected_append_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-3.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "observed_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  },
+  "allOf": [{
+    "if": { "properties": { "outcome_code": { "enum": ["persisted", "exact_replay_no_op"] } }, "required": ["outcome_code"] },
+    "then": { "properties": { "error_code": { "type": "null" }, "protected_append_receipt_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" } } },
+    "else": { "properties": { "error_code": { "type": "string" }, "protected_append_receipt_record_digest_sha256": { "type": "null" } } }
+  }]
+}

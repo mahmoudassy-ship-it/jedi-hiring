@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/recovery-assessment-link-v1-3.schema.json",
+  "title": "Corrected complete recovery assessment source identity link",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "link_code", "operation_id", "operation_nonce", "runtime_generation", "subject", "assessment_record_digest_sha256", "assessment_receipt_record_digest_sha256", "post_append_correspondence", "checkpoint_identity_record_digest_sha256", "semantic_actor", "persistence_actor", "classified_at", "persisted_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-assessment-source-identity-link" },
+    "format_version": { "const": "1.3.0" },
+    "link_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-3.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-3.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-3.schema.json#/$defs/subject" },
+    "assessment_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "assessment_receipt_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "post_append_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "checkpoint_identity_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "semantic_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "persistence_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "classified_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  }
+}

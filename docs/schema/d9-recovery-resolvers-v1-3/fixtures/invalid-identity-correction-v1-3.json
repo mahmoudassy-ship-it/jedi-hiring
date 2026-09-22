@@ -1,0 +1,26 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-invalid-fixture",
+  "format_version": "1.3.0",
+  "mutations": [
+    "wrong_tip",
+    "wrong_target",
+    "wrong_predecessor",
+    "wrong_sequence",
+    "wrong_time",
+    "wrong_inventory",
+    "wrong_raw_prefix",
+    "wrong_producer",
+    "wrong_build",
+    "swapped_state_and_receipt",
+    "accidental_equality",
+    "fork",
+    "gap",
+    "rollback",
+    "extra_append",
+    "response_loss",
+    "restart",
+    "exact_replay",
+    "conflicting_replay",
+    "correspondence_field_mutation"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/assessment-append-request-v1-3.schema.json",
+  "title": "Corrected complete D9.4 assessment append request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "request_code", "operation_id", "operation_nonce", "runtime_generation", "subject", "pre_append_checkpoint_identity_record_digest_sha256", "pre_append_correspondence", "expected_predecessor_receipt_sequence", "expected_predecessor_receipt_record_digest_sha256", "target_receipt_sequence", "assessment_format", "assessment_record_code", "assessment_canonical_utf8", "target_assessment_record_digest_sha256", "semantic_actor", "broker_recipient", "authorized_at", "append_revalidate_by", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-assessment-append-request" },
+    "format_version": { "const": "1.3.0" },
+    "request_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-3.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-3.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-3.schema.json#/$defs/subject" },
+    "pre_append_checkpoint_identity_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "pre_append_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "expected_predecessor_receipt_sequence": { "$ref": "common-v1-3.schema.json#/$defs/nonnegativeInteger" },
+    "expected_predecessor_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-3.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "target_receipt_sequence": { "$ref": "common-v1-3.schema.json#/$defs/positiveInteger" },
+    "assessment_format": { "const": "jedi-atlas-d940-recovery-assessment" },
+    "assessment_record_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "assessment_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 },
+    "target_assessment_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "semantic_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "broker_recipient": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "authorized_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "append_revalidate_by": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  },
+  "allOf": [{
+    "if": { "properties": { "expected_predecessor_receipt_sequence": { "const": 0 } }, "required": ["expected_predecessor_receipt_sequence"] },
+    "then": { "properties": { "expected_predecessor_receipt_record_digest_sha256": { "type": "null" }, "target_receipt_sequence": { "const": 1 } } },
+    "else": { "properties": { "expected_predecessor_receipt_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" } } }
+  }]
+}

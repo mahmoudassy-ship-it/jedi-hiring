@@ -1,0 +1,21 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-storage-profiles",
+  "format_version": "1.3.0",
+  "profiles": [
+    { "namespace_code": "d9.resolver.source-head-correspondence.v1.3", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "correspondence_plus_exact_authenticated_prefix_commitments_and_protected_append_receipt", "retention": "permanent_with_referenced_checkpoint_transition_and_assessment" },
+    { "namespace_code": "d9.resolver.identity-corrections.v1.3", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "one_identity_wrapper_plus_protected_append_receipt", "retention": "permanent_with_frozen_record_referenced_by_wrapper" }
+  ],
+  "bootstrap_rule": "new_empty_runtime_creates_genesis_correspondence_from_authenticated_empty_or_initial_d940_prefix_before_selecting_v1_3_route",
+  "progression_rule": "every_assessment_reconstructs_and_persists_exact_pre_and_post_correspondence_before_checkpoint_progression",
+  "restart_rule": "recompute_state_head_journal_tip_and_correspondence_from_retained_authenticated_raw_prefix_then_require_exact_replay",
+  "response_loss_rule": "return_only_exact_retained_wrapper_after_complete_correspondence_reverification",
+  "ambiguous_or_unavailable_rule": "reconciliation_required_no_automatic_progression",
+  "protected_append_state_machine": {
+    "before_append_failure": "no payload and no receipt persisted",
+    "durable_append": "payload and protected receipt become one append-only logical unit",
+    "response_loss_after_append": "restart must reconstruct the store and accept only byte-identical replay",
+    "exact_replay": "no-op returning the original protected receipt",
+    "changed_replay": "reject replay_collision",
+    "fork_gap_rollback_corrupt_or_incomplete": "reconciliation_required without automatic mutation or recovery action"
+  }
+}
