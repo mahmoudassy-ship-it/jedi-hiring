@@ -2,6 +2,7 @@ import { canonicalSha256 } from '../control-plane/canonical.mjs'
 import { sealD940Record, validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
 import { assertD941LedgerBroker } from './ledger.mjs'
+import { assertD941RecoveryResolverRuntime } from './recovery-resolvers.mjs'
 
 const defaults = Object.freeze({
   before_restriction_persisted: 'safe_no_effect',
@@ -26,7 +27,7 @@ function assertRecoveryHeadRepresentable({ head }) {
 
 // Reconstructs only the durable facts needed to classify an interrupted
 // operation. It never retries, repairs, restores, or writes a recovery record.
-export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = null } = {}) {
+export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = null, resolverRuntime = null, resolverOperationId = null, resolverOperationNonce = null, subjectKindCode = 'custody_copy' } = {}) {
   assertD941LedgerBroker(broker)
   const inventory = broker.store.inventory()
   let receipts
@@ -88,7 +89,19 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
   const stage = selected?.lastExecution?.record_kind_code ?? (subjectRecords.some((item) => item.namespaceCode === 'access') ? 'access_shutdown' : subjectRecords.some((item) => item.namespaceCode === 'control') ? 'restriction_persisted' : 'none')
   const head = broker.head()
   assertRecoveryHeadRepresentable({ head })
-  const snapshotProjection = null
+  let resolution = null
+  if (resolverRuntime !== null) {
+    assertD941RecoveryResolverRuntime(resolverRuntime)
+    if (subjectIdentitySha256 === null || typeof resolverOperationId !== 'string' || typeof resolverOperationNonce !== 'string') {
+      failD941('D941_RECOVERY_RESOLVER_CONTEXT_MISSING', 'resolver-backed reconstruction requires an exact subject and recovery operation identity')
+    }
+    resolution = resolverRuntime.resolveComposite({
+      subject: { subject_kind_code: subjectKindCode, subject_identity_sha256: subjectIdentitySha256 },
+      operationId: resolverOperationId,
+      operationNonce: resolverOperationNonce,
+    })
+  }
+  const snapshotProjection = resolution?.snapshot ?? null
   if (incomplete.length > 1) ledgerStateCode = 'recovery_required'
   const result = Object.freeze({
     subject_identity_sha256: subjectIdentitySha256,
@@ -104,7 +117,7 @@ export function reconstructD941RecoveryState({ broker, subjectIdentitySha256 = n
     snapshot_projection: snapshotProjection,
   })
   reconstructionStates.add(result)
-  reconstructionMetadata.set(result, Object.freeze({ broker, inventoryDigest: inventory.digest, head, snapshotProjection }))
+  reconstructionMetadata.set(result, Object.freeze({ broker, inventoryDigest: inventory.digest, head, snapshotProjection, resolverRuntime, resolution }))
   return result
 }
 
@@ -121,14 +134,16 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
   if (!metadata.snapshotProjection) {
     failD941('D941_RECOVERY_RESOLVER_UNAVAILABLE', 'exact D9.4 recovery projection requires the approved D9.2 evidence, D9.1 access, and D9.3 custody resolvers')
   }
+  if (metadata.resolution.compositeResponse.operation_id !== record.operation_id || metadata.resolution.compositeResponse.operation_nonce !== record.operation_nonce ||
+      metadata.resolution.compositeResponse.subject.subject_identity_sha256 !== record.subject.subject_identity_sha256 || metadata.resolution.compositeResponse.subject.subject_kind_code !== record.subject.subject_kind_code ||
+      metadata.resolution.compositeResponse.technical_evidence_only !== true || metadata.resolution.compositeResponse.authority_granted !== false) {
+    failD941('D941_RECOVERY_RESOLVER_CONTEXT_MISMATCH', 'resolver response does not bind the exact recovery operation and technical-evidence-only subject')
+  }
   if (reconstruction.ledger_state_code !== 'linear_complete' && controlStateCode === 'linear_complete') {
     failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims linear completion despite protected recovery-required facts')
   }
   if (reconstruction.physical_namespace_state_code === 'unknown_requires_independent_reconciliation' && inventoryStateCode === 'complete') {
     failD941('D941_RECOVERY_RECONSTRUCTION_CONTRADICTORY', 'caller state claims complete inventory despite unknown physical namespace state')
-  }
-  if (snapshot?.inventory_snapshot_sha256 !== reconstruction.protected_inventory_digest_sha256) {
-    failD941('D941_RECOVERY_SNAPSHOT_MISMATCH', 'classification snapshot is not the exact protected inventory projection that was reconstructed')
   }
   const expected = metadata?.snapshotProjection
   if (Object.keys(expected).some((key) => snapshot?.[key] !== expected[key])) {
@@ -164,6 +179,9 @@ export function classifyD941Recovery({ authorityContext, broker, record, reconst
     subject_identity_sha256: result.subject.subject_identity_sha256,
     ledger_head_digest_sha256: broker.head().digest,
     inventory_digest_sha256: broker.store.inventory().digest,
+    resolver_runtime: metadata.resolverRuntime,
+    resolver_response: metadata.resolution.compositeResponse,
+    append_revalidate_by: metadata.resolution.compositeResponse.append_revalidate_by,
   })
   recoveryProofs.add(proof)
   recoveryRecordProofs.set(result, proof)
@@ -174,9 +192,12 @@ export function getD941RecoveryClassificationProof(record) { return recoveryReco
 
 export function assertD941RecoveryClassificationProof(proof, record, broker) {
   if (!proof || !recoveryProofs.has(proof) || proof.record_digest_sha256 !== record.record_digest_sha256 ||
-      proof.subject_identity_sha256 !== record.subject.subject_identity_sha256 || proof.reconstruction_digest_sha256 !== proof.inventory_digest_sha256 || proof.broker !== broker ||
-      proof.ledger_head_digest_sha256 !== broker.head().digest || proof.inventory_digest_sha256 !== broker.store.inventory().digest) {
+      proof.subject_identity_sha256 !== record.subject.subject_identity_sha256 || proof.reconstruction_digest_sha256 !== proof.inventory_digest_sha256 || proof.broker !== broker) {
     failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'recovery assessment lacks a fixed protected-state classification proof')
+  }
+  proof.resolver_runtime.revalidateAtAppend({ compositeResponse: proof.resolver_response, completedAt: record.knowledge_boundary.persisted_at })
+  if (proof.ledger_head_digest_sha256 !== broker.head().digest || proof.inventory_digest_sha256 !== broker.store.inventory().digest) {
+    failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'protected D9.4 state changed after recovery classification')
   }
   return true
 }

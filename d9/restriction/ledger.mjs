@@ -98,7 +98,7 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
     validateD940Record({ contractSet, record })
     const namespaceCode = targetNamespaces[record.format]
     if (!namespaceCode) failD941('D941_LEDGER_TARGET_UNSUPPORTED', 'record format is not a D9.4 ledger target')
-    assertD941AuthenticatedSession(persistenceSession, 'control_submission')
+    assertD941AuthenticatedSession(persistenceSession, record.format === 'jedi-atlas-d940-recovery-assessment' ? 'recovery_classification' : 'control_submission')
     assertD941AuthenticatedSession(semanticSession)
     if (Date.parse(record.knowledge_boundary.recorded_at) < Date.parse(semanticSession.authenticatedAt) ||
         Date.parse(record.knowledge_boundary.persisted_at) < Date.parse(persistenceSession.authenticatedAt) ||
