@@ -1,6 +1,6 @@
 # D9 recovery source-head/receipt identity correction 1.3.0
 
-Status: **design proposal awaiting human approval**. Revision `1.3.0` is an additive, separately versioned correction. It preserves the approved resolver `1.0.0`, durability `1.1.0`, and checkpoint-progression `1.2.0` roots byte-for-byte and supersedes only the conflicting D9.4 source-head/receipt-identity route. The fingerprinted lifecycle value is permanently `design_only_contract_freeze`; approval, if granted, is external and cannot activate runtime use.
+Status: **approved design-only contract freeze** at reviewed commit `d9eddd21494f59e27b2b6365456b53ee2719db2c`. Revision `1.3.0` is an additive, separately versioned correction. It preserves the approved resolver `1.0.0`, durability `1.1.0`, and checkpoint-progression `1.2.0` roots byte-for-byte and supersedes only the conflicting D9.4 source-head/receipt-identity route. Approval is external to the fingerprinted contract root and does not modify its permanent `design_only_contract_freeze` lifecycle value or activate runtime use.
 
 This proposal proves technical journal continuity only. It grants no runtime activation, recovery action, evidence acceptance, officiality, legal identity, legal status, legal effect, legal verification, restriction, deletion, restoration, publication eligibility, compliance conclusion, operational permission, or D9.5 authority.
 
@@ -174,3 +174,5 @@ Before D9.4.1 can resume under a separate authorization, implementation must pro
 - Root inventory: `51d076dd244aa74c4fc7a433af6ab8121031f4b6194381477460c81ccd807fda`
 
 These identify the proposal bytes. They do not constitute approval, authentication, activation, recovery authority, legal verification, publication eligibility, or operational permission.
+
+The external approval record pins these exact fingerprints without changing them. Approval confirms the separation between independently derived source-state identity, exact journal-tip receipt identity, and their authenticated correspondence. It grants no runtime activation, recovery action, evidence acceptance, legal verification, deletion, restoration, publication, or D9.5 authority.
