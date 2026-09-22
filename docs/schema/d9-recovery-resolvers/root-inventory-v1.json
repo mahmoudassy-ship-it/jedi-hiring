@@ -1,0 +1,59 @@
+{
+  "format": "jedi-atlas-recovery-projection-resolver-root-inventory",
+  "format_version": "1.0.0",
+  "self_exclusion": "root-inventory-v1.json",
+  "files": [
+    {
+      "path": "append-revalidation-attestation-v1.schema.json",
+      "raw_sha256": "46d321867e29ac2137db9fda7f086c5390d8eea077542a823da7eb4f8bf72879"
+    },
+    {
+      "path": "classifications-v1.json",
+      "raw_sha256": "9f137c1ca9905b5a02754292a1b828bbdd7174af78bd385b3b4a3584fd1abe04"
+    },
+    {
+      "path": "common-v1.schema.json",
+      "raw_sha256": "2b16db298962affdb03547f72ff50cc243f056863b9639f2881e493989f1ad53"
+    },
+    {
+      "path": "contract-catalog-v1.json",
+      "raw_sha256": "df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3"
+    },
+    {
+      "path": "digest-profiles-v1.json",
+      "raw_sha256": "b7adfc736b04ef5c657e94bf2a621a602e518165cbf9b08f2b3c0653963abf90"
+    },
+    {
+      "path": "field-source-registry-v1.json",
+      "raw_sha256": "d6f9ec22ae8fdb6bbb998374680f13a89f02ffef2431d9eb8c6003294a3db1d8"
+    },
+    {
+      "path": "fixtures/golden-vectors-v1.json",
+      "raw_sha256": "3ad49da4d8b3676b876341b567233d4203bc5c57fc01def773c5de0dd42e5360"
+    },
+    {
+      "path": "fixtures/invalid-contracts-v1.json",
+      "raw_sha256": "e23ccee9ac0047d84b79af8821aa0b66577babb1bc7bbd149ce04fdc956f3786"
+    },
+    {
+      "path": "fixtures/synthetic-source-state-v1.json",
+      "raw_sha256": "5f70546d53327940af8fd27f347745d2c8177ba3c194a9cf36397e564a6b75a4"
+    },
+    {
+      "path": "fixtures/valid-contracts-v1.json",
+      "raw_sha256": "133614b0ee232164780ccd805e316622a17751bef4b4a337d784de117eced028"
+    },
+    {
+      "path": "projection-profiles-v1.json",
+      "raw_sha256": "c9c7a09c4a29814b1a6b55112e9b11075f1e1cc654e393561e6e3d79ad1ae6ff"
+    },
+    {
+      "path": "resolution-request-v1.schema.json",
+      "raw_sha256": "4e0a25c6848306bfba04f640452c605145deb51a33c0a632decebf5de6c55c5c"
+    },
+    {
+      "path": "resolution-response-v1.schema.json",
+      "raw_sha256": "124e344bce730d46558e42783ad6a16b981ff3b133147872155807b91c984c9c"
+    }
+  ]
+}

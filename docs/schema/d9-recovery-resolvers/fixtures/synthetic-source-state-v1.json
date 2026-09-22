@@ -1,0 +1,224 @@
+{
+  "fixture_code": "synthetic-raw-resolver-source-state-001",
+  "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+  "sources": {
+    "d901_control_state": [
+      {
+        "state_sequence": 1,
+        "state_code": "operation_started",
+        "record_digest_sha256": "1010101010101010101010101010101010101010101010101010101010101010"
+      },
+      {
+        "state_sequence": 2,
+        "state_code": "recovery_required",
+        "record_digest_sha256": "1212121212121212121212121212121212121212121212121212121212121212"
+      }
+    ],
+    "control_records": {
+      "known_through_receipt_sequence": 7,
+      "records": [
+        {
+          "receipt_sequence": 2,
+          "record_kind_code": "hold_imposed",
+          "record_digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "ignored_source_field": "not_hashed"
+        },
+        {
+          "receipt_sequence": 1,
+          "record_kind_code": "restriction_imposed",
+          "record_digest_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "ignored_source_field": "not_hashed"
+        }
+      ]
+    },
+    "source_access_state": {
+      "store_snapshot": {
+        "selection_boundary_code": "complete_matching_subject_copy_backend_at_snapshot",
+        "capability_record_count": 1,
+        "descriptor_record_count": 1,
+        "adapter_message_record_count": 0,
+        "capability_store_head_sha256": "6ceac0b7c8af50fafd0e518bea5af722d8c048f84c0b0b3fca3cf11f28879e13",
+        "descriptor_store_head_sha256": "56fe1c8f88a73d84cfb0a8ede19fc594f6239a345c478ad413fca2056868392d",
+        "adapter_message_store_head_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "d901_control_state_head_sha256": "a52750422d88654ceddc903288d2813d958ef702f8219ca82e84bdb93f343ff1"
+      },
+      "capabilities": [
+        {
+          "capability_record_digest_sha256": "3434343434343434343434343434343434343434343434343434343434343434",
+          "capability_leaf_record_digest_sha256": "3535353535353535353535353535353535353535353535353535353535353535",
+          "state_code": "ready"
+        }
+      ],
+      "descriptor_lifecycle_records": [
+        {
+          "descriptor_lifecycle_record_digest_sha256": "3737373737373737373737373737373737373737373737373737373737373737",
+          "receiver_process_code": "synthetic.receiver",
+          "state_code": "delivered"
+        }
+      ],
+      "adapter_message_record_digests": []
+    },
+    "access_shutdown_state": {
+      "known_through_journal_sequence": 5,
+      "capability_terminal_records": [
+        {
+          "capability_record_digest_sha256": "3434343434343434343434343434343434343434343434343434343434343434",
+          "terminal_record_digest_sha256": "3636363636363636363636363636363636363636363636363636363636363636",
+          "terminal_state_code": "revoked"
+        }
+      ],
+      "descriptor_leaves": [
+        {
+          "descriptor_lifecycle_record_digest_sha256": "3737373737373737373737373737373737373737373737373737373737373737",
+          "terminal_state_code": "closed"
+        }
+      ]
+    },
+    "accepted_receipts": {
+      "known_through_bundle_sequence": 2,
+      "records": [
+        {
+          "bundle_sequence": 2,
+          "bundle_code": "bundle.synthetic.002",
+          "receipt_digest_sha256": "3838383838383838383838383838383838383838383838383838383838383838"
+        },
+        {
+          "bundle_sequence": 1,
+          "bundle_code": "bundle.synthetic.001",
+          "receipt_digest_sha256": "3737373737373737373737373737373737373737373737373737373737373737"
+        }
+      ]
+    },
+    "accepted_logical_records": {
+      "known_through_bundle_sequence": 2,
+      "records": [
+        {
+          "accepted_in_bundle_sequence": 2,
+          "table_code": "artifacts",
+          "stable_key": "artifact.synthetic.001",
+          "record_digest_sha256": "3939393939393939393939393939393939393939393939393939393939393939"
+        }
+      ]
+    },
+    "lineage_store": {
+      "target_subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "store_snapshot": {
+        "selection_boundary_code": "complete_d920_lineage_for_subject_at_candidate_snapshot",
+        "known_through_bundle_sequence": 2,
+        "node_count": 2,
+        "edge_count": 1,
+        "node_store_head_sha256": "c65cedf3f0a202b53ffd201d3c9adceb4cd7a0e0f88778ad2fce177080928acb",
+        "edge_store_head_sha256": "eba00f216334c57f3ac9bf8ed4f04808cb18294423eca04490e1eaf4291e7523"
+      },
+      "nodes": [
+        {
+          "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+          "subject_kind_code": "custody_copy"
+        },
+        {
+          "subject_identity_sha256": "4242424242424242424242424242424242424242424242424242424242424242",
+          "subject_kind_code": "artifact"
+        }
+      ],
+      "edges": [
+        {
+          "from_subject_identity_sha256": "4242424242424242424242424242424242424242424242424242424242424242",
+          "to_subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+        }
+      ]
+    },
+    "primary_receipts": {
+      "known_through_receipt_sequence": 1,
+      "records": [
+        {
+          "receipt_sequence": 1,
+          "receipt_code": "receipt.synthetic.001",
+          "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+          "d930_operational_profile_record_digest_sha256": "4545454545454545454545454545454545454545454545454545454545454545",
+          "artifact": {
+            "byte_layer_code": "retrieved_body",
+            "hash_algorithm_code": "sha256",
+            "sha256": "4747474747474747474747474747474747474747474747474747474747474747",
+            "byte_length": 7
+          },
+          "copy_code": "copy.synthetic",
+          "backend_code": "pilot_local_cas_v1",
+          "backend_reference": "objects/sha256/47/4747474747474747474747474747474747474747474747474747474747474747",
+          "receipt_digest_sha256": "ae22c35b3a1a603fd18c13f134776ee806fbf92c1138f7305247aeafb0bd16fc"
+        }
+      ]
+    },
+    "custody_candidates": {
+      "known_through_journal_sequence": 5,
+      "records": [
+        {
+          "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+          "d930_operational_profile_record_digest_sha256": "4545454545454545454545454545454545454545454545454545454545454545",
+          "d930_primary_durability_receipt_sha256": "ae22c35b3a1a603fd18c13f134776ee806fbf92c1138f7305247aeafb0bd16fc",
+          "artifact": {
+            "byte_layer_code": "retrieved_body",
+            "hash_algorithm_code": "sha256",
+            "sha256": "4747474747474747474747474747474747474747474747474747474747474747",
+            "byte_length": 7
+          },
+          "copy_code": "copy.synthetic",
+          "backend_code": "pilot_local_cas_v1",
+          "backend_reference": "objects/sha256/47/4747474747474747474747474747474747474747474747474747474747474747"
+        }
+      ]
+    },
+    "source_boundaries": [
+      {
+        "source_namespace_code": "d901.capability-state.v1",
+        "head_sequence": 3,
+        "head_persisted_at": "2030-01-01T00:09:59.000Z",
+        "source_payload_codes": [
+          "source_access_state"
+        ]
+      },
+      {
+        "source_namespace_code": "d901.control-state.v1",
+        "head_sequence": 4,
+        "head_persisted_at": "2030-01-01T00:09:59.050Z",
+        "source_payload_codes": [
+          "d901_control_state"
+        ]
+      },
+      {
+        "source_namespace_code": "d920.accepted-evidence.v1",
+        "head_sequence": 2,
+        "head_persisted_at": "2030-01-01T00:09:59.100Z",
+        "source_payload_codes": [
+          "accepted_logical_records",
+          "accepted_receipts",
+          "lineage_store"
+        ]
+      },
+      {
+        "source_namespace_code": "d930.custody-journal.v1",
+        "head_sequence": 5,
+        "head_persisted_at": "2030-01-01T00:09:59.200Z",
+        "source_payload_codes": [
+          "access_shutdown_state",
+          "custody_candidates"
+        ]
+      },
+      {
+        "source_namespace_code": "d930.primary-receipts.v1",
+        "head_sequence": 1,
+        "head_persisted_at": "2030-01-01T00:09:59.250Z",
+        "source_payload_codes": [
+          "primary_receipts"
+        ]
+      },
+      {
+        "source_namespace_code": "d940.global.control-journal.v1",
+        "head_sequence": 7,
+        "head_persisted_at": "2030-01-01T00:09:59.300Z",
+        "source_payload_codes": [
+          "control_records"
+        ]
+      }
+    ]
+  }
+}
