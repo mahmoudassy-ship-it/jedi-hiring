@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/append-receipt-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "receipt_code", "namespace_code", "expected_predecessor", "persisted_head", "payload_record_digest_sha256", "persistence_actor", "accepted_at", "persisted_at", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-resolver-append-receipt" }, "format_version": { "const": "1.1.0" },
+    "receipt_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" }, "namespace_code": { "enum": ["d9.resolver.records.v1.1", "d9.resolver.checkpoints.v1.1", "d9.resolver.assessment-links.v1.1"] },
+    "expected_predecessor": { "$ref": "common-v1-1.schema.json#/$defs/journalHead" }, "persisted_head": { "$ref": "common-v1-1.schema.json#/$defs/journalHead" },
+    "payload_record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }, "persistence_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "accepted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" }, "persisted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}

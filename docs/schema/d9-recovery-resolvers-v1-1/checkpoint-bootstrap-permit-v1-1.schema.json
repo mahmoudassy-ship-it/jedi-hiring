@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/checkpoint-bootstrap-permit-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "permit_code", "operation_id", "operation_nonce", "runtime_generation", "issued_by", "persisted_by", "issued_at", "expires_at", "expected_empty_checkpoint_head", "initial_source_heads", "bootstrap_observation_record_digests", "source_observation_set_digest_sha256", "one_time_no_replace", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-resolver-checkpoint-bootstrap-permit" },
+    "format_version": { "const": "1.1.0" },
+    "permit_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-1.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-1.schema.json#/$defs/runtimeGeneration" },
+    "issued_by": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "persisted_by": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "issued_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "expires_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "expected_empty_checkpoint_head": { "$ref": "common-v1-1.schema.json#/$defs/journalHead" },
+    "initial_source_heads": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "common-v1-1.schema.json#/$defs/sourceHead" } },
+    "bootstrap_observation_record_digests": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "common-v1-1.schema.json#/$defs/sha256" } },
+    "source_observation_set_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" },
+    "one_time_no_replace": { "const": true },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}

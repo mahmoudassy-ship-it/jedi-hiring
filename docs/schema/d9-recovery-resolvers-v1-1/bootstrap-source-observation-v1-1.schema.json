@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/bootstrap-source-observation-v1-1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["format", "format_version", "observation_code", "operation_id", "operation_nonce", "runtime_generation", "source_head_before", "source_head_after", "semantic_actor", "persistence_actor", "observed_before_at", "observed_after_at", "persisted_at", "checkpoint_namespace_observed_empty", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-resolver-bootstrap-source-observation" }, "format_version": { "const": "1.1.0" },
+    "observation_code": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" }, "operation_id": { "$ref": "common-v1-1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-1.schema.json#/$defs/operationNonce" }, "runtime_generation": { "$ref": "common-v1-1.schema.json#/$defs/runtimeGeneration" },
+    "source_head_before": { "$ref": "common-v1-1.schema.json#/$defs/sourceHead" }, "source_head_after": { "$ref": "common-v1-1.schema.json#/$defs/sourceHead" },
+    "semantic_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" }, "persistence_actor": { "$ref": "common-v1-1.schema.json#/$defs/actor" },
+    "observed_before_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" }, "observed_after_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" }, "persisted_at": { "$ref": "common-v1-1.schema.json#/$defs/timestamp" },
+    "checkpoint_namespace_observed_empty": { "const": true }, "technical_evidence_only": { "const": true }, "authority_granted": { "const": false }, "record_digest_sha256": { "$ref": "common-v1-1.schema.json#/$defs/sha256" }
+  }
+}

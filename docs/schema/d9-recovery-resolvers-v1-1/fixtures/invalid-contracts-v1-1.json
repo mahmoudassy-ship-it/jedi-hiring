@@ -1,0 +1,12 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-invalid-fixtures",
+  "format_version": "1.1.0",
+  "mutation_codes": [
+    "bootstrap_nonempty_store", "bootstrap_replace", "bootstrap_wrong_roles", "bootstrap_source_missing",
+    "advance_wrong_predecessor", "advance_gap", "advance_rollback", "advance_fork", "advance_changed_heads",
+    "semantic_persistence_actor_collision", "payload_digest_mismatch", "request_response_link_mismatch",
+    "attestation_checkpoint_mismatch", "assessment_link_mismatch", "exact_replay_changed_bytes",
+    "response_loss_conflicting_retry", "stale_record", "future_time", "corrupt_chain", "unknown_field",
+    "authority_true", "legal_claim_injection"
+  ]
+}
