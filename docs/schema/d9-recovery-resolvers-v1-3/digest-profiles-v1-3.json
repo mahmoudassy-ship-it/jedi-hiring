@@ -1,0 +1,16 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-digest-profiles",
+  "format_version": "1.3.0",
+  "canonicalization": { "encoding": "utf-8", "unicode_normalization": "none", "object_key_order": "utf-16-code-unit-ascending", "array_order": "preserved", "number_policy": "nonnegative-safe-integers-only", "duplicate_keys": "reject", "line_ending": "none" },
+  "profiles": [
+    { "profile_code": "v1_3_record", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "d940_state_head_v1_3", "included_fields": ["source_namespace_code", "head_sequence", "head_persisted_at", "inventory_digest_sha256"], "stored_field_mapping": { "inventory_digest_sha256": "state_head.raw_payload_inventory_digest_sha256" }, "compatibility_note": "The preimage key is exactly the frozen v1 key; the v1.3 stored field makes its raw-payload meaning explicit." },
+    { "profile_code": "d940_raw_payload_inventory_v1_3", "included_fields": ["source_namespace_code", "head_sequence", "payload_commitments"], "payload_commitment_fields": ["source_payload_code", "raw_payload_sha256"], "ordering": "frozen_source_boundary_payload_code_order" },
+    { "profile_code": "d940_journal_tip_v1_3", "included_fields": ["journal_namespace_code", "receipt_sequence", "receipt_record_digest_sha256", "target_format", "target_record_code", "target_record_digest_sha256", "predecessor_receipt_record_digest_sha256", "receipt_persisted_at"] },
+    { "profile_code": "d940_authenticated_receipt_prefix_v1_3", "included_fields": ["receipt_sequence", "receipt_record_digest_sha256", "predecessor_receipt_record_digest_sha256", "target_format", "target_record_code", "target_record_digest_sha256", "receipt_persisted_at"], "ordering": "receipt_sequence_ascending_unique_contiguous" },
+    { "profile_code": "d940_correspondence_v1_3", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "checkpoint_cas_identity_v1_3", "included_fields": ["checkpoint_sequence", "predecessor_checkpoint_identity_record_digest_sha256", "correspondence_record_digest_sha256", "state_head_digest_sha256"], "note": "The transition receipt is referenced by the immutable checkpoint record after append but excluded from the CAS preimage to avoid a circular digest dependency." },
+    { "profile_code": "protected_append_receipt_v1_3", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "append_result_v1_3", "excluded_top_level_field": "record_digest_sha256", "operational_only": true }
+  ]
+}

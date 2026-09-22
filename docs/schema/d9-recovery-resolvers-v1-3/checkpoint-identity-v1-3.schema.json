@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/checkpoint-identity-v1-3.schema.json",
+  "title": "Corrected effective-checkpoint source identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "checkpoint_identity_code", "anchor_kind_code", "checkpoint_sequence", "predecessor_checkpoint_identity_record_digest_sha256", "predecessor_transition_receipt_record_digest_sha256", "d940_correspondence", "checkpoint_cas_identity_sha256", "created_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-checkpoint-source-identity" },
+    "format_version": { "const": "1.3.0" },
+    "checkpoint_identity_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "anchor_kind_code": { "enum": ["empty_runtime_genesis", "receipt_proven_transition"] },
+    "checkpoint_sequence": { "$ref": "common-v1-3.schema.json#/$defs/nonnegativeInteger" },
+    "predecessor_checkpoint_identity_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-3.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "predecessor_transition_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-3.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "d940_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "checkpoint_cas_identity_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "created_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  },
+  "allOf": [{
+    "if": { "properties": { "anchor_kind_code": { "const": "empty_runtime_genesis" } }, "required": ["anchor_kind_code"] },
+    "then": { "properties": { "checkpoint_sequence": { "const": 0 }, "predecessor_checkpoint_identity_record_digest_sha256": { "type": "null" }, "predecessor_transition_receipt_record_digest_sha256": { "type": "null" } } },
+    "else": { "properties": { "checkpoint_sequence": { "$ref": "common-v1-3.schema.json#/$defs/positiveInteger" }, "predecessor_checkpoint_identity_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }, "predecessor_transition_receipt_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" } } }
+  }]
+}

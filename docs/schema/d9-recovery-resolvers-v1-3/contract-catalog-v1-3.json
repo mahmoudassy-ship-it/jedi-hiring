@@ -1,0 +1,141 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-contract-catalog",
+  "format_version": "1.3.0",
+  "status_code": "design_only_contract_freeze",
+  "authority_code": "technical_journal_continuity_only_no_operational_authority",
+  "supersedes_contract_version": "1.2.0",
+  "supersedes_scope": "d940_source_head_receipt_identity_route_only",
+  "preserved_contracts": {
+    "resolver_v1_catalog_sha256": "df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3",
+    "resolver_v1_root_inventory_sha256": "93832dc8a6f12ae030515781169fd8ac9dd5431aa68f62699168469da3da6f31",
+    "durability_v1_1_catalog_sha256": "aa846c01c5d055050c810249316d11eba7a48d1080681f9538be3e71d371bb26",
+    "durability_v1_1_root_inventory_sha256": "b3711db55ed73a1a74621a808014aae35b2e05319e5cf0aeba5df0d62b1933bf",
+    "progression_v1_2_catalog_sha256": "b6fd085a5718fdccc51ae4cfbf10645aaa3a1f79929d9ebe896247350d3ddb3c",
+    "progression_v1_2_root_inventory_sha256": "3bc242bbd7147597e9b34aad16293d8e397cb23d4b7b7a6ca3578b371403c1ad"
+  },
+  "approved_dependencies": {
+    "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+    "d940_catalog_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+    "d91_implementation_commit": "79046c27dfa6923383be33a1d0aaa5a7641f5d1f",
+    "d92_implementation_commit": "460547b7fe75a94f689dabc97fd91ee6f803934a",
+    "d931_implementation_commit": "d960a03f4b8ac8a78d3f6b40ba909eb24b5f3442"
+  },
+  "production_verifier_dependencies": {
+    "canonical_module_sha256": "e0905b2e87991c67907b63d0a9b5db58c54cc982c2ab603501316ec26d648567",
+    "contracts_module_sha256": "c54a65f1033fd241a7da2728b568f5b92b79dc472810c9e9f6c85b943c0dbded",
+    "runtime_fixture_module_sha256": "421ec225d07b835f1888975b09293941bace35cb12978ea49f8a7ac69002c3e9"
+  },
+  "schemas": [
+    {
+      "file": "common-v1-3.schema.json",
+      "raw_sha256": "07437d9a8197307e2f69f078e7b6820fb3b717218836ed0f3df8c26b8bea4aff"
+    },
+    {
+      "file": "source-head-receipt-correspondence-v1-3.schema.json",
+      "raw_sha256": "d269b02d728c518fb163d6f9c79c983c3114e21b4008881776f1788481b5ff88"
+    },
+    {
+      "file": "control-access-projection-v1-3.schema.json",
+      "raw_sha256": "410656a65be9f427b60928fd86dc51a8767be6229a17b2bf9275d87da00aaa20"
+    },
+    {
+      "file": "checkpoint-identity-v1-3.schema.json",
+      "raw_sha256": "ada396355ee374e09c27d9bf24304f6b6ec52982d7c257f5d399ad4cf044d638"
+    },
+    {
+      "file": "assessment-append-request-v1-3.schema.json",
+      "raw_sha256": "544c6920717c206e179b9b4e802cae0212aa8d912f766b18709c642ae374c51d"
+    },
+    {
+      "file": "assessment-append-broker-receipt-v1-3.schema.json",
+      "raw_sha256": "77902e262b793976136ceb5bea45bf9b790761eca7130e4cae4f0d78aeac8b1a"
+    },
+    {
+      "file": "checkpoint-transition-v1-3.schema.json",
+      "raw_sha256": "a1699a5ffee6028ad4ebd780d4491cba89c9f73aab570b0f5ee8076ed6ebfbdb"
+    },
+    {
+      "file": "recovery-assessment-link-v1-3.schema.json",
+      "raw_sha256": "be02973a6c2f167e164a56a1137b583ed4e8f14939f1d3a7839e8e7f0e6bba68"
+    },
+    {
+      "file": "protected-append-receipt-v1-3.schema.json",
+      "raw_sha256": "d1a3a011d474c5f3363984a92da2896fa7d2d67992fcb597a8906b66c8227469"
+    },
+    {
+      "file": "append-result-v1-3.schema.json",
+      "raw_sha256": "10cbac33854b3b5a5635357c1e04d4aa5ae7065743368bd6d266ce55b480cda7"
+    }
+  ],
+  "registries": [
+    {
+      "file": "classifications-v1-3.json",
+      "raw_sha256": "972615f6a1386e29e6d4a10b0018f9c0f50ac8c71a846821a92ad5b75d029d72"
+    },
+    {
+      "file": "digest-profiles-v1-3.json",
+      "raw_sha256": "ea210c3606fa180f31fe7fd400515774ccf1a1f04e52490635e79146ab00b0c4"
+    },
+    {
+      "file": "field-source-registry-v1-3.json",
+      "raw_sha256": "e6f3501812e7b79e1369a2e70ddff768d577c9439b274eb0543c400f0e4b8de9"
+    },
+    {
+      "file": "storage-profiles-v1-3.json",
+      "raw_sha256": "47fb4f4dbbb965823c63b8f0dcceee7afcb55eea2deb9abd27751450e3850553"
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "fixtures/golden-vectors-v1-3.json",
+      "raw_sha256": "aee8347d2700aebfce57b05c92d00be863e01644f0a198b689fd0badd41a20fa"
+    },
+    {
+      "file": "fixtures/invalid-identity-correction-v1-3.json",
+      "raw_sha256": "5abe5b2f3eea7692ba0092741e8cc24b86479be53df7fd87d6b31c2f89bb8218"
+    },
+    {
+      "file": "fixtures/valid-identity-correction-v1-3.json",
+      "raw_sha256": "ae46ff8826b4cfe5aefcc9e9ce85c6e15cdb00ec72e34216433b733718985087"
+    }
+  ],
+  "validators": [
+    {
+      "file": "../validate-d9-recovery-resolvers-v1-3.mjs",
+      "raw_sha256": "49a89a606a133f9778d2329972e94c1bc40cdee9c2a3225c4746cd29ed0f3e0f"
+    },
+    {
+      "file": "../validate-d9-recovery-resolvers-v1-2.mjs",
+      "raw_sha256": "4708ae4c43fe8bfd83e13e216b1d5fc8fc15077e6ec38e24eda78f0b859f5ad7"
+    },
+    {
+      "file": "../validate-d9-recovery-resolvers-v1-1.mjs",
+      "raw_sha256": "f6e8aa1f242198febd6e3b5bfa0a93ddf0f9829bc4850d920a1ca9be941235c5"
+    },
+    {
+      "file": "../validate-d9-recovery-resolvers.mjs",
+      "raw_sha256": "bc36de4475ee6d8b9fd354f80163799f431496ae91765b5dd4903fdde9763ef5"
+    }
+  ],
+  "migration_sha256": {
+    "001_schema.sql": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094",
+    "002_reference_data.sql": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923",
+    "003_seed_eu_core.sql": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700",
+    "004_tranche_1a_foundations.sql": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2",
+    "005_tranche_2a_source_quarantine.sql": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+  },
+  "instance_policy": {
+    "runtime_implementation_authorized": false,
+    "operational_activation_authorized": false,
+    "credentials_authorized": false,
+    "atlas_writes_authorized": false,
+    "recovery_actions_authorized": false,
+    "evidence_acceptance_authorized": false,
+    "legal_conclusions_authorized": false,
+    "deletion_authorized": false,
+    "restoration_authorized": false,
+    "publication_authorized": false,
+    "d95_authority_granted": false
+  }
+}

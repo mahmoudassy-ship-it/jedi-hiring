@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/assessment-append-broker-receipt-v1-3.schema.json",
+  "title": "Corrected complete assessment append broker receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "receipt_code", "operation_id", "operation_nonce", "runtime_generation", "subject", "append_request_record_digest_sha256", "pre_append_correspondence", "post_append_correspondence", "d940_append_receipt_canonical_utf8", "d940_append_receipt_record_digest_sha256", "assessment_record_digest_sha256", "broker_actor", "semantic_verifier_actor", "accepted_at", "persisted_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-assessment-append-broker-receipt" },
+    "format_version": { "const": "1.3.0" },
+    "receipt_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-3.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-3.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-3.schema.json#/$defs/subject" },
+    "append_request_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "pre_append_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "post_append_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "d940_append_receipt_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 },
+    "d940_append_receipt_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "assessment_record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "broker_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "semantic_verifier_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "accepted_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  }
+}
