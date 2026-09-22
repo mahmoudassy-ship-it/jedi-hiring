@@ -13,6 +13,7 @@ import { loadApprovedD940ContractSet, sealD940Record, verifyD940AuthorityContext
 import { createD941LedgerBroker, D941_STORE_NAMESPACES } from '../../d9/restriction/ledger.mjs'
 import { compileD941PrimaryDeleteRuntime } from '../../d9/restriction/primary-delete.mjs'
 import { createD941SyntheticCustodyEvidence } from '../../d9/restriction/custody-evidence.mjs'
+import { createD941ResolverDurabilityStore } from '../../d9/restriction/recovery-resolvers.mjs'
 import { createGenerationFixture, reseal, verifyFixture } from '../d9-1-support/runtime-fixture.mjs'
 
 const templates = JSON.parse(fs.readFileSync('docs/schema/d9-4-0/fixtures/valid-contracts-v1.json', 'utf8')).records
@@ -41,7 +42,7 @@ export function makeClock(start = '2030-01-01T00:10:00.000Z') {
   }
 }
 
-export async function createD941Fixture(t) {
+export async function createD941Fixture(t, { resolverFaultInjector = null, brokerFaultInjector = null } = {}) {
   const linux = await compileLinuxEnforcement(); t.after(() => linux.dispose())
   const deleteRuntime = compileD941PrimaryDeleteRuntime(); t.after(() => deleteRuntime.dispose())
   const base = loadApprovedContractSet()
@@ -110,18 +111,20 @@ export async function createD941Fixture(t) {
   const authorityContext = verifyD940AuthorityContext({ contractSet: d940, verifiedGeneration: generation, operationalProfile: profile, authorityIdentityExtension: extension, authorityRoster: roster, authorityRosterAdoption: adoption, asOf: '2030-01-01T00:10:00.000Z' })
 
   const roots = {}
-  for (const code of ['store', 'handle', 'lock']) { roots[code] = fs.mkdtempSync(path.join(os.tmpdir(), `jedi-d941-${code}-`)); fs.chmodSync(roots[code], 0o700) }
+  for (const code of ['store', 'handle', 'lock', 'resolver']) { roots[code] = fs.mkdtempSync(path.join(os.tmpdir(), `jedi-d941-${code}-`)); fs.chmodSync(roots[code], 0o700) }
   roots.cas = deleteRuntime.createSyntheticRoot()
   t.after(() => { for (const root of Object.values(roots)) fs.rmSync(root, { recursive: true, force: true }) })
   fs.writeFileSync(path.join(roots.handle, 'synthetic.handle'), SYNTHETIC_DESCRIPTOR_BYTES, { mode: 0o600 })
   const store = createDurableNamespaceStore({ rootPath: roots.store, namespaceCodes: D941_STORE_NAMESPACES }); t.after(() => store.close())
+  const resolverStore = createD941ResolverDurabilityStore({ rootPath: roots.resolver, faultInjector: resolverFaultInjector }); t.after(() => resolverStore.close())
   const time = makeClock()
   const registry = createD941AuthorityRegistry({ store, authorityContext, clock: () => '2030-01-01T00:10:03.000Z', linuxEnforcement: linux, operationLockRootPath: roots.lock })
   const launcher = createD941AdministrativeLauncher({ authorityRegistry: registry, linuxEnforcement: linux, handleRootPath: roots.handle, trustedClock: () => '2030-01-01T00:10:00.000Z', maxFutureSkewMs: 5_000 })
   const selectionSession = await launcher.authenticateAuthorityTransition({ roleCode: 'operational_witness', bindingCode: byRole.get('operational_witness').binding_code, at: '2030-01-01T00:10:00.000Z' })
   registry.selectSynthetic({ actorSession: selectionSession, persistedAt: '2030-01-01T00:10:00.000Z' })
-  const broker = createD941LedgerBroker({ store, authorityContext, authorityRegistry: registry, clock: time.clock, linuxEnforcement: linux, operationLockRootPath: roots.lock })
-  return { base, d930, d940, generationFixture, generation, authorityContext, profile, extension, roster, adoption, byRole, linux, deleteRuntime, roots, store, time, registry, launcher, broker }
+  const resolverPersistenceSession = await launcher.authenticateService({ scopeCode: 'recovery_classification', bindingCode: byRole.get('journal_broker').binding_code, at: '2030-01-01T00:10:00.000Z' })
+  const broker = createD941LedgerBroker({ store, authorityContext, authorityRegistry: registry, clock: time.clock, linuxEnforcement: linux, operationLockRootPath: roots.lock, faultInjector: brokerFaultInjector })
+  return { base, d930, d940, generationFixture, generation, authorityContext, profile, extension, roster, adoption, byRole, linux, deleteRuntime, roots, store, resolverStore, resolverPersistenceSession, time, registry, launcher, broker }
 }
 
 export async function serviceSession(fixture, scopeCode, runtimeRoleCode, at = '2030-01-01T00:10:00.000Z', extra = {}) {

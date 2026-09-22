@@ -6,6 +6,7 @@ import { assertD941AuthorityLockBinding, assertD941AuthorityRegistry, setD941Des
 import { assertVerifiedD940AuthorityContext, sealD940Record, validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
 import { assertD941RuntimeSemantics } from './semantics.mjs'
+import { getD941RecoveryClassificationProof, persistD941RecoveryAssessmentLink } from './recovery.mjs'
 
 export const D941_STORE_NAMESPACES = Object.freeze([
   'authority', 'authority-events', 'control', 'access', 'execution', 'receipt', 'backup', 'recovery', 'ledger',
@@ -168,7 +169,11 @@ export function createD941LedgerBroker({ store, authorityContext, authorityRegis
 
   function appendLocked(input) {
     const prepared = prepareAppend(input)
-    return prepared.replay ?? persistPrepared(input.record, prepared)
+    const result = prepared.replay ?? persistPrepared(input.record, prepared)
+    if (input.record.format === 'jedi-atlas-d940-recovery-assessment') {
+      persistD941RecoveryAssessmentLink(input.runtimeProof ?? getD941RecoveryClassificationProof(input.record), input.record, result.receipt, broker)
+    }
+    return result
   }
 
   async function append(input) {

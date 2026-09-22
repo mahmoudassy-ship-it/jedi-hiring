@@ -2,7 +2,7 @@ import { canonicalSha256 } from '../control-plane/canonical.mjs'
 import { sealD940Record, validateD940Record } from './contracts.mjs'
 import { failD941 } from './errors.mjs'
 import { assertD941LedgerBroker } from './ledger.mjs'
-import { assertD941RecoveryResolverRuntime } from './recovery-resolvers.mjs'
+import { assertD941RecoveryResolverRuntime, persistD941ResolverAssessmentLink } from './recovery-resolvers.mjs'
 
 const defaults = Object.freeze({
   before_restriction_persisted: 'safe_no_effect',
@@ -18,6 +18,7 @@ const reconstructionStates = new WeakSet()
 const reconstructionMetadata = new WeakMap()
 const recoveryProofs = new WeakSet()
 const recoveryRecordProofs = new WeakMap()
+const recoveryProofRevalidations = new WeakMap()
 
 function assertRecoveryHeadRepresentable({ head }) {
   if (head.sequence < 1 || head.digest === null || head.persistedAt === null) {
@@ -195,9 +196,16 @@ export function assertD941RecoveryClassificationProof(proof, record, broker) {
       proof.subject_identity_sha256 !== record.subject.subject_identity_sha256 || proof.reconstruction_digest_sha256 !== proof.inventory_digest_sha256 || proof.broker !== broker) {
     failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'recovery assessment lacks a fixed protected-state classification proof')
   }
-  proof.resolver_runtime.revalidateAtAppend({ compositeResponse: proof.resolver_response, completedAt: record.knowledge_boundary.persisted_at })
+  const revalidation = proof.resolver_runtime.revalidateAtAppend({ compositeResponse: proof.resolver_response, completedAt: record.knowledge_boundary.persisted_at })
+  recoveryProofRevalidations.set(proof, revalidation)
   if (proof.ledger_head_digest_sha256 !== broker.head().digest || proof.inventory_digest_sha256 !== broker.store.inventory().digest) {
     failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'protected D9.4 state changed after recovery classification')
   }
   return true
+}
+
+export function persistD941RecoveryAssessmentLink(proof, record, receipt, broker) {
+  if (!proof || !recoveryProofs.has(proof) || proof.broker !== broker || proof.record_digest_sha256 !== record.record_digest_sha256) failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'assessment linkage requires the exact trusted recovery classification proof')
+  const revalidation = recoveryProofRevalidations.get(proof)
+  return persistD941ResolverAssessmentLink(proof.resolver_runtime, { revalidation, assessment: record, assessmentReceipt: receipt })
 }
