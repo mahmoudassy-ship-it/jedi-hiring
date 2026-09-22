@@ -1,0 +1,15 @@
+{
+  "format": "jedi-atlas-recovery-resolver-durability-storage-profiles",
+  "format_version": "1.1.0",
+  "profiles": [
+    { "namespace_code": "d9.resolver.records.v1.1", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "payload_plus_durable_record_plus_append_receipt", "retention": "retain_for_lifetime_of_referenced_assessment_and_all_audit_successors" },
+    { "namespace_code": "d9.resolver.checkpoints.v1.1", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "bootstrap_is_six_observations_plus_permit_plus_checkpoint_plus_receipt; advance_is_checkpoint_plus_receipt", "retention": "permanent_chain_including_bootstrap_evidence_permit_and_superseded_checkpoints" },
+    { "namespace_code": "d9.resolver.assessment-links.v1.1", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker"], "append_only": true, "no_replace": true, "atomic_unit": "assessment_link_plus_append_receipt", "retention": "permanent_with_referenced_recovery_assessment" }
+  ],
+  "reconstruction_order": ["verify catalog and dependency fingerprints", "verify every journal chain from empty head", "verify canonical payload bytes and self-digests", "verify request-response-attestation links", "verify checkpoint bootstrap and every advance", "verify assessment links", "classify missing corrupt forked gapped or ambiguous state as reconciliation_required"],
+  "crash_rules": [
+    { "boundary": "before_atomic_append", "classification": "incomplete_before_durable_append", "retry": "new authenticated attempt may retry exact payload" },
+    { "boundary": "after_atomic_append_before_response", "classification": "response_lost_after_durable_append", "retry": "exact replay returns existing receipt only" },
+    { "boundary": "partial_or_unprovable_append", "classification": "reconciliation_required", "retry": "automatic retry forbidden" }
+  ]
+}
