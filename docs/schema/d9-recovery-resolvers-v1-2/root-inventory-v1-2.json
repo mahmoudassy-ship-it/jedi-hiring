@@ -1,0 +1,21 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-root-inventory",
+  "format_version": "1.2.0",
+  "self_exclusion": "root-inventory-v1-2.json",
+  "files": [
+    { "path": "assessment-append-broker-receipt-v1-2.schema.json", "raw_sha256": "a2750ad27e5ac65bd255b6f2c87dc9d27a57e4a311b0f74e23c3ee86264f79fb" },
+    { "path": "assessment-append-request-v1-2.schema.json", "raw_sha256": "f23bf3588207eeae4e7a6e2ee347476756c9aa14a431d14d78420e0be0af2542" },
+    { "path": "checkpoint-transition-v1-2.schema.json", "raw_sha256": "350af4c04ce8e39decb36657ab88545bf1382ef02b1fa60a8050323a5d3de115" },
+    { "path": "classifications-v1-2.json", "raw_sha256": "ba84bef36d9026978cbfdb83da1e327fed4ff77194a0a85a87000c8b7e36a080" },
+    { "path": "common-v1-2.schema.json", "raw_sha256": "8829e8eaed05c1c69f376c7512103aedf65d62b902e67350c263b536d949eae1" },
+    { "path": "contract-catalog-v1-2.json", "raw_sha256": "b6fd085a5718fdccc51ae4cfbf10645aaa3a1f79929d9ebe896247350d3ddb3c" },
+    { "path": "digest-profiles-v1-2.json", "raw_sha256": "d2f0abe41f0a6b56d870744d4929b7544a311df84ca05b416420886b29a259d6" },
+    { "path": "field-source-registry-v1-2.json", "raw_sha256": "ef058880ae16ed47bc8ade75839d1118a5beb718482025af49d141e173ebac6c" },
+    { "path": "finalization-result-v1-2.schema.json", "raw_sha256": "f4d15e5d945d9a057877d38d0cdb61cb95d06aeb1056a87db152ce9a291fcd91" },
+    { "path": "fixtures/golden-vectors-v1-2.json", "raw_sha256": "4334840150c61e7df16f9481922b686ed5674b75f06d4deed1aae9441718acab" },
+    { "path": "fixtures/invalid-progression-v1-2.json", "raw_sha256": "380c879509b2e69f3308c96415a8031aeac4fdc2414634d49fa70ddbf1b44ac2" },
+    { "path": "fixtures/valid-progression-v1-2.json", "raw_sha256": "23c484694d611f5d9afe494863e033eab719d2b6e5ceb5c282f23c558959fdca" },
+    { "path": "protected-append-receipt-v1-2.schema.json", "raw_sha256": "db049b5a2cf3b504ac1063c5e6ab30990f49b0a2fa9f0b96a5af35471c3487d2" },
+    { "path": "storage-profiles-v1-2.json", "raw_sha256": "8425ca7279b297375e0e52db392cf692516b5bf2ace7e6145daf96d3a34d3bf0" }
+  ]
+}

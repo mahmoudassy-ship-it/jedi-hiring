@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-2/protected-append-receipt-v1-2.schema.json",
+  "title": "Protected v1.2 progression namespace append receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "receipt_code", "namespace_code", "expected_predecessor", "persisted_head", "payload_record_digest_sha256", "source_head_compare_and_append", "source_head_observer_actor", "persistence_actor", "accepted_at", "persisted_at", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-checkpoint-progression-append-receipt" },
+    "format_version": { "const": "1.2.0" },
+    "receipt_code": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "namespace_code": { "enum": ["d9.resolver.progression-intents.v1.2", "d9.resolver.checkpoint-transitions.v1.2"] },
+    "expected_predecessor": { "$ref": "common-v1-2.schema.json#/$defs/progressionJournalHead" },
+    "persisted_head": { "$ref": "common-v1-2.schema.json#/$defs/progressionJournalHead" },
+    "payload_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "source_head_compare_and_append": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_namespace_code", "expected_head", "observed_head_at_persist"],
+          "properties": {
+            "source_namespace_code": { "const": "d940.global.control-journal.v1" },
+            "expected_head": { "$ref": "common-v1-2.schema.json#/$defs/sourceHead" },
+            "observed_head_at_persist": { "$ref": "common-v1-2.schema.json#/$defs/sourceHead" }
+          }
+        }
+      ]
+    },
+    "source_head_observer_actor": { "oneOf": [{ "$ref": "common-v1-2.schema.json#/$defs/actor" }, { "type": "null" }] },
+    "persistence_actor": { "$ref": "common-v1-2.schema.json#/$defs/actor" },
+    "accepted_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "namespace_code": { "const": "d9.resolver.checkpoint-transitions.v1.2" } }, "required": ["namespace_code"] },
+      "then": {
+        "properties": {
+          "source_head_compare_and_append": { "type": "object" },
+          "source_head_observer_actor": { "$ref": "common-v1-2.schema.json#/$defs/actor" }
+        }
+      },
+      "else": {
+        "properties": {
+          "source_head_compare_and_append": { "type": "null" },
+          "source_head_observer_actor": { "type": "null" }
+        }
+      }
+    }
+  ]
+}

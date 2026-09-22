@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-2/checkpoint-transition-v1-2.schema.json",
+  "title": "D9 recovery resolver exact post-assessment checkpoint transition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "transition_code", "transition_sequence", "predecessor_checkpoint_record_digest_sha256", "predecessor_checkpoint_append_receipt_record_digest_sha256", "operation_id", "operation_nonce", "runtime_generation", "subject", "prior_checkpoint", "component_resolution_attestations", "composite_response_record_digest_sha256", "composite_response_durable_record_digest_sha256", "composite_append_attestation_record_digest_sha256", "composite_append_attestation_durable_record_digest_sha256", "append_request_record_digest_sha256", "append_request_protected_receipt_record_digest_sha256", "append_broker_receipt_record_digest_sha256", "append_broker_receipt_protected_receipt_record_digest_sha256", "assessment_record_code", "assessment_record_digest_sha256", "expected_d940_append_position", "d940_append_receipt_record_digest_sha256", "pre_append_source_heads", "post_append_source_heads", "unchanged_source_namespace_codes", "permitted_d940_delta", "post_append_source_heads_digest_sha256", "finalizer_actor", "semantic_actor", "persistence_actor", "attestation_completed_at", "append_authorized_until", "assessment_persisted_at", "finalizer_observed_at", "persisted_at", "freshness_boundary_code", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-checkpoint-transition" },
+    "format_version": { "const": "1.2.0" },
+    "transition_code": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "transition_sequence": { "$ref": "common-v1-2.schema.json#/$defs/positiveInteger" },
+    "predecessor_checkpoint_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "predecessor_checkpoint_append_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "operation_id": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-2.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-2.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-2.schema.json#/$defs/subject" },
+    "prior_checkpoint": { "$ref": "common-v1-2.schema.json#/$defs/checkpointReference" },
+    "component_resolution_attestations": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [
+        { "allOf": [{ "$ref": "common-v1-2.schema.json#/$defs/componentAttestation" }, { "properties": { "resolver_kind_code": { "const": "d901_control_access" } } }] },
+        { "allOf": [{ "$ref": "common-v1-2.schema.json#/$defs/componentAttestation" }, { "properties": { "resolver_kind_code": { "const": "d920_accepted_evidence" } } }] },
+        { "allOf": [{ "$ref": "common-v1-2.schema.json#/$defs/componentAttestation" }, { "properties": { "resolver_kind_code": { "const": "d930_custody" } } }] }
+      ],
+      "items": false
+    },
+    "composite_response_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "composite_response_durable_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "composite_append_attestation_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "composite_append_attestation_durable_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "append_request_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "append_request_protected_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "append_broker_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "append_broker_receipt_protected_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "assessment_record_code": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "assessment_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "expected_d940_append_position": { "$ref": "common-v1-2.schema.json#/$defs/d940AppendPosition" },
+    "d940_append_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "pre_append_source_heads": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "common-v1-2.schema.json#/$defs/sourceHead" } },
+    "post_append_source_heads": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "common-v1-2.schema.json#/$defs/sourceHead" } },
+    "unchanged_source_namespace_codes": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "prefixItems": [
+        { "const": "d901.capability-state.v1" },
+        { "const": "d901.control-state.v1" },
+        { "const": "d920.accepted-evidence.v1" },
+        { "const": "d930.custody-journal.v1" },
+        { "const": "d930.primary-receipts.v1" }
+      ],
+      "items": false
+    },
+    "permitted_d940_delta": { "$ref": "common-v1-2.schema.json#/$defs/d940Delta" },
+    "post_append_source_heads_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "finalizer_actor": { "$ref": "common-v1-2.schema.json#/$defs/actor" },
+    "semantic_actor": { "$ref": "common-v1-2.schema.json#/$defs/actor" },
+    "persistence_actor": { "$ref": "common-v1-2.schema.json#/$defs/actor" },
+    "attestation_completed_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "append_authorized_until": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "assessment_persisted_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "finalizer_observed_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "freshness_boundary_code": { "const": "assessment_append_within_attestation_window_and_exact_post_head_still_current" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" }
+  }
+}
