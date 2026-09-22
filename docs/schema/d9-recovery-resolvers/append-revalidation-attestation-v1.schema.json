@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/append-revalidation-attestation-v1.schema.json",
+  "title": "JEDI Atlas recovery projection append-time revalidation attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "attestation_code", "operation_id", "operation_nonce", "composite_response_record_digest_sha256", "sender", "recipient", "runtime_generation", "subject", "observed_at", "completed_at", "result_code", "error_code", "source_heads", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-projection-append-revalidation-attestation" },
+    "format_version": { "const": "1.0.0" },
+    "attestation_code": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/operationNonce" },
+    "composite_response_record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/sha256" },
+    "sender": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/serviceIdentity" },
+    "recipient": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/serviceIdentity" },
+    "runtime_generation": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/subject" },
+    "observed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/timestamp" },
+    "completed_at": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/timestamp" },
+    "result_code": { "enum": ["revalidated", "failed"] },
+    "error_code": { "type": ["string", "null"], "enum": [null, "append_revalidation_failed"] },
+    "source_heads": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/sourceHead" } },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/sha256" }
+  }
+}
