@@ -15,7 +15,10 @@ import { failD941 } from './errors.mjs'
 const here = path.dirname(fileURLToPath(import.meta.url))
 const contractRoot = path.resolve(here, '../../docs/schema/d9-recovery-resolvers')
 const durabilityContractRoot = path.resolve(here, '../../docs/schema/d9-recovery-resolvers-v1-1')
+const progressionContractRoot = path.resolve(here, '../../docs/schema/d9-recovery-resolvers-v1-2')
 const durabilityRootInventorySha256 = 'b3711db55ed73a1a74621a808014aae35b2e05319e5cf0aeba5df0d62b1933bf'
+const progressionRootInventorySha256 = '3bc242bbd7147597e9b34aad16293d8e397cb23d4b7b7a6ca3578b371403c1ad'
+const progressionSemanticVerifierSha256 = '4708ae4c43fe8bfd83e13e216b1d5fc8fc15077e6ec38e24eda78f0b859f5ad7'
 const semanticVerifierSha256 = 'bc36de4475ee6d8b9fd354f80163799f431496ae91765b5dd4903fdde9763ef5'
 const expectedFingerprints = Object.freeze({
   'contract-catalog-v1.json': 'df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3',
@@ -52,12 +55,30 @@ const runtimes = new WeakSet()
 const runtimeInternals = new WeakMap()
 const durabilityStores = new WeakSet()
 const durabilityWriters = new WeakMap()
+const syntheticTrustedClocks = new WeakSet()
 
 export const D941_RESOLVER_NAMESPACES = Object.freeze([
   'd9.resolver.records.v1.1',
   'd9.resolver.checkpoints.v1.1',
   'd9.resolver.assessment-links.v1.1',
+  'd9.resolver.progression-intents.v1.2',
+  'd9.resolver.checkpoint-transitions.v1.2',
 ])
+
+export function createD941SyntheticResolverClock({ authorityRegistry, launcherSession, clock }) {
+  assertD941AuthorityRegistry(authorityRegistry)
+  assertD941AuthenticatedSession(launcherSession, 'recovery_progression')
+  if (typeof clock !== 'function') failD941('D941_RESOLVER_CONFIGURATION_INVALID', 'synthetic resolver clock requires one fixed time source')
+  const trustedClock = () => {
+    const value = timestamp(clock(), 'synthetic trusted resolver clock')
+    const authorityHead = authorityRegistry.head()
+    if (authorityHead.persistedAt !== null && value < authorityHead.persistedAt) failD941('D941_RESOLVER_TIME_ROLLBACK', 'synthetic resolver clock precedes the latest protected authority event')
+    authorityRegistry.revalidateSession(launcherSession, value)
+    return value
+  }
+  syntheticTrustedClocks.add(trustedClock)
+  return trustedClock
+}
 
 function resolverAppendCode(sequence) { return `append-${String(sequence).padStart(12, '0')}` }
 
@@ -69,7 +90,7 @@ function assertResolverAppendEnvelope(envelope, namespaceCode, expectedSequence,
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope) ||
       !same(Object.keys(envelope).sort(), keys.sort()) ||
       envelope.format !== 'jedi-atlas-recovery-resolver-protected-append' ||
-      envelope.format_version !== '1.1.0' || envelope.namespace_code !== namespaceCode ||
+      envelope.format_version !== (namespaceCode.endsWith('.v1.2') ? '1.2.0' : '1.1.0') || envelope.namespace_code !== namespaceCode ||
       envelope.sequence !== expectedSequence ||
       envelope.predecessor_commit_sha256 !== expectedPredecessor ||
       !Array.isArray(envelope.records) || envelope.records.length === 0 ||
@@ -139,7 +160,7 @@ export function createD941ResolverDurabilityStore({ rootPath, expectedUid = proc
     const sequence = current.sequence + 1
     const envelope = {
       format: 'jedi-atlas-recovery-resolver-protected-append',
-      format_version: '1.1.0',
+      format_version: namespaceCode.endsWith('.v1.2') ? '1.2.0' : '1.1.0',
       namespace_code: namespaceCode,
       sequence,
       predecessor_commit_sha256: current.commit_sha256,
@@ -190,6 +211,15 @@ function readDurabilityFrozen(relativePath, expectedSha256 = null) {
   if (!stat.isFile() || stat.isSymbolicLink()) failD941('D941_RESOLVER_CONTRACT_UNPROTECTED', `${relativePath} is not a regular v1.1 contract file`)
   const bytes = fs.readFileSync(absolute)
   if (expectedSha256 !== null && sha256Bytes(bytes) !== expectedSha256) failD941('D941_RESOLVER_CONTRACT_CHANGED', `${relativePath} differs from the approved recovery-resolver v1.1 freeze`)
+  return parseStrictJson(bytes, { maximumBytes: 4 * 1024 * 1024, maximumDepth: 128, maximumMembers: 100_000, contractNumbers: true })
+}
+
+function readProgressionFrozen(relativePath, expectedSha256 = null) {
+  const absolute = path.join(progressionContractRoot, relativePath)
+  const stat = fs.lstatSync(absolute)
+  if (!stat.isFile() || stat.isSymbolicLink()) failD941('D941_RESOLVER_CONTRACT_UNPROTECTED', `${relativePath} is not a regular v1.2 contract file`)
+  const bytes = fs.readFileSync(absolute)
+  if (expectedSha256 !== null && sha256Bytes(bytes) !== expectedSha256) failD941('D941_RESOLVER_CONTRACT_CHANGED', `${relativePath} differs from the approved recovery-resolver v1.2 freeze`)
   return parseStrictJson(bytes, { maximumBytes: 4 * 1024 * 1024, maximumDepth: 128, maximumMembers: 100_000, contractNumbers: true })
 }
 
@@ -285,6 +315,37 @@ function loadDurabilityContract() {
   })
 }
 
+function loadProgressionContract() {
+  const inventory = readProgressionFrozen('root-inventory-v1-2.json', progressionRootInventorySha256)
+  for (const file of inventory.files) readProgressionFrozen(file.path, file.raw_sha256)
+  const catalog = readProgressionFrozen('contract-catalog-v1-2.json', 'b6fd085a5718fdccc51ae4cfbf10645aaa3a1f79929d9ebe896247350d3ddb3c')
+  if (catalog.status_code !== 'design_only_contract_freeze' || catalog.instance_policy.runtime_implementation_authorized !== false || catalog.instance_policy.operational_activation_authorized !== false) {
+    failD941('D941_RESOLVER_CONTRACT_BOUNDARY_INVALID', 'resolver v1.2 contract does not retain its design-only, unactivated boundary')
+  }
+  const verifierPath = path.resolve(here, '../../docs/schema/validate-d9-recovery-resolvers-v1-2.mjs')
+  const verifierStat = fs.lstatSync(verifierPath)
+  if (!verifierStat.isFile() || verifierStat.isSymbolicLink() || sha256Bytes(fs.readFileSync(verifierPath)) !== progressionSemanticVerifierSha256) failD941('D941_RESOLVER_DURABLE_VERIFIER_INVALID', 'approved v1.2 semantic verifier bytes are unavailable or changed')
+  const v1Common = readFrozen('common-v1.schema.json')
+  const v11Common = readDurabilityFrozen('common-v1-1.schema.json')
+  const schemas = [
+    'common-v1-2.schema.json',
+    'assessment-append-request-v1-2.schema.json',
+    'assessment-append-broker-receipt-v1-2.schema.json',
+    'protected-append-receipt-v1-2.schema.json',
+    'checkpoint-transition-v1-2.schema.json',
+    'finalization-result-v1-2.schema.json',
+  ].map((file) => readProgressionFrozen(file, inventory.files.find((item) => item.path === file)?.raw_sha256 ?? null))
+  const ajv = new Ajv2020({ allErrors: true, strict: false })
+  ajv.addSchema(v1Common)
+  ajv.addSchema(v11Common)
+  for (const schema of schemas) ajv.addSchema(schema)
+  return Object.freeze({
+    catalog,
+    inventory,
+    validate: Object.freeze(Object.fromEntries(schemas.slice(1).map((schema) => [schema.$id.split('/').at(-1), ajv.getSchema(schema.$id)]))),
+  })
+}
+
 function assertSchema(validator, value, label) {
   if (!validator(value)) failD941('D941_RESOLVER_SCHEMA_REJECTED', `${label} violates the approved schema: ${validator.errors?.map((item) => `${item.instancePath || '/'} ${item.message}`).join('; ')}`, { details: validator.errors })
 }
@@ -340,7 +401,7 @@ function assertDurabilitySchema(contract, schemaFile, value, label) {
   if (value.record_digest_sha256 !== recordDigest(value)) failD941('D941_RESOLVER_DURABILITY_DIGEST_INVALID', `${label} has an invalid self digest`)
 }
 
-function makeAppendReceipt({ namespaceCode, expectedHead, payloadRecord, authorityContext, acceptedAt, persistedAt }) {
+function makeAppendReceipt({ namespaceCode, expectedHead, payloadRecord, persistenceActor, acceptedAt, persistedAt }) {
   return sealRecord({
     format: 'jedi-atlas-recovery-resolver-append-receipt',
     format_version: '1.1.0',
@@ -349,7 +410,7 @@ function makeAppendReceipt({ namespaceCode, expectedHead, payloadRecord, authori
     expected_predecessor: journalHead(expectedHead),
     persisted_head: { namespace_code: namespaceCode, sequence: expectedHead.sequence + 1, record_digest_sha256: payloadRecord.record_digest_sha256 },
     payload_record_digest_sha256: payloadRecord.record_digest_sha256,
-    persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', persistedAt),
+    persistence_actor: persistenceActor,
     accepted_at: acceptedAt,
     persisted_at: persistedAt,
     record_digest_sha256: null,
@@ -429,6 +490,31 @@ function dynamicSourceState(template, broker, subject, custodyEvidence) {
   return state
 }
 
+function deriveD940ProtectedHead(contract, broker, sequence = broker.head().sequence) {
+  const retained = receiptRecords(broker)
+  if (!Number.isSafeInteger(sequence) || sequence < 1 || sequence > retained.length) failD941('D941_RESOLVER_SOURCE_HEAD_UNAVAILABLE', 'requested D9.4 receipt prefix is unavailable')
+  const prefix = retained.slice(0, sequence)
+  for (const [index, item] of prefix.entries()) if (item.receipt.receipt_sequence !== index + 1) failD941('D941_RESOLVER_SOURCE_CONTRADICTORY', 'D9.4 receipt prefix is not gapless')
+  const last = prefix.at(-1).receipt
+  const payloadCommitments = prefix.map(({ receipt, record }) => ({
+    receipt_sequence: receipt.receipt_sequence,
+    receipt_record_digest_sha256: receipt.record_digest_sha256,
+    receipt_raw_payload_sha256: canonicalSha256(receipt),
+    target_format: receipt.target_format,
+    target_record_code: receipt.target_record_code,
+    target_record_digest_sha256: record.record_digest_sha256,
+    target_raw_payload_sha256: canonicalSha256(record),
+  }))
+  return Object.freeze({
+    source_namespace_code: 'd940.global.control-journal.v1',
+    source_contract_fingerprint_sha256: contract.sourceProfiles.get('d940.global.control-journal.v1'),
+    head_sequence: sequence,
+    head_digest_sha256: last.record_digest_sha256,
+    head_persisted_at: last.persisted_at,
+    inventory_digest_sha256: canonicalSha256({ source_namespace_code: 'd940.global.control-journal.v1', head_sequence: sequence, payload_commitments: payloadCommitments }),
+  })
+}
+
 function deriveHeads(contract, sourceState, broker) {
   const heads = new Map()
   for (const boundary of sourceState.sources.source_boundaries) {
@@ -438,14 +524,14 @@ function deriveHeads(contract, sourceState, broker) {
     }))
     const inventoryDigest = canonicalSha256({ source_namespace_code: boundary.source_namespace_code, head_sequence: boundary.head_sequence, payload_commitments: payloadCommitments })
     const derivedHead = canonicalSha256({ source_namespace_code: boundary.source_namespace_code, head_sequence: boundary.head_sequence, head_persisted_at: boundary.head_persisted_at, inventory_digest_sha256: inventoryDigest })
-    const d940Head = boundary.source_namespace_code === 'd940.global.control-journal.v1' ? broker.head() : null
+    const d940Head = boundary.source_namespace_code === 'd940.global.control-journal.v1' ? deriveD940ProtectedHead(contract, broker, boundary.head_sequence) : null
     heads.set(boundary.source_namespace_code, Object.freeze({
       source_namespace_code: boundary.source_namespace_code,
       source_contract_fingerprint_sha256: contract.sourceProfiles.get(boundary.source_namespace_code),
       head_sequence: boundary.head_sequence,
-      head_digest_sha256: d940Head?.digest ?? derivedHead,
+      head_digest_sha256: d940Head?.head_digest_sha256 ?? derivedHead,
       head_persisted_at: boundary.head_persisted_at,
-      inventory_digest_sha256: boundary.source_namespace_code === 'd940.global.control-journal.v1' ? broker.store.inventory().digest : inventoryDigest,
+      inventory_digest_sha256: d940Head?.inventory_digest_sha256 ?? inventoryDigest,
     }))
   }
   if (!same(sorted(heads.keys()), namespaces)) failD941('D941_RESOLVER_SOURCE_SET_INVALID', 'synthetic adapters do not expose the complete approved source set')
@@ -553,15 +639,32 @@ function makeResponse({ contract, request, sourceState, beforeHeads, heads, outp
   return deepFreeze(response)
 }
 
-export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, authorityRegistry, broker, subject: configuredSubject, custodyEvidence, trustedClock, durabilityStore, persistenceSession, faultInjector = null }) {
+export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, authorityRegistry, broker, subject: configuredSubject, custodyEvidence, trustedClock, durabilityStore, persistenceSession, verifierSession, finalizerSession, faultInjector = null }) {
   assertD941LedgerBroker(broker)
   assertD941AuthorityRegistry(authorityRegistry)
   assertD941SyntheticCustodyEvidence(custodyEvidence)
   assertD941ResolverDurabilityStore(durabilityStore)
-  if (!authorityContext?.verifiedGeneration || authorityRegistry.authorityContext !== authorityContext || typeof trustedClock !== 'function' || !persistenceSession || configuredSubject?.subject_kind_code !== 'custody_copy' || typeof configuredSubject?.subject_identity_sha256 !== 'string') failD941('D941_RESOLVER_CONFIGURATION_INVALID', 'synthetic resolver requires the selected authority registry, authenticated journal-broker persistence session, one exact custody subject, one protected durability store, and a trusted launcher clock')
+  if (!authorityContext?.verifiedGeneration || authorityRegistry.authorityContext !== authorityContext || !syntheticTrustedClocks.has(trustedClock) || !persistenceSession || !verifierSession || !finalizerSession || configuredSubject?.subject_kind_code !== 'custody_copy' || typeof configuredSubject?.subject_identity_sha256 !== 'string') failD941('D941_RESOLVER_CONFIGURATION_INVALID', 'synthetic resolver requires authenticated launcher, verifier, and journal-broker sessions, one exact custody subject, one protected durability store, and a branded trusted launcher clock')
+  assertD941AuthenticatedSession(persistenceSession, 'recovery_classification')
+  assertD941AuthenticatedSession(verifierSession, 'recovery_projection')
+  assertD941AuthenticatedSession(finalizerSession, 'recovery_progression')
   const contract = loadContract()
   const durability = loadDurabilityContract()
+  const progression = loadProgressionContract()
   const expectedGeneration = runtimeGeneration(authorityContext)
+
+  const producerSessions = Object.freeze({ trusted_launcher: finalizerSession, independent_verifier: verifierSession, journal_broker: persistenceSession })
+
+  function authenticatedActorFor(runtimeRoleCode, at) {
+    const session = producerSessions[runtimeRoleCode]
+    const expectedScope = { trusted_launcher: 'recovery_progression', independent_verifier: 'recovery_projection', journal_broker: 'recovery_classification' }[runtimeRoleCode]
+    assertD941AuthenticatedSession(session, expectedScope)
+    authorityRegistry.revalidateSession(session, at)
+    const binding = authorityContext.verifiedGeneration.identityBindings.bindings.find((item) => item.binding_code === session.actor.identity_binding.binding_code)
+    const expected = durabilityActorFor(authorityContext, runtimeRoleCode, at)
+    if (!binding || binding.runtime_role_code !== runtimeRoleCode || expected.binding_code !== binding.binding_code || session.exchange.authenticatedEndpointCode !== expected.endpoint_code || binding.executable_sha256 !== expected.executable_build_sha256) failD941('D941_RESOLVER_PRODUCER_UNAUTHENTICATED', `${runtimeRoleCode} producer does not match its authenticated kernel/build/endpoint binding`)
+    return expected
+  }
 
   function observe(subjectIdentitySha256) {
     if (subjectIdentitySha256 !== configuredSubject.subject_identity_sha256) failD941('D941_RESOLVER_SUBJECT_SUBSTITUTED', 'resolver request differs from the configured D9.3 custody subject')
@@ -577,7 +680,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   }
 
   function assertDurabilityActor(actor, role, at) {
-    const expected = durabilityActorFor(authorityContext, role, at)
+    const expected = authenticatedActorFor(role, at)
     if (!same(actor, expected)) failD941('D941_RESOLVER_DURABILITY_ACTOR_INVALID', `${role} does not match the active verified binding generation`)
   }
 
@@ -592,7 +695,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   }
 
   function assertV1Identity(identity, role, at, label) {
-    const expected = serviceIdentity(durabilityActorFor(authorityContext, role, at))
+    const expected = serviceIdentity(authenticatedActorFor(role, at))
     if (!same(identity, expected)) failD941('D941_RESOLVER_DURABLE_ROUTE_INVALID', `${label} does not resolve to the exact frozen route binding`)
   }
 
@@ -602,6 +705,60 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       if (contract.sourceProfiles.get(head.source_namespace_code) !== head.source_contract_fingerprint_sha256 || head.head_persisted_at > knownAt) {
         failD941('D941_RESOLVER_DURABLE_SOURCE_INVALID', `${label} has a substituted or future source head`)
       }
+    }
+  }
+
+  function assertProgressionSchema(schemaFile, value, label) {
+    const validator = progression.validate[schemaFile]
+    if (!validator || !validator(value)) failD941('D941_RESOLVER_PROGRESSION_SCHEMA_REJECTED', `${label} violates ${schemaFile}: ${validator?.errors?.map((item) => `${item.instancePath || '/'} ${item.message}`).join('; ')}`, { details: validator?.errors })
+    if (value.record_digest_sha256 !== recordDigest(value)) failD941('D941_RESOLVER_PROGRESSION_DIGEST_INVALID', `${label} has an invalid self digest`)
+  }
+
+  function progressionHead(namespaceCode, entries) {
+    const payload = entries.at(-1)?.records.at(-1) ?? null
+    return { namespace_code: namespaceCode, sequence: entries.length, record_digest_sha256: payload?.record_digest_sha256 ?? null }
+  }
+
+  function checkpointReference(checkpoint, receipt) {
+    return {
+      checkpoint_contract_version: checkpoint.format_version,
+      checkpoint_namespace_code: checkpoint.format_version === '1.2.0' ? 'd9.resolver.checkpoint-transitions.v1.2' : 'd9.resolver.checkpoints.v1.1',
+      checkpoint_sequence: checkpoint.transition_sequence ?? checkpoint.sequence,
+      checkpoint_record_digest_sha256: checkpoint.record_digest_sha256,
+      checkpoint_append_receipt_record_digest_sha256: receipt.record_digest_sha256,
+      source_heads: checkpoint.post_append_source_heads ?? checkpoint.source_heads,
+      source_heads_digest_sha256: checkpoint.post_append_source_heads_digest_sha256 ?? canonicalSha256(checkpoint.source_heads),
+    }
+  }
+
+  function d940SourceHead(heads) { return heads.find((item) => item.source_namespace_code === 'd940.global.control-journal.v1') }
+
+  function assertProgressionReceipt(entry, namespaceCode, predecessor, payload, currentD940Head = null) {
+    if (entry.records.length !== 1) failD941('D941_RESOLVER_PROGRESSION_BATCH_INVALID', 'progression appends contain exactly one payload')
+    const receipt = entry.append_receipt
+    assertProgressionSchema('protected-append-receipt-v1-2.schema.json', receipt, 'progression protected receipt')
+    if (receipt.namespace_code !== namespaceCode || !same(receipt.expected_predecessor, predecessor) || receipt.persisted_head.sequence !== predecessor.sequence + 1 || receipt.persisted_head.record_digest_sha256 !== payload.record_digest_sha256 || receipt.payload_record_digest_sha256 !== payload.record_digest_sha256 || receipt.accepted_at > receipt.persisted_at) {
+      failD941('D941_RESOLVER_PROGRESSION_RECEIPT_INVALID', 'progression receipt does not bind its exact protected append')
+    }
+    assertDurabilityActor(receipt.persistence_actor, 'journal_broker', receipt.persisted_at)
+    if (namespaceCode === 'd9.resolver.checkpoint-transitions.v1.2') {
+      assertDurabilityActor(receipt.source_head_observer_actor, 'independent_verifier', receipt.persisted_at)
+      if (currentD940Head === null || !same(receipt.source_head_compare_and_append?.expected_head, currentD940Head) || !same(receipt.source_head_compare_and_append?.observed_head_at_persist, currentD940Head)) failD941('D941_RESOLVER_PROGRESSION_SOURCE_CAS_INVALID', 'checkpoint transition lacks the exact D9.4 source-head compare-and-append proof')
+    } else if (receipt.source_head_compare_and_append !== null || receipt.source_head_observer_actor !== null) failD941('D941_RESOLVER_PROGRESSION_RECEIPT_INVALID', 'intent receipt claims an unauthorized source-head CAS')
+    return receipt
+  }
+
+  function expectedD940Position(priorCheckpoint, assessment) {
+    const head = d940SourceHead(priorCheckpoint.source_heads)
+    return {
+      journal_namespace_code: 'd940.global.control-journal.v1',
+      predecessor_receipt_sequence: head.head_sequence,
+      predecessor_receipt_record_digest_sha256: head.head_digest_sha256,
+      target_receipt_sequence: head.head_sequence + 1,
+      target_format: assessment.format,
+      target_record_code: assessment.record_code,
+      target_record_digest_sha256: assessment.record_digest_sha256,
+      target_subject_identity_sha256: assessment.subject.subject_identity_sha256,
     }
   }
 
@@ -669,7 +826,9 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     const checkpointEntries = durabilityStore.entries('d9.resolver.checkpoints.v1.1')
     const recordEntries = durabilityStore.entries('d9.resolver.records.v1.1')
     const linkEntries = durabilityStore.entries('d9.resolver.assessment-links.v1.1')
-    if (checkpointEntries.length === 0 && (recordEntries.length !== 0 || linkEntries.length !== 0)) failD941('D941_RESOLVER_DURABILITY_BOOTSTRAP_MISSING', 'resolver records or assessment links exist without a checkpoint bootstrap')
+    const intentEntries = durabilityStore.entries('d9.resolver.progression-intents.v1.2')
+    const transitionEntries = durabilityStore.entries('d9.resolver.checkpoint-transitions.v1.2')
+    if (checkpointEntries.length === 0 && (recordEntries.length !== 0 || linkEntries.length !== 0 || intentEntries.length !== 0 || transitionEntries.length !== 0)) failD941('D941_RESOLVER_DURABILITY_BOOTSTRAP_MISSING', 'resolver state exists without a checkpoint bootstrap')
 
     const checkpoints = []
     let checkpointHead = { namespace_code: 'd9.resolver.checkpoints.v1.1', sequence: 0, record_digest_sha256: null, commit_sha256: null }
@@ -721,6 +880,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       checkpointHead = { namespace_code: checkpointHead.namespace_code, sequence: checkpoint.sequence, record_digest_sha256: checkpoint.record_digest_sha256, commit_sha256: entry.commit_sha256 }
       checkpoints.push(checkpoint)
     }
+    if (checkpoints.length > 1) failD941('D941_RESOLVER_PRE_RECEIPT_ADVANCE_REJECTED', 'v1.2 permits only the v1.1 bootstrap anchor; post-assessment progression must use receipt-proven v1.2 transitions')
 
     const durableRecords = []
     let recordHead = { namespace_code: 'd9.resolver.records.v1.1', sequence: 0, record_digest_sha256: null, commit_sha256: null }
@@ -731,7 +891,8 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       if (wrapper.sequence !== recordHead.sequence + 1 || wrapper.predecessor_record_digest_sha256 !== recordHead.record_digest_sha256 || !same(wrapper.runtime_generation, expectedGeneration) || wrapper.accepted_at > wrapper.persisted_at) failD941('D941_RESOLVER_DURABLE_CHAIN_INVALID', 'durable resolver wrapper is gapped, forked, backdated, or belongs to another generation')
       assertDurabilityActor(wrapper.semantic_actor, 'independent_verifier', wrapper.accepted_at)
       assertDurabilityActor(wrapper.persistence_actor, 'journal_broker', wrapper.persisted_at)
-      const checkpoint = checkpoints.find((item) => item.sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256)
+      const checkpoint = checkpoints.find((item) => item.sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256) ??
+        transitionEntries.flatMap((entry) => entry.records).find((item) => item.format === 'jedi-atlas-recovery-checkpoint-transition' && item.transition_sequence === wrapper.checkpoint_sequence && item.record_digest_sha256 === wrapper.checkpoint_record_digest_sha256)
       if (!checkpoint) failD941('D941_RESOLVER_DURABLE_CHECKPOINT_INVALID', 'durable resolver wrapper references an unknown checkpoint')
       let payload
       try { payload = parseStrictJson(Buffer.from(wrapper.payload_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_RESOLVER_DURABLE_PAYLOAD_INVALID', 'durable resolver payload is not strict canonical JSON', { cause: error.message }) }
@@ -739,12 +900,12 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       assertSchema(payloadValidator, payload, 'durable v1 resolver payload')
       const payloadResolverKind = payload.resolver_kind_code ?? 'd940_composite_snapshot'
       if (canonicalize(payload) !== wrapper.payload_canonical_utf8 || payload.record_digest_sha256 !== wrapper.payload_record_digest_sha256 || recordDigest(payload) !== payload.record_digest_sha256 || payload.format !== wrapper.payload_format || payload.operation_id !== wrapper.operation_id || payload.operation_nonce !== wrapper.operation_nonce || !same(payload.subject, wrapper.subject) || !same(payload.runtime_generation, wrapper.runtime_generation) || payloadResolverKind !== wrapper.resolver_kind_code) failD941('D941_RESOLVER_DURABLE_PAYLOAD_INVALID', 'durable wrapper does not preserve the exact verified v1 payload')
-      const expectedProducer = durabilityActorFor(authorityContext, payload.sender.runtime_role_code, wrapper.accepted_at)
+      const expectedProducer = authenticatedActorFor(payload.sender.runtime_role_code, wrapper.accepted_at)
       if (!same(wrapper.payload_producer, expectedProducer) || !same(payload.sender, serviceIdentity(expectedProducer))) failD941('D941_RESOLVER_DURABLE_PRODUCER_INVALID', 'durable wrapper producer differs from the verified v1 route binding')
       if (wrapper.semantic_verifier_sha256 !== semanticVerifierSha256) failD941('D941_RESOLVER_DURABLE_VERIFIER_INVALID', 'durable wrapper names an unapproved semantic verifier')
       const operationRecords = durableRecords.filter((item) => item.wrapper.operation_id === wrapper.operation_id && item.wrapper.operation_nonce === wrapper.operation_nonce)
-      const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request')
-      const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response')
+      const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === wrapper.request_record_digest_sha256)
+      const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.payload.record_digest_sha256 === wrapper.response_record_digest_sha256)
       if (wrapper.record_kind_code === 'request' && (wrapper.request_record_digest_sha256 !== wrapper.payload_record_digest_sha256 || wrapper.response_record_digest_sha256 !== null || wrapper.attestation_record_digest_sha256 !== null)) failD941('D941_RESOLVER_DURABLE_LINK_INVALID', 'durable request wrapper has invalid links')
       if (wrapper.record_kind_code === 'response' && (!request || payload.request_record_digest_sha256 !== request.payload.record_digest_sha256 || wrapper.request_record_digest_sha256 !== request.payload.record_digest_sha256 || wrapper.response_record_digest_sha256 !== wrapper.payload_record_digest_sha256 || wrapper.attestation_record_digest_sha256 !== null)) failD941('D941_RESOLVER_DURABLE_LINK_INVALID', 'durable response wrapper does not resolve to its exact request')
       if (wrapper.record_kind_code === 'append_attestation' && (!request || !response || payload.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 || wrapper.request_record_digest_sha256 !== request.payload.record_digest_sha256 || wrapper.response_record_digest_sha256 !== response.payload.record_digest_sha256 || wrapper.attestation_record_digest_sha256 !== wrapper.payload_record_digest_sha256)) failD941('D941_RESOLVER_DURABLE_LINK_INVALID', 'durable attestation wrapper does not resolve to its exact request and response')
@@ -756,19 +917,95 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       durableRecords.push({ wrapper, payload, receipt: entry.append_receipt })
     }
 
-    for (const checkpoint of checkpoints.filter((item) => item.checkpoint_kind_code === 'advance')) {
-      const previous = checkpoints[checkpoint.sequence - 2]
-      const response = durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.payload.record_digest_sha256 === checkpoint.composite_response_record_digest_sha256)
-      const attestation = durableRecords.find((item) => item.wrapper.record_kind_code === 'append_attestation' && item.payload.record_digest_sha256 === checkpoint.append_attestation_record_digest_sha256)
-      const request = response && durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === response.payload.request_record_digest_sha256)
-      if (!request || !response || !attestation || !same(request.payload.prior_accepted_source_heads, previous.source_heads) ||
-          response.wrapper.checkpoint_sequence !== previous.sequence || response.wrapper.checkpoint_record_digest_sha256 !== previous.record_digest_sha256 ||
-          attestation.payload.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 || checkpoint.operation_id !== attestation.payload.operation_id || checkpoint.operation_nonce !== attestation.payload.operation_nonce ||
-          checkpoint.observed_at !== attestation.payload.completed_at || checkpoint.persisted_at > response.payload.append_revalidate_by || !same(checkpoint.source_heads, attestation.payload.source_heads)) {
-        failD941('D941_RESOLVER_CHECKPOINT_ATTESTATION_INVALID', 'checkpoint advance does not resolve to the exact prior checkpoint, request, response, and append attestation')
-      }
-      for (const head of checkpoint.source_heads) if (contract.sourceProfiles.get(head.source_namespace_code) !== head.source_contract_fingerprint_sha256) failD941('D941_RESOLVER_CHECKPOINT_ATTESTATION_INVALID', 'checkpoint advance carries a substituted source contract')
+    const progressionRecords = []
+    let intentHead = { namespace_code: 'd9.resolver.progression-intents.v1.2', sequence: 0, record_digest_sha256: null }
+    const requestIdentities = new Set()
+    for (const entry of intentEntries) {
+      const payload = entry.records[0]
+      const schema = payload?.format === 'jedi-atlas-recovery-checkpoint-assessment-append-request'
+        ? 'assessment-append-request-v1-2.schema.json'
+        : payload?.format === 'jedi-atlas-recovery-checkpoint-assessment-append-broker-receipt'
+          ? 'assessment-append-broker-receipt-v1-2.schema.json' : null
+      if (!schema) failD941('D941_RESOLVER_PROGRESSION_RECORD_INVALID', 'intent namespace contains an unknown payload')
+      assertProgressionSchema(schema, payload, 'progression intent record')
+      assertProgressionReceipt(entry, intentHead.namespace_code, intentHead, payload)
+      assertDurabilityActor(payload.semantic_actor ?? payload.post_head_observer_actor, 'independent_verifier', payload.authorized_at ?? payload.post_head_observed_at)
+      assertDurabilityActor(payload.broker_recipient ?? payload.broker_actor, 'journal_broker', payload.authorized_at ?? payload.accepted_at)
+      if (!same(payload.runtime_generation, expectedGeneration) || payload.technical_evidence_only !== true || payload.authority_granted !== false) failD941('D941_RESOLVER_PROGRESSION_RECORD_INVALID', 'progression record has a substituted generation or grants authority')
+      const identity = payload.format.endsWith('append-request')
+        ? [`request:${payload.request_code}`, `operation:${payload.operation_id}`, `idempotency:${payload.idempotency_key_sha256}`]
+        : [`broker:${payload.receipt_code}`, `broker-operation:${payload.operation_id}`, `broker-request:${payload.append_request_record_digest_sha256}`]
+      if (identity.some((item) => requestIdentities.has(item))) failD941('D941_RESOLVER_PROGRESSION_REPLAY_COLLISION', 'progression stable identity was reused')
+      identity.forEach((item) => requestIdentities.add(item))
+      progressionRecords.push({ payload, receipt: entry.append_receipt })
+      intentHead = { namespace_code: intentHead.namespace_code, sequence: intentHead.sequence + 1, record_digest_sha256: payload.record_digest_sha256 }
     }
+
+    const initialCheckpoint = checkpoints[0]
+    const initialCheckpointReceipt = checkpointEntries[0]?.append_receipt
+    let effectiveCheckpoint = initialCheckpoint && initialCheckpointReceipt ? checkpointReference(initialCheckpoint, initialCheckpointReceipt) : null
+    const transitions = []
+    let transitionHead = { namespace_code: 'd9.resolver.checkpoint-transitions.v1.2', sequence: 0, record_digest_sha256: null }
+    const usedProgressionRecords = new Set()
+    const d940ReceiptsForProgression = transitionEntries.length === 0 ? [] : broker.validate()
+    for (const entry of transitionEntries) {
+      const transition = entry.records[0]
+      assertProgressionSchema('checkpoint-transition-v1-2.schema.json', transition, 'checkpoint transition')
+      const requestEntry = progressionRecords.find((item) => item.payload.record_digest_sha256 === transition.append_request_record_digest_sha256)
+      const brokerEntry = progressionRecords.find((item) => item.payload.record_digest_sha256 === transition.append_broker_receipt_record_digest_sha256)
+      if (!effectiveCheckpoint || !requestEntry || !brokerEntry || usedProgressionRecords.has(requestEntry) || usedProgressionRecords.has(brokerEntry)) failD941('D941_RESOLVER_PROGRESSION_LINK_INVALID', 'transition does not resolve to one unused request and broker receipt')
+      const request = requestEntry.payload
+      const brokerReceipt = brokerEntry.payload
+      let assessment
+      let d940Receipt
+      try {
+        assessment = parseStrictJson(Buffer.from(request.assessment_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true })
+        d940Receipt = parseStrictJson(Buffer.from(brokerReceipt.d940_append_receipt_canonical_utf8, 'utf8'), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true })
+      } catch (error) { failD941('D941_RESOLVER_PROGRESSION_LINK_INVALID', 'progression canonical evidence is unreadable', { cause: error.message }) }
+      validateD940Record({ contractSet: authorityContext.contractSet, record: assessment })
+      validateD940Record({ contractSet: authorityContext.contractSet, record: d940Receipt })
+      const expectedPosition = expectedD940Position(effectiveCheckpoint, assessment)
+      const componentDurables = request.component_resolution_attestations.map((component) => durableRecords.find((item) => item.wrapper.record_digest_sha256 === component.component_response_durable_record_digest_sha256 && item.payload.record_digest_sha256 === component.component_response_record_digest_sha256 && item.payload.resolver_kind_code === component.resolver_kind_code))
+      const compositeResponse = durableRecords.find((item) => item.wrapper.record_digest_sha256 === request.composite_response_durable_record_digest_sha256 && item.payload.record_digest_sha256 === request.composite_response_record_digest_sha256)
+      const compositeAttestation = durableRecords.find((item) => item.wrapper.record_digest_sha256 === request.composite_append_attestation_durable_record_digest_sha256 && item.payload.record_digest_sha256 === request.composite_append_attestation_record_digest_sha256)
+      const compositeRequest = compositeResponse && durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === compositeResponse.payload.request_record_digest_sha256)
+      const componentDigests = componentDurables.map((item) => item?.payload.record_digest_sha256)
+      const componentContextExact = componentDurables.every((item) => item && item.payload.operation_id === request.operation_id && item.payload.operation_nonce === request.operation_nonce && same(item.payload.subject, request.subject) && same(item.payload.runtime_generation, request.runtime_generation) && item.wrapper.checkpoint_sequence === effectiveCheckpoint.checkpoint_sequence && item.wrapper.checkpoint_record_digest_sha256 === effectiveCheckpoint.checkpoint_record_digest_sha256)
+      if (!same(request.prior_checkpoint, effectiveCheckpoint) || !same(request.pre_append_source_heads, effectiveCheckpoint.source_heads) || request.pre_append_source_heads_digest_sha256 !== canonicalSha256(effectiveCheckpoint.source_heads) || componentDurables.some((item) => !item) || !compositeResponse || !compositeAttestation ||
+          !compositeRequest || !componentContextExact || !same(componentDigests, compositeRequest.payload.input_response_record_digests) || !same(componentDigests, compositeResponse.payload.projection.source_response_record_digests) ||
+          canonicalize(assessment) !== request.assessment_canonical_utf8 || assessment.record_digest_sha256 !== request.assessment_record_digest_sha256 || recordDigest(assessment) !== assessment.record_digest_sha256 || assessment.snapshot_digest_sha256 !== compositeResponse.payload.projection.snapshot_digest_sha256 || !same(assessment.snapshot, compositeResponse.payload.projection.snapshot) ||
+          !same(request.expected_d940_append_position, expectedPosition) || request.idempotency_key_sha256 !== canonicalSha256({ operation_id: request.operation_id, operation_nonce: request.operation_nonce, prior_checkpoint_record_digest_sha256: effectiveCheckpoint.checkpoint_record_digest_sha256, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: expectedPosition }) || request.authorized_at !== compositeAttestation.payload.completed_at || request.append_revalidate_by !== compositeResponse.payload.append_revalidate_by || request.authorized_at >= request.append_revalidate_by) {
+        const diagnostics = { checkpoint: same(request.prior_checkpoint, effectiveCheckpoint), heads: same(request.pre_append_source_heads, effectiveCheckpoint.source_heads), headsDigest: request.pre_append_source_heads_digest_sha256 === canonicalSha256(effectiveCheckpoint.source_heads), components: componentDurables.map(Boolean), compositeResponse: Boolean(compositeResponse), compositeAttestation: Boolean(compositeAttestation), assessmentCanonical: canonicalize(assessment) === request.assessment_canonical_utf8, assessmentDigest: assessment.record_digest_sha256 === request.assessment_record_digest_sha256 && recordDigest(assessment) === assessment.record_digest_sha256, snapshot: Boolean(compositeResponse) && assessment.snapshot_digest_sha256 === compositeResponse.payload.projection.snapshot_digest_sha256 && same(assessment.snapshot, compositeResponse.payload.projection.snapshot), position: same(request.expected_d940_append_position, expectedPosition), idempotency: request.idempotency_key_sha256 === canonicalSha256({ operation_id: request.operation_id, operation_nonce: request.operation_nonce, prior_checkpoint_record_digest_sha256: effectiveCheckpoint.checkpoint_record_digest_sha256, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: expectedPosition }), authorizedAt: Boolean(compositeAttestation) && request.authorized_at === compositeAttestation.payload.completed_at, deadline: Boolean(compositeResponse) && request.append_revalidate_by === compositeResponse.payload.append_revalidate_by }
+        failD941('D941_RESOLVER_PROGRESSION_REQUEST_INVALID', `append request is not grounded in the exact checkpoint, durable evidence, assessment, and append position: ${JSON.stringify(diagnostics)}`, { details: diagnostics })
+      }
+      const retainedD940Receipt = d940ReceiptsForProgression.find((item) => item.record_digest_sha256 === d940Receipt.record_digest_sha256)
+      const independentlyDerivedPostD940 = deriveD940ProtectedHead(contract, broker, d940Receipt.receipt_sequence)
+      if (!retainedD940Receipt || !same(retainedD940Receipt, d940Receipt) || brokerReceipt.append_request_record_digest_sha256 !== request.record_digest_sha256 || brokerReceipt.assessment_record_digest_sha256 !== assessment.record_digest_sha256 || !same(brokerReceipt.expected_d940_append_position, expectedPosition) || !same(brokerReceipt.pre_append_source_head, d940SourceHead(effectiveCheckpoint.source_heads)) || !same(brokerReceipt.post_append_source_head, independentlyDerivedPostD940) || !same(d940SourceHead(transition.post_append_source_heads), independentlyDerivedPostD940) ||
+          canonicalize(d940Receipt) !== brokerReceipt.d940_append_receipt_canonical_utf8 || brokerReceipt.d940_append_receipt_record_digest_sha256 !== d940Receipt.record_digest_sha256 || d940Receipt.receipt_sequence !== expectedPosition.target_receipt_sequence || d940Receipt.previous_receipt_record_digest_sha256 !== expectedPosition.predecessor_receipt_record_digest_sha256 || d940Receipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || d940Receipt.persisted_at !== brokerReceipt.assessment_persisted_at || brokerReceipt.assessment_persisted_at > brokerReceipt.post_head_observed_at || brokerReceipt.post_head_observed_at > brokerReceipt.accepted_at) {
+        failD941('D941_RESOLVER_PROGRESSION_BROKER_RECEIPT_INVALID', 'broker receipt does not prove the exact authorized D9.4 append')
+      }
+      const postD940 = independentlyDerivedPostD940
+      const priorD940 = d940SourceHead(effectiveCheckpoint.source_heads)
+      assertProgressionReceipt(entry, transitionHead.namespace_code, transitionHead, transition, postD940)
+      if (transition.transition_sequence !== effectiveCheckpoint.checkpoint_sequence + 1 || transition.predecessor_checkpoint_record_digest_sha256 !== effectiveCheckpoint.checkpoint_record_digest_sha256 || transition.predecessor_checkpoint_append_receipt_record_digest_sha256 !== effectiveCheckpoint.checkpoint_append_receipt_record_digest_sha256 || !same(transition.prior_checkpoint, effectiveCheckpoint) ||
+          !same(transition.component_resolution_attestations, request.component_resolution_attestations) || transition.composite_response_record_digest_sha256 !== request.composite_response_record_digest_sha256 || transition.composite_response_durable_record_digest_sha256 !== request.composite_response_durable_record_digest_sha256 || transition.composite_append_attestation_record_digest_sha256 !== request.composite_append_attestation_record_digest_sha256 || transition.composite_append_attestation_durable_record_digest_sha256 !== request.composite_append_attestation_durable_record_digest_sha256 ||
+          transition.append_request_protected_receipt_record_digest_sha256 !== requestEntry.receipt.record_digest_sha256 || transition.append_broker_receipt_protected_receipt_record_digest_sha256 !== brokerEntry.receipt.record_digest_sha256 || transition.d940_append_receipt_record_digest_sha256 !== d940Receipt.record_digest_sha256 || transition.assessment_record_digest_sha256 !== assessment.record_digest_sha256 || !same(transition.expected_d940_append_position, expectedPosition) || !same(transition.pre_append_source_heads, effectiveCheckpoint.source_heads) ||
+          transition.post_append_source_heads_digest_sha256 !== canonicalSha256(transition.post_append_source_heads) || postD940.head_sequence !== priorD940.head_sequence + 1 || !same(transition.permitted_d940_delta?.before, priorD940) || !same(transition.permitted_d940_delta?.after, postD940) || transition.permitted_d940_delta?.delta_code !== 'single_authorized_assessment_append' || transition.attestation_completed_at > transition.assessment_persisted_at || transition.assessment_persisted_at > transition.append_authorized_until || transition.assessment_persisted_at > transition.finalizer_observed_at || transition.finalizer_observed_at > transition.persisted_at) {
+        failD941('D941_RESOLVER_PROGRESSION_TRANSITION_INVALID', 'checkpoint transition is gapped, mismatched, stale, or not the exact single authorized D9.4 delta')
+      }
+      for (const namespace of namespaces.filter((item) => item !== 'd940.global.control-journal.v1')) {
+        if (!same(effectiveCheckpoint.source_heads.find((item) => item.source_namespace_code === namespace), transition.post_append_source_heads.find((item) => item.source_namespace_code === namespace))) failD941('D941_RESOLVER_PROGRESSION_TRANSITION_INVALID', 'checkpoint transition contains an unexplained non-D9.4 source change')
+      }
+      assertDurabilityActor(transition.finalizer_actor, 'trusted_launcher', transition.finalizer_observed_at)
+      assertDurabilityActor(transition.semantic_actor, 'independent_verifier', transition.attestation_completed_at)
+      assertDurabilityActor(transition.persistence_actor, 'journal_broker', transition.persisted_at)
+      usedProgressionRecords.add(requestEntry); usedProgressionRecords.add(brokerEntry)
+      transitions.push({ transition, receipt: entry.append_receipt, request, requestReceipt: requestEntry.receipt, brokerReceipt, brokerStoreReceipt: brokerEntry.receipt, assessment, d940Receipt })
+      transitionHead = { namespace_code: transitionHead.namespace_code, sequence: transitionHead.sequence + 1, record_digest_sha256: transition.record_digest_sha256 }
+      effectiveCheckpoint = checkpointReference(transition, entry.append_receipt)
+    }
+    const pendingProgressionRecords = progressionRecords.filter((item) => !usedProgressionRecords.has(item))
+    if (pendingProgressionRecords.length > 2 || (pendingProgressionRecords[0]?.payload.format.endsWith('broker-receipt') ?? false) || (pendingProgressionRecords.length === 2 && (pendingProgressionRecords[1].payload.format.endsWith('append-request') || pendingProgressionRecords[1].payload.append_request_record_digest_sha256 !== pendingProgressionRecords[0].payload.record_digest_sha256))) failD941('D941_RESOLVER_PROGRESSION_PENDING_INVALID', 'pending progression state is forked, reordered, or ambiguous')
 
     const links = []
     const d940Receipts = linkEntries.length === 0 ? [] : broker.validate()
@@ -792,7 +1029,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       const request = durableRecords.find((item) => item.wrapper.record_digest_sha256 === link.request_durable_record_digest_sha256)
       const response = durableRecords.find((item) => item.wrapper.record_digest_sha256 === link.response_durable_record_digest_sha256)
       const attestation = durableRecords.find((item) => item.wrapper.record_digest_sha256 === link.attestation_durable_record_digest_sha256)
-      const checkpoint = checkpoints.find((item) => item.sequence === link.checkpoint_sequence && item.record_digest_sha256 === link.checkpoint_record_digest_sha256)
+      const checkpoint = checkpoints.find((item) => item.sequence === link.checkpoint_sequence && item.record_digest_sha256 === link.checkpoint_record_digest_sha256) ?? transitions.find((item) => item.transition.transition_sequence === link.checkpoint_sequence && item.transition.record_digest_sha256 === link.checkpoint_record_digest_sha256)?.transition
       const retainedD940Receipt = d940Receipts.find((item) => item.record_digest_sha256 === assessmentReceipt.record_digest_sha256)
       let retainedAssessment = null
       try { retainedAssessment = parseStrictJson(broker.store.read({ namespaceCode: 'recovery', recordCode: assessment.record_code }), { maximumBytes: 1024 * 1024, maximumDepth: 96, maximumMembers: 50_000, contractNumbers: true }) } catch (error) { failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'linked assessment is absent from protected D9.4 storage', { cause: error.message }) }
@@ -803,7 +1040,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
           response.payload.request_record_digest_sha256 !== request.payload.record_digest_sha256 || attestation.payload.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 ||
           [request, response, attestation].some((item) => item.payload.operation_id !== link.operation_id || item.payload.operation_nonce !== link.operation_nonce || item.payload.subject.subject_identity_sha256 !== link.subject_identity_sha256 || !same(item.payload.runtime_generation, link.runtime_generation)) ||
           response.payload.record_digest_sha256 !== link.composite_response_record_digest_sha256 || attestation.payload.record_digest_sha256 !== link.append_attestation_record_digest_sha256 ||
-          checkpoint.checkpoint_kind_code !== 'advance' || checkpoint.operation_id !== link.operation_id || checkpoint.operation_nonce !== link.operation_nonce || checkpoint.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 || checkpoint.append_attestation_record_digest_sha256 !== attestation.payload.record_digest_sha256 ||
+          (checkpoint.format_version === '1.1.0' ? checkpoint.checkpoint_kind_code !== 'advance' : checkpoint.format !== 'jedi-atlas-recovery-checkpoint-transition') || checkpoint.operation_id !== link.operation_id || checkpoint.operation_nonce !== link.operation_nonce || checkpoint.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 || (checkpoint.append_attestation_record_digest_sha256 ?? checkpoint.composite_append_attestation_record_digest_sha256) !== attestation.payload.record_digest_sha256 ||
           assessment.action_execution_code !== 'none_classification_only' || assessment.recovery_authority_present !== false ||
           assessment.snapshot_digest_sha256 !== response.payload.projection.snapshot_digest_sha256 || !same(assessment.snapshot, response.payload.projection.snapshot) ||
           !retainedD940Receipt || !same(retainedD940Receipt, assessmentReceipt) || !same(retainedAssessment, assessment) ||
@@ -814,7 +1051,16 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       priorLinkPersistedAt = link.persisted_at
       links.push({ link, assessment, assessmentReceipt, receipt: entry.append_receipt })
     }
-    return deepFreeze({ checkpoints, durableRecords, links, heads: { checkpoint: checkpointHead, records: recordHead, links: linkHead } })
+    const checkpointReferences = checkpoints.map((checkpoint, index) => ({
+      checkpoint_contract_version: '1.1.0',
+      checkpoint_namespace_code: 'd9.resolver.checkpoints.v1.1',
+      checkpoint_sequence: checkpoint.sequence,
+      checkpoint_record_digest_sha256: checkpoint.record_digest_sha256,
+      checkpoint_append_receipt_record_digest_sha256: checkpointEntries[index].append_receipt.record_digest_sha256,
+      source_heads: checkpoint.source_heads,
+      source_heads_digest_sha256: canonicalSha256(checkpoint.source_heads),
+    })).concat(transitions.map((item) => checkpointReference(item.transition, item.receipt)))
+    return deepFreeze({ checkpoints, transitions, pendingProgressionRecords, checkpointReferences, durableRecords, links, heads: { checkpoint: checkpointHead, records: recordHead, links: linkHead, intents: intentHead, transitions: transitionHead } })
   }
 
   function collectStable(kind, subjectIdentitySha256, requestedAt) {
@@ -833,7 +1079,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
 
   function persistBatch(namespaceCode, records, payloadRecord, acceptedAt, persistedAt) {
     const expectedHead = durabilityStore.head(namespaceCode)
-    const receipt = makeAppendReceipt({ namespaceCode, expectedHead, payloadRecord, authorityContext, acceptedAt, persistedAt })
+    const receipt = makeAppendReceipt({ namespaceCode, expectedHead, payloadRecord, persistenceActor: authenticatedActorFor('journal_broker', persistedAt), acceptedAt, persistedAt })
     assertDurabilitySchema(durability, 'append-receipt-v1-1.schema.json', receipt, 'append receipt')
     assertD941AuthenticatedSession(persistenceSession, 'recovery_classification')
     const receiptActor = receipt.persistence_actor
@@ -851,10 +1097,59 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     return receipt
   }
 
+  function persistProgression(namespaceCode, payload, persistedAt, currentD940Head = null) {
+    let state = validateDurableState()
+    const retainedProgression = [...state.pendingProgressionRecords, ...state.transitions.flatMap((item) => [
+      { payload: item.request, receipt: item.requestReceipt },
+      { payload: item.brokerReceipt, receipt: item.brokerStoreReceipt },
+      { payload: item.transition, receipt: item.receipt },
+    ])]
+    const existing = retainedProgression.find((item) => item.payload.record_digest_sha256 === payload.record_digest_sha256)
+    if (existing) return existing
+    const stableIdentities = (record) => record.format.endsWith('append-request')
+      ? [`request:${record.request_code}`, `operation:${record.operation_id}`, `idempotency:${record.idempotency_key_sha256}`]
+      : record.format.endsWith('broker-receipt')
+        ? [`broker:${record.receipt_code}`, `broker-operation:${record.operation_id}`, `broker-request:${record.append_request_record_digest_sha256}`]
+        : [`transition:${record.transition_code}`, `transition-sequence:${record.transition_sequence}`, `transition-operation:${record.operation_id}`, `transition-predecessor:${record.predecessor_checkpoint_record_digest_sha256}`]
+    const claimed = new Set(stableIdentities(payload))
+    if (retainedProgression.some((item) => stableIdentities(item.payload).some((identity) => claimed.has(identity)))) failD941('D941_RESOLVER_PROGRESSION_REPLAY_COLLISION', 'progression stable identity collision was rejected before durable mutation')
+    const expectedHead = namespaceCode === 'd9.resolver.progression-intents.v1.2' ? state.heads.intents : state.heads.transitions
+    let sourceHeadForCas = currentD940Head
+    if (namespaceCode === 'd9.resolver.checkpoint-transitions.v1.2') {
+      const currentBrokerHead = broker.head()
+      const independentlyDerived = deriveD940ProtectedHead(contract, broker, currentBrokerHead.sequence)
+      if (sourceHeadForCas === null || !same(sourceHeadForCas, independentlyDerived) || currentBrokerHead.digest !== independentlyDerived.head_digest_sha256) failD941('D941_RESOLVER_PROGRESSION_SOURCE_CAS_INVALID', 'D9.4 source head changed before the transition protected append')
+      sourceHeadForCas = independentlyDerived
+    }
+    const receipt = sealRecord({
+      format: 'jedi-atlas-recovery-checkpoint-progression-append-receipt', format_version: '1.2.0',
+      receipt_code: `progression.receipt.${namespaceCode.split('.').at(-2)}.${String(expectedHead.sequence + 1).padStart(8, '0')}`,
+      namespace_code: namespaceCode, expected_predecessor: expectedHead,
+      persisted_head: { namespace_code: namespaceCode, sequence: expectedHead.sequence + 1, record_digest_sha256: payload.record_digest_sha256 },
+      payload_record_digest_sha256: payload.record_digest_sha256,
+      source_head_compare_and_append: sourceHeadForCas === null ? null : { source_namespace_code: 'd940.global.control-journal.v1', expected_head: sourceHeadForCas, observed_head_at_persist: sourceHeadForCas },
+      source_head_observer_actor: sourceHeadForCas === null ? null : authenticatedActorFor('independent_verifier', persistedAt),
+      persistence_actor: authenticatedActorFor('journal_broker', persistedAt), accepted_at: persistedAt, persisted_at: persistedAt,
+      record_digest_sha256: null,
+    })
+    assertProgressionSchema('protected-append-receipt-v1-2.schema.json', receipt, 'progression protected receipt')
+    assertD941AuthenticatedSession(persistenceSession, 'recovery_classification')
+    assertAuthorityActive(persistedAt)
+    authorityRegistry.revalidateSession(persistenceSession, persistedAt)
+    const writer = durabilityWriters.get(durabilityStore)
+    if (!writer) failD941('D941_RESOLVER_DURABLE_STORE_UNTRUSTED', 'resolver durability writer capability is unavailable')
+    writer({ namespaceCode, expectedHead: { ...expectedHead, commit_sha256: durabilityStore.head(namespaceCode).commit_sha256 }, records: [payload], appendReceipt: receipt })
+    faultInjector?.('after_progression_atomic_append_before_response', { namespaceCode, payloadRecord: payload })
+    state = validateDurableState()
+    return namespaceCode === 'd9.resolver.progression-intents.v1.2'
+      ? state.pendingProgressionRecords.find((item) => item.payload.record_digest_sha256 === payload.record_digest_sha256) ?? state.transitions.flatMap((item) => [{ payload: item.request, receipt: item.requestReceipt }, { payload: item.brokerReceipt, receipt: item.brokerStoreReceipt }]).find((item) => item.payload.record_digest_sha256 === payload.record_digest_sha256)
+      : { payload: state.transitions.find((item) => item.transition.record_digest_sha256 === payload.record_digest_sha256)?.transition, receipt: state.transitions.find((item) => item.transition.record_digest_sha256 === payload.record_digest_sha256)?.receipt }
+  }
+
   function bootstrapDurability() {
     const checkpointHead = durabilityStore.head('d9.resolver.checkpoints.v1.1')
     if (checkpointHead.sequence !== 0) return validateDurableState()
-    if (durabilityStore.head('d9.resolver.records.v1.1').sequence !== 0 || durabilityStore.head('d9.resolver.assessment-links.v1.1').sequence !== 0) failD941('D941_RESOLVER_DURABILITY_BOOTSTRAP_MISSING', 'non-checkpoint state exists before bootstrap')
+    if (D941_RESOLVER_NAMESPACES.filter((item) => item !== 'd9.resolver.checkpoints.v1.1').some((item) => durabilityStore.head(item).sequence !== 0)) failD941('D941_RESOLVER_DURABILITY_BOOTSTRAP_MISSING', 'non-checkpoint state exists before bootstrap')
     const now = timestamp(trustedClock(), 'durability bootstrap time')
     assertAuthorityActive(now)
     const before = observe(configuredSubject.subject_identity_sha256)
@@ -867,7 +1162,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       format: 'jedi-atlas-recovery-resolver-bootstrap-source-observation', format_version: '1.1.0',
       observation_code: `resolver.bootstrap.observation.${index + 1}`, operation_id: operationId, operation_nonce: operationNonce,
       runtime_generation: expectedGeneration, source_head_before: before.heads.get(namespace), source_head_after: after.heads.get(namespace),
-      semantic_actor: durabilityActorFor(authorityContext, 'independent_verifier', now), persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', now),
+      semantic_actor: authenticatedActorFor('independent_verifier', now), persistence_actor: authenticatedActorFor('journal_broker', now),
       observed_before_at: now, observed_after_at: now, persisted_at: now,
       checkpoint_namespace_observed_empty: true, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
     }))
@@ -875,7 +1170,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     const permit = sealRecord({
       format: 'jedi-atlas-recovery-resolver-checkpoint-bootstrap-permit', format_version: '1.1.0',
       permit_code: `resolver.bootstrap.permit.${expectedGeneration.binding_generation}`, operation_id: operationId, operation_nonce: operationNonce,
-      runtime_generation: expectedGeneration, issued_by: durabilityActorFor(authorityContext, 'trusted_launcher', now), persisted_by: durabilityActorFor(authorityContext, 'journal_broker', now),
+      runtime_generation: expectedGeneration, issued_by: authenticatedActorFor('trusted_launcher', now), persisted_by: authenticatedActorFor('journal_broker', now),
       issued_at: now, expires_at: plus(now, 1000), expected_empty_checkpoint_head: journalHead(checkpointHead),
       initial_source_heads: namespaces.map((namespace) => after.heads.get(namespace)), bootstrap_observation_record_digests: observations.map((item) => item.record_digest_sha256),
       source_observation_set_digest_sha256: canonicalSha256(namespaces.map((namespace) => after.heads.get(namespace))), one_time_no_replace: true,
@@ -885,7 +1180,7 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     const checkpoint = sealRecord({
       format: 'jedi-atlas-recovery-resolver-checkpoint-record', format_version: '1.1.0', checkpoint_code: 'resolver.checkpoint.00000001', checkpoint_kind_code: 'bootstrap', sequence: 1,
       predecessor_record_digest_sha256: null, operation_id: operationId, operation_nonce: operationNonce, runtime_generation: expectedGeneration,
-      semantic_actor: durabilityActorFor(authorityContext, 'independent_verifier', now), persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', now), observed_at: now, persisted_at: now,
+      semantic_actor: authenticatedActorFor('independent_verifier', now), persistence_actor: authenticatedActorFor('journal_broker', now), observed_at: now, persisted_at: now,
       source_heads: permit.initial_source_heads, composite_response_record_digest_sha256: null, append_attestation_record_digest_sha256: null,
       bootstrap_permit_record_digest_sha256: permit.record_digest_sha256, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
     })
@@ -922,22 +1217,23 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
 
   function persistDurablePayload(payload, recordKindCode, checkpoint) {
     const state = validateDurableState()
-    const sameOperation = state.durableRecords.filter((item) => item.wrapper.operation_id === payload.operation_id && item.wrapper.operation_nonce === payload.operation_nonce && item.wrapper.record_kind_code === recordKindCode)
-    if (sameOperation.length > 1) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', 'multiple durable records claim the same operation and kind')
-    if (sameOperation.length === 1) {
-      if (!same(sameOperation[0].payload, payload)) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', 'durable operation replay carries different resolver payload bytes')
-      return sameOperation[0]
+    const retained = state.durableRecords.filter((item) => item.wrapper.payload_record_digest_sha256 === payload.record_digest_sha256)
+    if (retained.length > 1) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', 'multiple durable records claim the same payload digest')
+    if (retained.length === 1) {
+      if (retained[0].wrapper.record_kind_code !== recordKindCode || !same(retained[0].payload, payload)) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', 'durable payload replay carries a different kind or bytes')
+      return retained[0]
     }
     const acceptedAt = timestamp(trustedClock(), 'durable resolver acceptance time')
     const persistedAt = timestamp(trustedClock(), 'durable resolver persistence time')
     if (persistedAt < acceptedAt) failD941('D941_RESOLVER_TIME_INVALID', 'durable resolver persistence precedes acceptance')
     const operationRecords = state.durableRecords.filter((item) => item.wrapper.operation_id === payload.operation_id && item.wrapper.operation_nonce === payload.operation_nonce)
-    const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request')
-    const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response')
+    const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.payload.record_digest_sha256 === payload.composite_response_record_digest_sha256)
+    const requestDigest = payload.request_record_digest_sha256 ?? response?.payload.request_record_digest_sha256 ?? payload.record_digest_sha256
+    const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === requestDigest)
     if (recordKindCode !== 'request' && !request) failD941('D941_RESOLVER_DURABLE_LINK_INVALID', 'response or attestation has no durable request')
     if (recordKindCode === 'append_attestation' && !response) failD941('D941_RESOLVER_DURABLE_LINK_INVALID', 'attestation has no durable response')
     const head = state.heads.records
-    const producer = durabilityActorFor(authorityContext, payload.sender.runtime_role_code, acceptedAt)
+    const producer = authenticatedActorFor(payload.sender.runtime_role_code, acceptedAt)
     const wrapper = sealRecord({
       format: 'jedi-atlas-recovery-resolver-durable-record', format_version: '1.1.0',
       record_code: `resolver.durable.${String(head.sequence + 1).padStart(8, '0')}`, record_kind_code: recordKindCode,
@@ -948,8 +1244,8 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       request_record_digest_sha256: request?.payload.record_digest_sha256 ?? payload.record_digest_sha256,
       response_record_digest_sha256: recordKindCode === 'request' ? null : (response?.payload.record_digest_sha256 ?? payload.record_digest_sha256),
       attestation_record_digest_sha256: recordKindCode === 'append_attestation' ? payload.record_digest_sha256 : null,
-      payload_producer: producer, semantic_actor: durabilityActorFor(authorityContext, 'independent_verifier', acceptedAt), persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', persistedAt),
-      accepted_at: acceptedAt, persisted_at: persistedAt, checkpoint_sequence: checkpoint.sequence, checkpoint_record_digest_sha256: checkpoint.record_digest_sha256,
+      payload_producer: producer, semantic_actor: authenticatedActorFor('independent_verifier', acceptedAt), persistence_actor: authenticatedActorFor('journal_broker', persistedAt),
+      accepted_at: acceptedAt, persisted_at: persistedAt, checkpoint_sequence: checkpoint.sequence ?? checkpoint.checkpoint_sequence, checkpoint_record_digest_sha256: checkpoint.record_digest_sha256 ?? checkpoint.checkpoint_record_digest_sha256,
       technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
     })
     assertDurabilitySchema(durability, 'durable-resolver-record-v1-1.schema.json', wrapper, 'durable resolver record')
@@ -960,15 +1256,24 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
   function resolveComposite({ subject, operationId, operationNonce }) {
     const initialState = bootstrapDurability()
     if (subject?.subject_kind_code !== configuredSubject.subject_kind_code || subject?.subject_identity_sha256 !== configuredSubject.subject_identity_sha256) failD941('D941_RESOLVER_SUBJECT_SUBSTITUTED', 'resolver request differs from the configured D9.3 custody subject')
-    const retainedRequest = initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
-    const retainedResponse = initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
+    const retainedRequest = initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.wrapper.resolver_kind_code === 'd940_composite_snapshot' && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
+    const retainedResponse = initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code === 'd940_composite_snapshot' && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
     if (retainedRequest || retainedResponse) {
       if (!retainedRequest || !retainedResponse || retainedRequest.payload.subject.subject_identity_sha256 !== subject.subject_identity_sha256 || retainedResponse.payload.subject.subject_identity_sha256 !== subject.subject_identity_sha256) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', 'retained resolver operation is incomplete or belongs to another subject')
-      const checkpoint = initialState.checkpoints.find((item) => item.sequence === retainedResponse.wrapper.checkpoint_sequence && item.record_digest_sha256 === retainedResponse.wrapper.checkpoint_record_digest_sha256)
+      const checkpoint = initialState.checkpointReferences.find((item) => item.checkpoint_sequence === retainedResponse.wrapper.checkpoint_sequence && item.checkpoint_record_digest_sha256 === retainedResponse.wrapper.checkpoint_record_digest_sha256)
       if (!checkpoint) failD941('D941_RESOLVER_DURABLE_CHECKPOINT_INVALID', 'retained resolver response checkpoint is unavailable')
-      return deepFreeze({ requests: [], sourceResponses: [], compositeRequest: retainedRequest.payload, compositeResponse: retainedResponse.payload, snapshot: retainedResponse.payload.projection.snapshot, durability: { request: retainedRequest.wrapper, response: retainedResponse.wrapper, checkpoint } })
+      const componentResponses = initialState.durableRecords.filter((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code !== 'd940_composite_snapshot' && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
+      return deepFreeze({ requests: [], sourceResponses: componentResponses.map((item) => item.payload), componentDurability: componentResponses.map((item) => item.wrapper), compositeRequest: retainedRequest.payload, compositeResponse: retainedResponse.payload, snapshot: retainedResponse.payload.projection.snapshot, durability: { request: retainedRequest.wrapper, response: retainedResponse.wrapper, checkpoint } })
     }
-    const sourceResults = sourceAdapters.map((adapter) => adapter.resolve({ subject, operationId, operationNonce }))
+    const sourceResults = sourceAdapters.map((adapter) => {
+      const response = initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code === adapter.kind && item.wrapper.operation_id === operationId && item.wrapper.operation_nonce === operationNonce)
+      const request = response && initialState.durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === response.payload.request_record_digest_sha256)
+      if (response || request) {
+        if (!response || !request) failD941('D941_RESOLVER_DURABLE_REPLAY_COLLISION', `partial durable ${adapter.kind} pair cannot be reconstructed exactly`)
+        return Object.freeze({ request: request.payload, response: response.payload, ownedNamespaces: adapter.ownedNamespaces })
+      }
+      return adapter.resolve({ subject, operationId, operationNonce })
+    })
     const requests = sourceResults.map((item) => item.request)
     const sourceResponses = sourceResults.map((item) => item.response)
     const requestedAt = timestamp(trustedClock(), 'trusted composite request clock')
@@ -977,33 +1282,37 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     for (const response of sourceResponses) for (const sourceObservation of response.source_observations) {
       if (!same(sourceObservation.after, observed.beforeHeads.get(sourceObservation.source_namespace_code))) failD941('D941_RESOLVER_MIXED_SOURCE_HEAD', 'constituent final source head differs from the composite anchor')
     }
-    const checkpoint = initialState.checkpoints.at(-1)
+    const checkpoint = initialState.checkpointReferences.at(-1)
     if (!checkpoint) failD941('D941_RESOLVER_DURABILITY_BOOTSTRAP_MISSING', 'composite resolution requires a current protected checkpoint')
     const currentHeads = namespaceSets.d940_composite_snapshot.map((namespace) => observed.heads.get(namespace))
     if (!same(currentHeads, checkpoint.source_heads)) failD941('D941_RESOLVER_CHECKPOINT_SOURCE_MISMATCH', 'current source heads moved beyond the protected checkpoint; a resolved v1 response cannot be fabricated')
     const compositeRequest = makeRequest({ contract, kind: 'd940_composite_snapshot', authorityContext, subject, operationId, operationNonce, requestedAt, heads: observed.heads, priorHeads: checkpoint.source_heads, inputDigests: sourceResponses.map((item) => item.record_digest_sha256) })
     const compositeResponse = makeResponse({ contract, request: compositeRequest, ...observed, sourceResponses })
     if (!checkpoint || !same(compositeRequest.prior_accepted_source_heads, checkpoint.source_heads)) failD941('D941_RESOLVER_CHECKPOINT_SOURCE_MISMATCH', 'resolver request source heads differ from the current durable checkpoint')
+    const componentDurability = []
+    for (const result of sourceResults) {
+      persistDurablePayload(result.request, 'request', checkpoint)
+      componentDurability.push(persistDurablePayload(result.response, 'response', checkpoint).wrapper)
+    }
     const durableRequest = persistDurablePayload(compositeRequest, 'request', checkpoint)
     const durableResponse = persistDurablePayload(compositeResponse, 'response', checkpoint)
-    return deepFreeze({ requests, sourceResponses, compositeRequest, compositeResponse, snapshot: compositeResponse.projection.snapshot, durability: { request: durableRequest.wrapper, response: durableResponse.wrapper, checkpoint } })
+    return deepFreeze({ requests, sourceResponses, componentDurability, compositeRequest, compositeResponse, snapshot: compositeResponse.projection.snapshot, durability: { request: durableRequest.wrapper, response: durableResponse.wrapper, checkpoint } })
   }
 
-  function revalidateAtAppend({ compositeResponse, completedAt }) {
+  function revalidateAtAppend({ compositeResponse, assessment, completedAt }) {
     let state = validateDurableState()
     const durableResponse = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.payload.record_digest_sha256 === compositeResponse.record_digest_sha256)
     const durableRequest = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.payload.record_digest_sha256 === compositeResponse.request_record_digest_sha256)
-    if (!durableRequest || !durableResponse || !same(durableResponse.payload, compositeResponse)) failD941('D941_RECOVERY_RESOLVER_RESPONSE_UNTRUSTED', 'append revalidation requires the exact durably retained composite response')
+    if (!durableRequest || !durableResponse || !same(durableResponse.payload, compositeResponse) || assessment?.format !== 'jedi-atlas-d940-recovery-assessment' || assessment.record_digest_sha256 !== recordDigest(assessment) || assessment.operation_id !== compositeResponse.operation_id || assessment.operation_nonce !== compositeResponse.operation_nonce || assessment.subject.subject_identity_sha256 !== compositeResponse.subject.subject_identity_sha256) failD941('D941_RECOVERY_RESOLVER_RESPONSE_UNTRUSTED', 'append revalidation requires the exact durable response and assessment')
     timestamp(completedAt, 'append revalidation completion time')
     const authorityState = authorityRegistry.stateAt(completedAt)
     if (authorityState.revoked.size !== 0) failD941('D941_RESOLVER_AUTHORITY_REVOKED', 'resolver authority generation has a revoked required target')
     actorFor(authorityContext, 'independent_verifier', completedAt)
     actorFor(authorityContext, 'journal_broker', completedAt)
-    const priorCheckpoint = state.checkpoints.find((item) => item.sequence === durableResponse.wrapper.checkpoint_sequence && item.record_digest_sha256 === durableResponse.wrapper.checkpoint_record_digest_sha256)
+    const priorCheckpoint = state.checkpointReferences.find((item) => item.checkpoint_sequence === durableResponse.wrapper.checkpoint_sequence && item.checkpoint_record_digest_sha256 === durableResponse.wrapper.checkpoint_record_digest_sha256)
     if (!priorCheckpoint) failD941('D941_RESOLVER_DURABLE_CHECKPOINT_INVALID', 'durable response checkpoint cannot be resolved')
     const existingAttestation = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'append_attestation' && item.wrapper.operation_id === compositeResponse.operation_id && item.wrapper.operation_nonce === compositeResponse.operation_nonce)
-    const existingAdvance = state.checkpoints.find((item) => item.checkpoint_kind_code === 'advance' && item.composite_response_record_digest_sha256 === compositeResponse.record_digest_sha256)
-    if (existingAttestation && existingAdvance) return deepFreeze({ attestation: existingAttestation.payload, durableRequest: durableRequest.wrapper, durableResponse: durableResponse.wrapper, durableAttestation: existingAttestation.wrapper, checkpoint: existingAdvance })
+    const existingRequestEntry = [...state.pendingProgressionRecords, ...state.transitions.map((item) => ({ payload: item.request, receipt: item.requestReceipt }))].find((item) => item.payload.assessment_record_digest_sha256 === assessment.record_digest_sha256)
     if (completedAt < compositeResponse.responded_at || completedAt > compositeResponse.append_revalidate_by) failD941('D941_RECOVERY_APPEND_REVALIDATION_EXPIRED', 'append occurs outside the resolver freshness window')
     const before = observe(compositeResponse.subject.subject_identity_sha256)
     const current = observe(compositeResponse.subject.subject_identity_sha256)
@@ -1025,34 +1334,109 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
     if (!exact) failD941('D941_RECOVERY_APPEND_REVALIDATION_FAILED', 'one or more resolver source heads changed before append', { details: { attestation } })
     const durableAttestation = existingAttestation ?? persistDurablePayload(attestation, 'append_attestation', priorCheckpoint)
     state = validateDurableState()
-    let checkpoint = state.checkpoints.find((item) => item.checkpoint_kind_code === 'advance' && item.composite_response_record_digest_sha256 === compositeResponse.record_digest_sha256)
-    if (!checkpoint) {
-      const currentCheckpoint = state.checkpoints.at(-1)
-      if (currentCheckpoint.record_digest_sha256 !== priorCheckpoint.record_digest_sha256 || !same(durableRequest.payload.prior_accepted_source_heads, priorCheckpoint.source_heads)) failD941('D941_RESOLVER_CHECKPOINT_HEAD_MISMATCH', 'checkpoint advanced or source basis changed before append revalidation')
-      checkpoint = sealRecord({
-        format: 'jedi-atlas-recovery-resolver-checkpoint-record', format_version: '1.1.0', checkpoint_code: `resolver.checkpoint.${String(currentCheckpoint.sequence + 1).padStart(8, '0')}`,
-        checkpoint_kind_code: 'advance', sequence: currentCheckpoint.sequence + 1, predecessor_record_digest_sha256: currentCheckpoint.record_digest_sha256,
-        operation_id: attestation.operation_id, operation_nonce: attestation.operation_nonce, runtime_generation: expectedGeneration,
-        semantic_actor: durabilityActorFor(authorityContext, 'independent_verifier', completedAt), persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', completedAt),
-        observed_at: completedAt, persisted_at: completedAt, source_heads: attestation.source_heads,
-        composite_response_record_digest_sha256: compositeResponse.record_digest_sha256, append_attestation_record_digest_sha256: attestation.record_digest_sha256,
-        bootstrap_permit_record_digest_sha256: null, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+    const currentCheckpoint = state.checkpointReferences.at(-1)
+    if (!same(currentCheckpoint, priorCheckpoint) || !same(durableRequest.payload.prior_accepted_source_heads, priorCheckpoint.source_heads)) failD941('D941_RESOLVER_CHECKPOINT_HEAD_MISMATCH', 'effective checkpoint advanced or source basis changed before append authorization')
+    const componentResolutionAttestations = ['d901_control_access', 'd920_accepted_evidence', 'd930_custody'].map((kind) => {
+      const component = state.durableRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code === kind && item.wrapper.operation_id === assessment.operation_id && item.wrapper.operation_nonce === assessment.operation_nonce)
+      if (!component) failD941('D941_RESOLVER_PROGRESSION_EVIDENCE_MISSING', `missing durable ${kind} response`)
+      return { resolver_kind_code: kind, component_response_record_digest_sha256: component.payload.record_digest_sha256, component_response_durable_record_digest_sha256: component.wrapper.record_digest_sha256 }
+    })
+    const position = expectedD940Position(priorCheckpoint, assessment)
+    const progressionRequest = sealRecord({
+      format: 'jedi-atlas-recovery-checkpoint-assessment-append-request', format_version: '1.2.0',
+      request_code: `progression.request.${canonicalSha256({ operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce }).slice(0, 20)}`,
+      operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, idempotency_key_sha256: canonicalSha256({ operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, prior_checkpoint_record_digest_sha256: priorCheckpoint.checkpoint_record_digest_sha256, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: position }),
+      runtime_generation: expectedGeneration, subject: compositeResponse.subject, prior_checkpoint: priorCheckpoint,
+      component_resolution_attestations: componentResolutionAttestations,
+      composite_response_record_digest_sha256: compositeResponse.record_digest_sha256, composite_response_durable_record_digest_sha256: durableResponse.wrapper.record_digest_sha256,
+      composite_append_attestation_record_digest_sha256: attestation.record_digest_sha256, composite_append_attestation_durable_record_digest_sha256: durableAttestation.wrapper.record_digest_sha256,
+      assessment_format: assessment.format, assessment_record_code: assessment.record_code, assessment_canonical_utf8: canonicalize(assessment), assessment_record_digest_sha256: assessment.record_digest_sha256,
+      expected_d940_append_position: position, pre_append_source_heads: priorCheckpoint.source_heads, pre_append_source_heads_digest_sha256: canonicalSha256(priorCheckpoint.source_heads), authorized_delta_namespace_code: 'd940.global.control-journal.v1',
+      semantic_actor: authenticatedActorFor('independent_verifier', completedAt), broker_recipient: authenticatedActorFor('journal_broker', completedAt), authorized_at: completedAt, append_revalidate_by: compositeResponse.append_revalidate_by,
+      technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+    })
+    assertProgressionSchema('assessment-append-request-v1-2.schema.json', progressionRequest, 'assessment append request')
+    if (existingRequestEntry && !same(existingRequestEntry.payload, progressionRequest)) failD941('D941_RESOLVER_PROGRESSION_REPLAY_COLLISION', 'retained progression request differs from the fully revalidated exact request')
+    const progressionRequestEntry = existingRequestEntry ?? persistProgression('d9.resolver.progression-intents.v1.2', progressionRequest, completedAt)
+    return deepFreeze({ attestation, durableRequest: durableRequest.wrapper, durableResponse: durableResponse.wrapper, durableAttestation: durableAttestation.wrapper, checkpoint: priorCheckpoint, progressionRequest, progressionRequestReceipt: progressionRequestEntry.receipt })
+  }
+
+  function finalizeProgression({ revalidation, assessment, assessmentReceipt }) {
+    let state = validateDurableState()
+    const existing = state.transitions.find((item) => item.assessment.record_digest_sha256 === assessment.record_digest_sha256)
+    if (existing) return existing
+    const requestEntry = state.pendingProgressionRecords.find((item) => item.payload.format === 'jedi-atlas-recovery-checkpoint-assessment-append-request' && item.payload.assessment_record_digest_sha256 === assessment.record_digest_sha256)
+    if (!requestEntry || (revalidation != null && (!same(requestEntry.payload, revalidation.progressionRequest) || !same(requestEntry.receipt, revalidation.progressionRequestReceipt)))) failD941('D941_RESOLVER_PROGRESSION_REQUEST_INVALID', 'post-append finalization cannot resolve the exact durable progression request')
+    const request = requestEntry.payload
+    const durableAttestation = state.durableRecords.find((item) => item.wrapper.record_digest_sha256 === request.composite_append_attestation_durable_record_digest_sha256 && item.payload.record_digest_sha256 === request.composite_append_attestation_record_digest_sha256)
+    if (!durableAttestation) failD941('D941_RESOLVER_PROGRESSION_EVIDENCE_MISSING', 'post-append finalization cannot resolve the exact append attestation')
+    const attestation = durableAttestation.payload
+    const retainedD940Receipt = broker.validate().find((item) => item.record_digest_sha256 === assessmentReceipt.record_digest_sha256)
+    if (!retainedD940Receipt || !same(retainedD940Receipt, assessmentReceipt) || assessmentReceipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || assessmentReceipt.receipt_sequence !== request.expected_d940_append_position.target_receipt_sequence || assessmentReceipt.previous_receipt_record_digest_sha256 !== request.expected_d940_append_position.predecessor_receipt_record_digest_sha256) failD941('D941_RESOLVER_PROGRESSION_D940_RECEIPT_INVALID', 'finalization requires the exact authorized durable D9.4 receipt')
+    const observed = observe(assessment.subject.subject_identity_sha256)
+    const postHeads = namespaces.map((namespace) => observed.heads.get(namespace))
+    const postD940 = d940SourceHead(postHeads)
+    const preD940 = d940SourceHead(request.pre_append_source_heads)
+    if (broker.head().sequence !== assessmentReceipt.receipt_sequence || broker.head().digest !== assessmentReceipt.record_digest_sha256 || postD940.head_sequence !== preD940.head_sequence + 1 || postD940.head_sequence !== assessmentReceipt.receipt_sequence || postD940.head_digest_sha256 !== assessmentReceipt.record_digest_sha256) failD941('D941_RESOLVER_PROGRESSION_RECONCILIATION_REQUIRED', 'D9.4 source head moved beyond or differs from the exact assessment receipt')
+    for (const namespace of namespaces.filter((item) => item !== 'd940.global.control-journal.v1')) if (!same(request.pre_append_source_heads.find((item) => item.source_namespace_code === namespace), postHeads.find((item) => item.source_namespace_code === namespace))) failD941('D941_RESOLVER_PROGRESSION_RECONCILIATION_REQUIRED', 'a non-D9.4 source changed before progression finalization')
+    const observedAt = timestamp(trustedClock(), 'progression post-head observation time')
+    if (observedAt < assessmentReceipt.persisted_at) failD941('D941_RESOLVER_PROGRESSION_FRESHNESS_INVALID', 'post-head observation precedes the durable assessment receipt')
+    let brokerEntry = state.pendingProgressionRecords.find((item) => item.payload.format === 'jedi-atlas-recovery-checkpoint-assessment-append-broker-receipt' && item.payload.append_request_record_digest_sha256 === request.record_digest_sha256)
+    if (!brokerEntry) {
+      const brokerReceipt = sealRecord({
+        format: 'jedi-atlas-recovery-checkpoint-assessment-append-broker-receipt', format_version: '1.2.0',
+        receipt_code: `progression.broker.${canonicalSha256({ request: request.record_digest_sha256 }).slice(0, 20)}`,
+        operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, runtime_generation: expectedGeneration, subject: request.subject,
+        append_request_record_digest_sha256: request.record_digest_sha256, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: request.expected_d940_append_position,
+        pre_append_source_head: preD940, d940_append_receipt_canonical_utf8: canonicalize(assessmentReceipt), d940_append_receipt_record_digest_sha256: assessmentReceipt.record_digest_sha256,
+        post_append_source_head: postD940, source_head_derivation_profile_code: 'frozen_v1_raw_payload_commitments',
+        post_head_observer_actor: authenticatedActorFor('independent_verifier', observedAt), broker_actor: authenticatedActorFor('journal_broker', observedAt),
+        accepted_at: observedAt, assessment_persisted_at: assessmentReceipt.persisted_at, post_head_observed_at: observedAt,
+        exact_single_append: true, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
       })
-      assertDurabilitySchema(durability, 'checkpoint-record-v1-1.schema.json', checkpoint, 'checkpoint advance')
-      persistBatch('d9.resolver.checkpoints.v1.1', [checkpoint], checkpoint, completedAt, completedAt)
+      assertProgressionSchema('assessment-append-broker-receipt-v1-2.schema.json', brokerReceipt, 'assessment append broker receipt')
+      brokerEntry = persistProgression('d9.resolver.progression-intents.v1.2', brokerReceipt, observedAt)
     }
-    return deepFreeze({ attestation, durableRequest: durableRequest.wrapper, durableResponse: durableResponse.wrapper, durableAttestation: durableAttestation.wrapper, checkpoint })
+    state = validateDurableState()
+    const effectiveCheckpoint = state.checkpointReferences.at(-1)
+    if (!same(effectiveCheckpoint, request.prior_checkpoint)) failD941('D941_RESOLVER_PROGRESSION_RECONCILIATION_REQUIRED', 'effective checkpoint changed before transition finalization')
+    const finalizedAt = timestamp(trustedClock(), 'progression finalizer observation time')
+    const persistedAt = timestamp(trustedClock(), 'progression transition persistence time')
+    if (finalizedAt < observedAt || persistedAt < finalizedAt) failD941('D941_RESOLVER_PROGRESSION_FRESHNESS_INVALID', 'transition finalization chronology is invalid')
+    const transition = sealRecord({
+      format: 'jedi-atlas-recovery-checkpoint-transition', format_version: '1.2.0',
+      transition_code: `progression.transition.${canonicalSha256({ request: request.record_digest_sha256 }).slice(0, 20)}`,
+      transition_sequence: effectiveCheckpoint.checkpoint_sequence + 1,
+      predecessor_checkpoint_record_digest_sha256: effectiveCheckpoint.checkpoint_record_digest_sha256,
+      predecessor_checkpoint_append_receipt_record_digest_sha256: effectiveCheckpoint.checkpoint_append_receipt_record_digest_sha256,
+      operation_id: assessment.operation_id, operation_nonce: assessment.operation_nonce, runtime_generation: expectedGeneration, subject: request.subject,
+      prior_checkpoint: effectiveCheckpoint, component_resolution_attestations: request.component_resolution_attestations,
+      composite_response_record_digest_sha256: request.composite_response_record_digest_sha256, composite_response_durable_record_digest_sha256: request.composite_response_durable_record_digest_sha256,
+      composite_append_attestation_record_digest_sha256: request.composite_append_attestation_record_digest_sha256, composite_append_attestation_durable_record_digest_sha256: request.composite_append_attestation_durable_record_digest_sha256,
+      append_request_record_digest_sha256: request.record_digest_sha256, append_request_protected_receipt_record_digest_sha256: requestEntry.receipt.record_digest_sha256,
+      append_broker_receipt_record_digest_sha256: brokerEntry.payload.record_digest_sha256, append_broker_receipt_protected_receipt_record_digest_sha256: brokerEntry.receipt.record_digest_sha256,
+      assessment_record_code: assessment.record_code, assessment_record_digest_sha256: assessment.record_digest_sha256, expected_d940_append_position: request.expected_d940_append_position,
+      d940_append_receipt_record_digest_sha256: assessmentReceipt.record_digest_sha256, pre_append_source_heads: request.pre_append_source_heads, post_append_source_heads: postHeads,
+      unchanged_source_namespace_codes: namespaces.filter((item) => item !== 'd940.global.control-journal.v1'),
+      permitted_d940_delta: { source_namespace_code: 'd940.global.control-journal.v1', before: preD940, after: postD940, delta_code: 'single_authorized_assessment_append' },
+      post_append_source_heads_digest_sha256: canonicalSha256(postHeads),
+      finalizer_actor: authenticatedActorFor('trusted_launcher', finalizedAt), semantic_actor: authenticatedActorFor('independent_verifier', attestation.completed_at), persistence_actor: authenticatedActorFor('journal_broker', persistedAt),
+      attestation_completed_at: attestation.completed_at, append_authorized_until: request.append_revalidate_by, assessment_persisted_at: assessmentReceipt.persisted_at, finalizer_observed_at: finalizedAt, persisted_at: persistedAt,
+      freshness_boundary_code: 'assessment_append_within_attestation_window_and_exact_post_head_still_current', technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
+    })
+    assertProgressionSchema('checkpoint-transition-v1-2.schema.json', transition, 'checkpoint transition')
+    persistProgression('d9.resolver.checkpoint-transitions.v1.2', transition, persistedAt, postD940)
+    return validateDurableState().transitions.find((item) => item.transition.record_digest_sha256 === transition.record_digest_sha256)
   }
 
   function retainedRevalidationFor(state, assessment) {
     const operationRecords = state.durableRecords.filter((item) => item.wrapper.operation_id === assessment.operation_id && item.wrapper.operation_nonce === assessment.operation_nonce)
-    const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request')
-    const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response')
+    const request = operationRecords.find((item) => item.wrapper.record_kind_code === 'request' && item.wrapper.resolver_kind_code === 'd940_composite_snapshot')
+    const response = operationRecords.find((item) => item.wrapper.record_kind_code === 'response' && item.wrapper.resolver_kind_code === 'd940_composite_snapshot')
     const attestation = operationRecords.find((item) => item.wrapper.record_kind_code === 'append_attestation')
-    const checkpoint = state.checkpoints.find((item) => item.checkpoint_kind_code === 'advance' && response && attestation &&
-      item.operation_id === assessment.operation_id && item.operation_nonce === assessment.operation_nonce &&
-      item.composite_response_record_digest_sha256 === response.payload.record_digest_sha256 &&
-      item.append_attestation_record_digest_sha256 === attestation.payload.record_digest_sha256)
+    const checkpoint = state.transitions.find((item) => response && attestation && item.transition.operation_id === assessment.operation_id && item.transition.operation_nonce === assessment.operation_nonce &&
+      item.transition.composite_response_record_digest_sha256 === response.payload.record_digest_sha256 &&
+      item.transition.composite_append_attestation_record_digest_sha256 === attestation.payload.record_digest_sha256)?.transition
     if (!request || !response || !attestation || !checkpoint || response.payload.request_record_digest_sha256 !== request.payload.record_digest_sha256 ||
         attestation.payload.composite_response_record_digest_sha256 !== response.payload.record_digest_sha256 ||
         assessment.snapshot_digest_sha256 !== response.payload.projection.snapshot_digest_sha256 || !same(assessment.snapshot, response.payload.projection.snapshot)) {
@@ -1069,8 +1453,10 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       return existing
     }
     if (assessment.format !== 'jedi-atlas-d940-recovery-assessment' || assessmentReceipt.target_format !== assessment.format || assessmentReceipt.target_record_digest_sha256 !== assessment.record_digest_sha256 || assessmentReceipt.target_subject_identity_sha256 !== assessment.subject.subject_identity_sha256 || assessmentReceipt.operation_id !== assessment.operation_id || assessmentReceipt.operation_nonce !== assessment.operation_nonce) failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'D9.4 assessment receipt does not bind the exact assessment')
+    finalizeProgression({ revalidation, assessment, assessmentReceipt })
+    state = validateDurableState()
     const retainedRevalidation = retainedRevalidationFor(state, assessment)
-    if (revalidation != null && (!same(revalidation.durableRequest, retainedRevalidation.durableRequest) || !same(revalidation.durableResponse, retainedRevalidation.durableResponse) || !same(revalidation.durableAttestation, retainedRevalidation.durableAttestation) || !same(revalidation.checkpoint, retainedRevalidation.checkpoint))) failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'caller revalidation context differs from the reconstructed durable chain')
+    if (revalidation != null && (!same(revalidation.durableRequest, retainedRevalidation.durableRequest) || !same(revalidation.durableResponse, retainedRevalidation.durableResponse) || !same(revalidation.durableAttestation, retainedRevalidation.durableAttestation))) failD941('D941_RESOLVER_ASSESSMENT_LINK_INVALID', 'caller revalidation context differs from the reconstructed durable chain')
     revalidation = retainedRevalidation
     const retainedReceipt = broker.validate().find((item) => item.record_digest_sha256 === assessmentReceipt.record_digest_sha256)
     let retainedAssessment
@@ -1089,11 +1475,11 @@ export function createD941SyntheticRecoveryResolverRuntime({ authorityContext, a
       attestation_durable_record_digest_sha256: revalidation.durableAttestation.record_digest_sha256,
       composite_response_record_digest_sha256: revalidation.durableResponse.payload_record_digest_sha256,
       append_attestation_record_digest_sha256: revalidation.durableAttestation.payload_record_digest_sha256,
-      checkpoint_sequence: revalidation.checkpoint.sequence, checkpoint_record_digest_sha256: revalidation.checkpoint.record_digest_sha256,
+      checkpoint_sequence: revalidation.checkpoint.transition_sequence ?? revalidation.checkpoint.sequence, checkpoint_record_digest_sha256: revalidation.checkpoint.record_digest_sha256,
       recovery_assessment_canonical_utf8: canonicalize(assessment), recovery_assessment_record_digest_sha256: assessment.record_digest_sha256,
       d940_assessment_receipt_canonical_utf8: canonicalize(assessmentReceipt), d940_assessment_receipt_sequence: assessmentReceipt.receipt_sequence,
       d940_assessment_receipt_record_digest_sha256: assessmentReceipt.record_digest_sha256, d940_assessment_journal_head_digest_sha256: assessmentReceipt.record_digest_sha256,
-      semantic_actor: durabilityActorFor(authorityContext, 'independent_verifier', classifiedAt), persistence_actor: durabilityActorFor(authorityContext, 'journal_broker', persistedAt),
+      semantic_actor: authenticatedActorFor('independent_verifier', classifiedAt), persistence_actor: authenticatedActorFor('journal_broker', persistedAt),
       classified_at: classifiedAt, persisted_at: persistedAt, technical_evidence_only: true, authority_granted: false, record_digest_sha256: null,
     })
     assertDurabilitySchema(durability, 'recovery-assessment-link-v1-1.schema.json', link, 'recovery assessment link')

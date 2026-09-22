@@ -196,7 +196,7 @@ export function assertD941RecoveryClassificationProof(proof, record, broker) {
       proof.subject_identity_sha256 !== record.subject.subject_identity_sha256 || proof.reconstruction_digest_sha256 !== proof.inventory_digest_sha256 || proof.broker !== broker) {
     failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'recovery assessment lacks a fixed protected-state classification proof')
   }
-  const revalidation = proof.resolver_runtime.revalidateAtAppend({ compositeResponse: proof.resolver_response, completedAt: record.knowledge_boundary.persisted_at })
+  const revalidation = proof.resolver_runtime.revalidateAtAppend({ compositeResponse: proof.resolver_response, assessment: record, completedAt: record.knowledge_boundary.persisted_at })
   recoveryProofRevalidations.set(proof, revalidation)
   if (proof.ledger_head_digest_sha256 !== broker.head().digest || proof.inventory_digest_sha256 !== broker.store.inventory().digest) {
     failD941('D941_RECOVERY_CLASSIFICATION_UNPROVEN', 'protected D9.4 state changed after recovery classification')

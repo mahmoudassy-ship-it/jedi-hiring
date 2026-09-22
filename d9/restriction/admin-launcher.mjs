@@ -70,6 +70,21 @@ export const D941_ADMIN_SCOPES = Object.freeze({
     grants: Object.freeze([
       Object.freeze({ slot_code: 'd941_global_ledger', runtime_role_code: 'journal_broker', access_code: 'read_only' }),
       Object.freeze({ slot_code: 'd941_recovery_store', runtime_role_code: 'journal_broker', access_code: 'append_only' }),
+      Object.freeze({ slot_code: 'd941_resolver_store', runtime_role_code: 'journal_broker', access_code: 'append_only' }),
+    ]),
+  }),
+  recovery_projection: Object.freeze({
+    roleCode: 'independent_verifier',
+    runtimeRoleCode: 'independent_verifier',
+    grants: Object.freeze([
+      Object.freeze({ slot_code: 'd941_resolver_sources', runtime_role_code: 'independent_verifier', access_code: 'integrity_only' }),
+    ]),
+  }),
+  recovery_progression: Object.freeze({
+    roleCode: 'trusted_launcher',
+    runtimeRoleCode: 'trusted_launcher',
+    grants: Object.freeze([
+      Object.freeze({ slot_code: 'd941_resolver_progression', runtime_role_code: 'trusted_launcher', access_code: 'finalize_only' }),
     ]),
   }),
 })

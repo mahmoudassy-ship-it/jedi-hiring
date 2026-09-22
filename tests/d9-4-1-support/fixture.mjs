@@ -13,7 +13,7 @@ import { loadApprovedD940ContractSet, sealD940Record, verifyD940AuthorityContext
 import { createD941LedgerBroker, D941_STORE_NAMESPACES } from '../../d9/restriction/ledger.mjs'
 import { compileD941PrimaryDeleteRuntime } from '../../d9/restriction/primary-delete.mjs'
 import { createD941SyntheticCustodyEvidence } from '../../d9/restriction/custody-evidence.mjs'
-import { createD941ResolverDurabilityStore } from '../../d9/restriction/recovery-resolvers.mjs'
+import { createD941ResolverDurabilityStore, createD941SyntheticResolverClock } from '../../d9/restriction/recovery-resolvers.mjs'
 import { createGenerationFixture, reseal, verifyFixture } from '../d9-1-support/runtime-fixture.mjs'
 
 const templates = JSON.parse(fs.readFileSync('docs/schema/d9-4-0/fixtures/valid-contracts-v1.json', 'utf8')).records
@@ -123,8 +123,10 @@ export async function createD941Fixture(t, { resolverFaultInjector = null, broke
   const selectionSession = await launcher.authenticateAuthorityTransition({ roleCode: 'operational_witness', bindingCode: byRole.get('operational_witness').binding_code, at: '2030-01-01T00:10:00.000Z' })
   registry.selectSynthetic({ actorSession: selectionSession, persistedAt: '2030-01-01T00:10:00.000Z' })
   const resolverPersistenceSession = await launcher.authenticateService({ scopeCode: 'recovery_classification', bindingCode: byRole.get('journal_broker').binding_code, at: '2030-01-01T00:10:00.000Z' })
+  const resolverVerifierSession = await launcher.authenticateService({ scopeCode: 'recovery_projection', bindingCode: byRole.get('independent_verifier').binding_code, at: '2030-01-01T00:10:00.000Z' })
+  const resolverFinalizerSession = await launcher.authenticateService({ scopeCode: 'recovery_progression', bindingCode: byRole.get('trusted_launcher').binding_code, at: '2030-01-01T00:10:00.000Z' })
   const broker = createD941LedgerBroker({ store, authorityContext, authorityRegistry: registry, clock: time.clock, linuxEnforcement: linux, operationLockRootPath: roots.lock, faultInjector: brokerFaultInjector })
-  return { base, d930, d940, generationFixture, generation, authorityContext, profile, extension, roster, adoption, byRole, linux, deleteRuntime, roots, store, resolverStore, resolverPersistenceSession, time, registry, launcher, broker }
+  return { base, d930, d940, generationFixture, generation, authorityContext, profile, extension, roster, adoption, byRole, linux, deleteRuntime, roots, store, resolverStore, resolverPersistenceSession, resolverVerifierSession, resolverFinalizerSession, createResolverClock: (clock) => createD941SyntheticResolverClock({ authorityRegistry: registry, launcherSession: resolverFinalizerSession, clock }), time, registry, launcher, broker }
 }
 
 export async function serviceSession(fixture, scopeCode, runtimeRoleCode, at = '2030-01-01T00:10:00.000Z', extra = {}) {

@@ -52,7 +52,7 @@ function resolverRuntime(fixture, subject, trustedAt = '2030-01-01T00:10:01.500Z
     const afterLedger = new Date(Date.parse(ledgerPersistedAt) + 1).toISOString()
     return Date.parse(afterLedger) > Date.parse(trustedAt) ? afterLedger : trustedAt
   }
-  return createD941SyntheticRecoveryResolverRuntime({ authorityContext: fixture.authorityContext, authorityRegistry: fixture.registry, broker: fixture.broker, subject, custodyEvidence: custodyEvidenceForSubject(fixture, subject), trustedClock: trustedClock ?? defaultClock, durabilityStore, persistenceSession: fixture.resolverPersistenceSession, faultInjector })
+  return createD941SyntheticRecoveryResolverRuntime({ authorityContext: fixture.authorityContext, authorityRegistry: fixture.registry, broker: fixture.broker, subject, custodyEvidence: custodyEvidenceForSubject(fixture, subject), trustedClock: fixture.createResolverClock(trustedClock ?? defaultClock), durabilityStore, persistenceSession: fixture.resolverPersistenceSession, verifierSession: fixture.resolverVerifierSession, finalizerSession: fixture.resolverFinalizerSession, faultInjector })
 }
 
 function resolvedReconstruction(fixture, subject, operationId = 'operation.recovery.001', operationNonce = 'e'.repeat(64), trustedAt) {
@@ -134,7 +134,7 @@ test('approved D9.1, D9.2, and D9.3 synthetic adapters resolve the exact D9.4 sn
   assert.equal(reconstruction.snapshot_projection.journal_namespace_code, 'd940.global.control-journal.v1')
   assert.equal(reconstruction.snapshot_projection.known_through_receipt_sequence, fixture.broker.head().sequence)
   assert.equal(reconstruction.snapshot_projection.control_ledger_head_receipt_digest_sha256, fixture.broker.head().digest)
-  const persistedAt = fixture.time.reserve(1500)
+  const persistedAt = fixture.time.reserve(1400)
   const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
   const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
   assert.equal(assessment.classification_code, 'safe_no_effect')
@@ -195,6 +195,8 @@ test('resolver-backed recovery rejects operation, subject, snapshot, and freshne
   const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
   const subject = subjectFor().subject
   const runtime = resolverRuntime(fixture, subject)
+  assert.throws(() => createD941SyntheticRecoveryResolverRuntime({ authorityContext: fixture.authorityContext, authorityRegistry: fixture.registry, broker: fixture.broker, subject, custodyEvidence: custodyEvidenceForSubject(fixture, subject), trustedClock: () => '2030-01-01T00:10:01.500Z', durabilityStore: fixture.resolverStore, persistenceSession: fixture.resolverPersistenceSession, verifierSession: fixture.resolverVerifierSession, finalizerSession: fixture.resolverFinalizerSession }), /D941_RESOLVER_CONFIGURATION_INVALID/)
+  assert.throws(() => createD941SyntheticRecoveryResolverRuntime({ authorityContext: fixture.authorityContext, authorityRegistry: fixture.registry, broker: fixture.broker, subject, custodyEvidence: custodyEvidenceForSubject(fixture, subject), trustedClock: fixture.createResolverClock(() => '2030-01-01T00:10:01.500Z'), durabilityStore: fixture.resolverStore, persistenceSession: fixture.resolverPersistenceSession, verifierSession: fixture.resolverPersistenceSession, finalizerSession: fixture.resolverFinalizerSession }), /D941_SESSION_SCOPE_MISMATCH/)
   assert.deepEqual(Object.keys(runtime).sort(), ['reconstruct', 'resolveComposite', 'revalidateAtAppend'])
   assert.equal('persistAssessmentLink' in runtime, false)
   assert.equal('durabilityStore' in runtime, false)
@@ -205,7 +207,7 @@ test('resolver-backed recovery rejects operation, subject, snapshot, and freshne
   assert.throws(() => runtime.resolveComposite({ subject: subjectFor(Buffer.from('substituted subject\n')).subject, operationId: 'operation.recovery.001', operationNonce: 'e'.repeat(64) }), /D941_RESOLVER_SUBJECT_SUBSTITUTED/)
   const resolverSubject = { subject_kind_code: subject.subject_kind_code, subject_identity_sha256: subject.subject_identity_sha256 }
   assert.throws(() => resolverRuntime(fixture, subject, '2030-01-01T00:10:02Z').resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.bad-time', operationNonce: 'b'.repeat(64) }), /D941_RESOLVER_TIME_INVALID/)
-  assert.throws(() => resolverRuntime(fixture, subject, '2099-01-01T00:00:00.000Z').resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.expired', operationNonce: 'c'.repeat(64) }), /D941_RESOLVER_IDENTITY_UNAVAILABLE/)
+  assert.throws(() => resolverRuntime(fixture, subject, '2099-01-01T00:00:00.000Z').resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.expired', operationNonce: 'c'.repeat(64) }), /D941_AUTHORITY_EXPIRED/)
   assert.throws(() => resolverRuntime(fixture, subject, '2030-01-01T00:10:00.500Z', { trustedClock: () => '2030-01-01T00:10:00.500Z' }).resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.future-head', operationNonce: 'd'.repeat(64) }), /D941_RESOLVER_SOURCE_HEAD_FUTURE/)
   const issued = runtime.resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.immutable', operationNonce: 'a'.repeat(64) })
   assert.throws(() => { issued.compositeResponse.projection.snapshot.control_head_projection_sha256 = 'f'.repeat(64) }, TypeError)
@@ -236,7 +238,7 @@ test('v1.1 protected checkpoint bootstrap is exact, empty-only, and technical-ev
   assert.deepEqual(fixture.resolverStore.inventory().projection['d9.resolver.checkpoints.v1.1'].map((item) => item.record_code), ['append-000000000001'])
 })
 
-test('v1.1 durable wrappers, checkpoint advance, assessment link, restart reconstruction, and exact replay are closed and deterministic', async (t) => {
+test('v1.1 durable evidence and v1.2 receipt-proven progression survive restart and exact replay', async (t) => {
   const fixture = await createD941Fixture(t)
   await primeProtectedHead(fixture)
   const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
@@ -246,16 +248,17 @@ test('v1.1 durable wrappers, checkpoint advance, assessment link, restart recons
   const operationNonce = '9'.repeat(64)
   const runtime = resolverRuntime(fixture, subject)
   const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
-  const persistedAt = fixture.time.reserve(1500)
+  const persistedAt = fixture.time.reserve(1400)
   const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
   record.record_code = 'recovery.synthetic.durable.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
   const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
   const appended = await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
   assert.equal(appended.created, true)
   const beforeRestart = runtime.reconstruct()
-  assert.deepEqual(beforeRestart.durableRecords.map((item) => item.wrapper.record_kind_code), ['request', 'response', 'append_attestation'])
-  assert.equal(beforeRestart.checkpoints.length, 2)
-  assert.equal(beforeRestart.checkpoints[1].checkpoint_kind_code, 'advance')
+  assert.deepEqual(beforeRestart.durableRecords.map((item) => item.wrapper.record_kind_code), ['request', 'response', 'request', 'response', 'request', 'response', 'request', 'response', 'append_attestation'])
+  assert.equal(beforeRestart.checkpoints.length, 1)
+  assert.equal(beforeRestart.transitions.length, 1)
+  assert.equal(beforeRestart.transitions[0].transition.transition_sequence, 2)
   assert.equal(beforeRestart.links.length, 1)
   assert.equal(beforeRestart.links[0].link.technical_evidence_only, true)
   assert.equal(beforeRestart.links[0].link.authority_granted, false)
@@ -270,8 +273,18 @@ test('v1.1 durable wrappers, checkpoint advance, assessment link, restart recons
   assert.equal(replay.created, false)
   assert.equal(reopenedStore.inventory().digest, inventoryBefore)
   assert.equal(restarted.reconstruct().links.length, 1)
-  assert.throws(() => restarted.resolveComposite({ subject: { subject_kind_code: subject.subject_kind_code, subject_identity_sha256: subject.subject_identity_sha256 }, operationId: 'operation.recovery.durable.002', operationNonce: '7'.repeat(64) }), /D941_RESOLVER_CHECKPOINT_SOURCE_MISMATCH/)
-  assert.equal(reopenedStore.entries('d9.resolver.records.v1.1').length, 3)
+  const next = restarted.resolveComposite({ subject: { subject_kind_code: subject.subject_kind_code, subject_identity_sha256: subject.subject_identity_sha256 }, operationId: 'operation.recovery.durable.002', operationNonce: '7'.repeat(64) })
+  assert.equal(next.durability.checkpoint.checkpoint_contract_version, '1.2.0')
+  const secondReconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: restarted, resolverOperationId: 'operation.recovery.durable.002', resolverOperationNonce: '7'.repeat(64) })
+  const secondPersistedAt = fixture.time.reserve(2100)
+  const secondRecord = baseRecord(subject, verifier.actor, journal.actor, { persistedAt: secondPersistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
+  secondRecord.record_code = 'recovery.synthetic.durable.002'; secondRecord.operation_id = 'operation.recovery.durable.002'; secondRecord.operation_nonce = '7'.repeat(64)
+  const secondAssessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: secondRecord, reconstruction: secondReconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(secondReconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  const secondAppend = await fixture.broker.append({ record: secondAssessment, semanticSession: verifier, persistenceSession: journal })
+  assert.equal(secondAppend.created, true)
+  assert.equal(restarted.reconstruct().transitions.length, 2)
+  assert.equal(restarted.reconstruct().checkpointReferences.at(-1).checkpoint_sequence, 3)
+  assert.equal(reopenedStore.entries('d9.resolver.records.v1.1').length, 18)
 })
 
 test('response loss after a durable wrapper append reconstructs to an exact no-op instead of forking', async (t) => {
@@ -296,7 +309,7 @@ test('response loss after a durable wrapper append reconstructs to an exact no-o
   const restarted = resolverRuntime(fixture, subject, '2030-01-01T00:10:02.000Z', { durabilityStore: reopenedStore })
   const replay = restarted.resolveComposite({ subject: resolverSubject, operationId: 'operation.recovery.response-loss.001', operationNonce: '8'.repeat(64) })
   assert.equal(replay.compositeResponse.operation_id, 'operation.recovery.response-loss.001')
-  assert.equal(reopenedStore.entries('d9.resolver.records.v1.1').length, 2)
+  assert.equal(reopenedStore.entries('d9.resolver.records.v1.1').length, 8)
 })
 
 test('checkpoint bootstrap failure before durable publish rolls back to the exact empty namespace and can retry once', async (t) => {
@@ -336,7 +349,7 @@ test('assessment-link response loss leaves exact durable cross-store state and r
     },
   })
   const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
-  const persistedAt = fixture.time.reserve(1500)
+  const persistedAt = fixture.time.reserve(1400)
   const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
   record.record_code = 'recovery.synthetic.link-loss.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
   const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
@@ -366,7 +379,7 @@ test('restart repairs the exact assessment link when the D9.4 receipt is durable
   const operationNonce = '5'.repeat(64)
   const runtime = resolverRuntime(fixture, subject)
   const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
-  const persistedAt = fixture.time.reserve(1500)
+  const persistedAt = fixture.time.reserve(1400)
   const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
   record.record_code = 'recovery.synthetic.post-receipt.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
   const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
@@ -388,6 +401,172 @@ test('restart repairs the exact assessment link when the D9.4 receipt is durable
   assert.notEqual(reopenedStore.inventory().digest, resolverDigestBefore)
 })
 
+test('authority revocation after the durable D9.4 receipt blocks missing-transition completion', async (t) => {
+  let injected = false
+  let trustedNow = '2030-01-01T00:10:01.500Z'
+  const fixture = await createD941Fixture(t, {
+    brokerFaultInjector(boundary, context) {
+      if (!injected && boundary === 'after_receipt_persisted_before_response' && context.record.format === 'jedi-atlas-d940-recovery-assessment') {
+        injected = true
+        throw new Error('synthetic post-receipt revocation boundary')
+      }
+    },
+  })
+  await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
+  const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
+  const subject = subjectFor().subject
+  const operationId = 'operation.recovery.revoked-finalizer.001'
+  const operationNonce = 'b'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { trustedClock: () => trustedNow })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400)
+  const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 })
+  record.record_code = 'recovery.synthetic.revoked-finalizer.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /synthetic post-receipt revocation boundary/)
+  assert.equal(fixture.broker.head().sequence, 2)
+  assert.equal(runtime.reconstruct().transitions.length, 0)
+  const resolverDigestBefore = fixture.resolverStore.inventory().digest
+  const revoker = await fixture.launcher.authenticateAuthorityTransition({ roleCode: 'recovery_authority', bindingCode: fixture.byRole.get('recovery_operator').binding_code, at: '2030-01-01T00:10:02.000Z' })
+  await fixture.registry.revoke({ targetCode: 'd940_authority_roster', actorSession: revoker, persistedAt: '2030-01-01T00:10:02.100Z' })
+  const staleClock = fixture.createResolverClock(() => trustedNow)
+  assert.throws(() => staleClock(), /D941_RESOLVER_TIME_ROLLBACK/)
+  trustedNow = '2030-01-01T00:10:02.200Z'
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /D941_AUTHORITY_REVOKED/)
+  assert.equal(fixture.resolverStore.inventory().digest, resolverDigestBefore)
+  assert.equal(fixture.resolverStore.entries('d9.resolver.checkpoint-transitions.v1.2').length, 0)
+})
+
+test('durable progression-intent response loss retries without a D9.4 or checkpoint fork', async (t) => {
+  let injected = false
+  const fixture = await createD941Fixture(t); await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const subject = subjectFor().subject
+  const operationId = 'operation.recovery.intent-loss.001'; const operationNonce = '0'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { faultInjector(boundary, context) {
+    if (!injected && boundary === 'after_progression_atomic_append_before_response' && context.namespaceCode === 'd9.resolver.progression-intents.v1.2' && context.payloadRecord.format.endsWith('append-request')) { injected = true; throw new Error('synthetic progression-intent response loss') }
+  } })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400); const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.intent-loss.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /synthetic progression-intent response loss/)
+  assert.equal(fixture.broker.head().sequence, 1)
+  assert.equal(runtime.reconstruct().pendingProgressionRecords.length, 1)
+  const replay = await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  assert.equal(replay.created, true)
+  assert.equal(runtime.reconstruct().transitions.length, 1)
+  assert.equal(runtime.reconstruct().pendingProgressionRecords.length, 0)
+})
+
+test('progression stable-identity collisions fail before any protected mutation', async (t) => {
+  let injected = false
+  const fixture = await createD941Fixture(t); await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const subject = subjectFor().subject
+  const operationId = 'operation.recovery.identity-collision.001'; const operationNonce = 'a'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { faultInjector(boundary, context) {
+    if (!injected && boundary === 'after_progression_atomic_append_before_response' && context.payloadRecord.format.endsWith('append-request')) { injected = true; throw new Error('synthetic retained first intent') }
+  } })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400); const firstRecord = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); firstRecord.record_code = 'recovery.synthetic.identity-collision.001'; firstRecord.operation_id = operationId; firstRecord.operation_nonce = operationNonce
+  const first = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: firstRecord, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: first, semanticSession: verifier, persistenceSession: journal }), /synthetic retained first intent/)
+  const before = fixture.resolverStore.inventory().digest
+  const changedRecord = { ...firstRecord, record_code: 'recovery.synthetic.identity-collision.changed' }
+  const changed = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record: changedRecord, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: changed, semanticSession: verifier, persistenceSession: journal }), /D941_RESOLVER_PROGRESSION_REPLAY_COLLISION/)
+  assert.equal(fixture.resolverStore.inventory().digest, before)
+  assert.equal(fixture.broker.head().sequence, 1)
+})
+
+test('durable broker-receipt response loss restarts and completes the one exact v1.2 transition', async (t) => {
+  let injected = false
+  const fixture = await createD941Fixture(t)
+  await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
+  const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
+  const subject = subjectFor().subject
+  const operationId = 'operation.recovery.broker-loss.001'; const operationNonce = '1'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { faultInjector(boundary, context) {
+    if (!injected && boundary === 'after_progression_atomic_append_before_response' && context.namespaceCode === 'd9.resolver.progression-intents.v1.2' && context.payloadRecord.format === 'jedi-atlas-recovery-checkpoint-assessment-append-broker-receipt') { injected = true; throw new Error('synthetic broker-receipt response loss') }
+  } })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400)
+  const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.broker-loss.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /synthetic broker-receipt response loss/)
+  assert.equal(runtime.reconstruct().transitions.length, 0)
+  assert.equal(runtime.reconstruct().pendingProgressionRecords.length, 2)
+  const replay = await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  assert.equal(replay.created, false)
+  assert.equal(runtime.reconstruct().transitions.length, 1)
+  assert.equal(runtime.reconstruct().pendingProgressionRecords.length, 0)
+})
+
+test('durable transition response loss is an exact replay and cannot fork checkpoint progression', async (t) => {
+  let injected = false
+  const fixture = await createD941Fixture(t)
+  await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
+  const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
+  const subject = subjectFor().subject
+  const operationId = 'operation.recovery.transition-loss.001'; const operationNonce = '2'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { faultInjector(boundary, context) {
+    if (!injected && boundary === 'after_progression_atomic_append_before_response' && context.namespaceCode === 'd9.resolver.checkpoint-transitions.v1.2') { injected = true; throw new Error('synthetic transition response loss') }
+  } })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400)
+  const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.transition-loss.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /synthetic transition response loss/)
+  assert.equal(runtime.reconstruct().transitions.length, 1)
+  const transitionDigest = runtime.reconstruct().transitions[0].transition.record_digest_sha256
+  const replay = await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  assert.equal(replay.created, false)
+  assert.equal(runtime.reconstruct().transitions.length, 1)
+  assert.equal(runtime.reconstruct().transitions[0].transition.record_digest_sha256, transitionDigest)
+})
+
+test('an unrelated append before missing-transition completion fails closed as reconciliation required', async (t) => {
+  let injected = false
+  const fixture = await createD941Fixture(t)
+  await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker')
+  const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier')
+  const subject = subjectFor().subject
+  const operationId = 'operation.recovery.extra-append.001'; const operationNonce = '3'.repeat(64)
+  const runtime = resolverRuntime(fixture, subject, undefined, { faultInjector(boundary, context) {
+    if (!injected && boundary === 'after_progression_atomic_append_before_response' && context.namespaceCode === 'd9.resolver.progression-intents.v1.2' && context.payloadRecord.format.endsWith('broker-receipt')) { injected = true; throw new Error('synthetic pre-transition stop') }
+  } })
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400)
+  const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.extra-append.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /synthetic pre-transition stop/)
+  const movementActor = await humanSession(fixture, 'security_authority', 'recovery_operator')
+  const movementJournal = await serviceSession(fixture, 'control_submission', 'journal_broker')
+  const movedAt = fixture.time.reserve()
+  const movement = makeControlRecord({ fixture, kind: 'restriction_imposed', code: 'control.recovery.extra.001', operationId: 'operation.recovery.extra.control', nonce: '4'.repeat(64), subject: subjectFor(Buffer.from('extra append\n')).subject, semanticActor: movementActor.actor, persistenceActor: movementJournal.actor, sequence: 1, effectiveAt: new Date(Date.parse(movedAt) - 2).toISOString(), recordedAt: new Date(Date.parse(movedAt) - 1).toISOString(), persistedAt: movedAt })
+  await fixture.broker.append({ record: movement, semanticSession: movementActor, persistenceSession: movementJournal })
+  await assert.rejects(fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal }), /D941_RESOLVER_PROGRESSION_RECONCILIATION_REQUIRED/)
+  assert.equal(runtime.reconstruct().transitions.length, 0)
+})
+
+test('concurrent exact assessment submissions serialize to one D9.4 receipt and one v1.2 transition', async (t) => {
+  const fixture = await createD941Fixture(t); await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const subject = subjectFor().subject
+  const operationId = 'operation.recovery.concurrent.001'; const operationNonce = '5'.repeat(64); const runtime = resolverRuntime(fixture, subject)
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400); const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.concurrent.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  const concurrent = await Promise.allSettled([1, 2].map(() => fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })))
+  assert.equal(concurrent.filter((item) => item.status === 'fulfilled').length, 1)
+  assert.match(concurrent.find((item) => item.status === 'rejected').reason.message, /OPERATION_LOCK_UNAVAILABLE/)
+  const replay = await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  assert.equal(replay.created, false)
+  assert.equal(runtime.reconstruct().transitions.length, 1)
+  assert.equal(fixture.broker.validate().filter((item) => item.target_record_digest_sha256 === assessment.record_digest_sha256).length, 1)
+})
+
 test('restart fails closed when protected checkpoint bytes are corrupted', async (t) => {
   const fixture = await createD941Fixture(t)
   await primeProtectedHead(fixture)
@@ -399,6 +578,83 @@ test('restart fails closed when protected checkpoint bytes are corrupted', async
   const reopenedStore = createD941ResolverDurabilityStore({ rootPath: fixture.roots.resolver })
   t.after(() => reopenedStore.close())
   assert.throws(() => resolverRuntime(fixture, subject, '2030-01-01T00:10:02.000Z', { durabilityStore: reopenedStore }), /D941_RESOLVER_DURABLE_COMMIT_INVALID/)
+})
+
+test('restart rejects resealed v1.2 transition, receipt, and source-head substitutions', async (t) => {
+  const fixture = await createD941Fixture(t); await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const subject = subjectFor().subject
+  const operationId = 'operation.recovery.progression-tamper.001'; const operationNonce = '6'.repeat(64); const runtime = resolverRuntime(fixture, subject)
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400); const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.progression-tamper.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  fixture.resolverStore.close()
+  const transitionFile = path.join(fixture.roots.resolver, 'd9.resolver.checkpoint-transitions.v1.2', 'append-000000000001')
+  const original = fs.readFileSync(transitionFile)
+  const assertRestartRejects = (mutate, pattern) => {
+    const envelope = JSON.parse(original.toString('utf8')); mutate(envelope)
+    envelope.commit_sha256 = canonicalSha256(envelope, { excludedTopLevelField: 'commit_sha256' }); fs.writeFileSync(transitionFile, canonicalize(envelope))
+    const reopened = createD941ResolverDurabilityStore({ rootPath: fixture.roots.resolver })
+    assert.throws(() => resolverRuntime(fixture, subject, '2030-01-01T00:10:04.000Z', { durabilityStore: reopened }), pattern)
+    reopened.close(); fs.writeFileSync(transitionFile, original)
+  }
+  assertRestartRejects((envelope) => {
+    envelope.append_receipt.source_head_compare_and_append.observed_head_at_persist.head_digest_sha256 = 'f'.repeat(64)
+    resealRecord(envelope.append_receipt)
+  }, /D941_RESOLVER_PROGRESSION_SOURCE_CAS_INVALID/)
+  assertRestartRejects((envelope) => {
+    const transition = envelope.records[0]; transition.predecessor_checkpoint_record_digest_sha256 = 'f'.repeat(64); resealRecord(transition)
+    envelope.append_receipt.persisted_head.record_digest_sha256 = transition.record_digest_sha256; envelope.append_receipt.payload_record_digest_sha256 = transition.record_digest_sha256; resealRecord(envelope.append_receipt)
+  }, /D941_RESOLVER_PROGRESSION_TRANSITION_INVALID/)
+  assertRestartRejects((envelope) => {
+    const transition = envelope.records[0]; transition.component_resolution_attestations[0].component_response_record_digest_sha256 = 'f'.repeat(64); resealRecord(transition)
+    envelope.append_receipt.persisted_head.record_digest_sha256 = transition.record_digest_sha256; envelope.append_receipt.payload_record_digest_sha256 = transition.record_digest_sha256; resealRecord(envelope.append_receipt)
+  }, /D941_RESOLVER_PROGRESSION_TRANSITION_INVALID/)
+})
+
+test('restart rejects a self-consistent circular D9.4 post-head substitution', async (t) => {
+  const fixture = await createD941Fixture(t); await primeProtectedHead(fixture)
+  const journal = await serviceSession(fixture, 'recovery_classification', 'journal_broker'); const verifier = await serviceSession(fixture, 'independent_verification', 'independent_verifier'); const subject = subjectFor().subject
+  const operationId = 'operation.recovery.circular-head.001'; const operationNonce = 'c'.repeat(64); const runtime = resolverRuntime(fixture, subject)
+  const reconstruction = reconstructD941RecoveryState({ broker: fixture.broker, subjectIdentitySha256: subject.subject_identity_sha256, subjectKindCode: subject.subject_kind_code, resolverRuntime: runtime, resolverOperationId: operationId, resolverOperationNonce: operationNonce })
+  const persistedAt = fixture.time.reserve(1400); const record = baseRecord(subject, verifier.actor, journal.actor, { persistedAt, receiptSequence: fixture.broker.head().sequence + 1 }); record.record_code = 'recovery.synthetic.circular-head.001'; record.operation_id = operationId; record.operation_nonce = operationNonce
+  const assessment = classifyD941Recovery({ authorityContext: fixture.authorityContext, broker: fixture.broker, record, reconstruction, crashBoundaryCode: 'before_restriction_persisted', snapshot: snapshot(reconstruction), inventoryStateCode: 'complete', accessStateCode: 'none_confirmed', controlStateCode: 'linear_complete' })
+  await fixture.broker.append({ record: assessment, semanticSession: verifier, persistenceSession: journal })
+  fixture.resolverStore.close()
+
+  const fabricatedInventory = 'f'.repeat(64)
+  const brokerFile = path.join(fixture.roots.resolver, 'd9.resolver.progression-intents.v1.2', 'append-000000000002')
+  const brokerEnvelope = JSON.parse(fs.readFileSync(brokerFile, 'utf8'))
+  const brokerRecord = brokerEnvelope.records[0]
+  brokerRecord.post_append_source_head.inventory_digest_sha256 = fabricatedInventory
+  resealRecord(brokerRecord)
+  brokerEnvelope.append_receipt.persisted_head.record_digest_sha256 = brokerRecord.record_digest_sha256
+  brokerEnvelope.append_receipt.payload_record_digest_sha256 = brokerRecord.record_digest_sha256
+  resealRecord(brokerEnvelope.append_receipt)
+  brokerEnvelope.commit_sha256 = canonicalSha256(brokerEnvelope, { excludedTopLevelField: 'commit_sha256' })
+  fs.writeFileSync(brokerFile, canonicalize(brokerEnvelope))
+
+  const transitionFile = path.join(fixture.roots.resolver, 'd9.resolver.checkpoint-transitions.v1.2', 'append-000000000001')
+  const transitionEnvelope = JSON.parse(fs.readFileSync(transitionFile, 'utf8'))
+  const transition = transitionEnvelope.records[0]
+  transition.append_broker_receipt_record_digest_sha256 = brokerRecord.record_digest_sha256
+  transition.append_broker_receipt_protected_receipt_record_digest_sha256 = brokerEnvelope.append_receipt.record_digest_sha256
+  const postHead = transition.post_append_source_heads.find((item) => item.source_namespace_code === 'd940.global.control-journal.v1')
+  postHead.inventory_digest_sha256 = fabricatedInventory
+  transition.permitted_d940_delta.after.inventory_digest_sha256 = fabricatedInventory
+  transition.post_append_source_heads_digest_sha256 = canonicalSha256(transition.post_append_source_heads)
+  resealRecord(transition)
+  transitionEnvelope.append_receipt.persisted_head.record_digest_sha256 = transition.record_digest_sha256
+  transitionEnvelope.append_receipt.payload_record_digest_sha256 = transition.record_digest_sha256
+  transitionEnvelope.append_receipt.source_head_compare_and_append.expected_head.inventory_digest_sha256 = fabricatedInventory
+  transitionEnvelope.append_receipt.source_head_compare_and_append.observed_head_at_persist.inventory_digest_sha256 = fabricatedInventory
+  resealRecord(transitionEnvelope.append_receipt)
+  transitionEnvelope.commit_sha256 = canonicalSha256(transitionEnvelope, { excludedTopLevelField: 'commit_sha256' })
+  fs.writeFileSync(transitionFile, canonicalize(transitionEnvelope))
+
+  const reopenedStore = createD941ResolverDurabilityStore({ rootPath: fixture.roots.resolver })
+  t.after(() => reopenedStore.close())
+  assert.throws(() => resolverRuntime(fixture, subject, '2030-01-01T00:10:04.000Z', { durabilityStore: reopenedStore }), /D941_RESOLVER_PROGRESSION_BROKER_RECEIPT_INVALID/)
 })
 
 test('restart rejects semantically identical resolver envelopes whose retained bytes are not canonical', async (t) => {
