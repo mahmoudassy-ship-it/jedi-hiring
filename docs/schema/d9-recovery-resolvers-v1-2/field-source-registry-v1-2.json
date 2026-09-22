@@ -1,0 +1,21 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-field-source-registry",
+  "format_version": "1.2.0",
+  "default_confidentiality_code": "highly_restricted_integrity",
+  "unknown_field_code": "reject",
+  "fields": [
+    { "path_family": "prior_checkpoint", "trusted_producer": "protected_v1_1_checkpoint_or_v1_2_transition_reconstruction", "consumer": "independent_verifier_and_finalizer", "storage": "d9.resolver.progression-intents.v1.2_and_checkpoint-transitions.v1.2", "caller_claim": false },
+    { "path_family": "component_resolution_attestations", "trusted_producer": "verified_exact_v1_component_responses_and_v1_1_durable_wrappers", "consumer": "independent_verifier_and_finalizer", "storage": "progression_request_and_transition", "caller_claim": false },
+    { "path_family": "composite_response_and_append_attestation_digests", "trusted_producer": "verified_v1_composite_and_v1_1_durable_wrappers", "consumer": "independent_verifier_and_finalizer", "storage": "progression_request_and_transition", "caller_claim": false },
+    { "path_family": "assessment_canonical_utf8_and_digest", "trusted_producer": "d940_classification_only_fixed_function_and_exact_canonicalizer", "consumer": "independent_verifier_and_journal_broker", "storage": "d9.resolver.progression-intents.v1.2", "caller_claim": false },
+    { "path_family": "expected_d940_append_position", "trusted_producer": "independent_verifier_from_prior_checkpoint_and_current_d940_receipt_head", "consumer": "journal_broker_and_finalizer", "storage": "progression_request_receipt_and_transition", "caller_claim": false },
+    { "path_family": "d940_append_receipt_canonical_utf8_and_digest", "trusted_producer": "authenticated_d940_journal_broker_from_durable_ledger", "consumer": "independent_verifier_and_finalizer", "storage": "assessment_append_broker_receipt", "caller_claim": false },
+    { "path_family": "post_append_source_head", "trusted_producer": "authenticated_independent_verifier_observing_the_d940_adapter_after_exact_broker_append_under_the_frozen_v1_raw_payload_commitment_profile", "consumer": "independent_verifier_and_finalizer", "storage": "assessment_append_broker_receipt_and_transition", "caller_claim": false },
+    { "path_family": "append_request_and_broker_receipt_protected_receipt_digests", "trusted_producer": "authenticated_journal_broker", "consumer": "fixed_function_finalizer", "storage": "checkpoint_transition", "caller_claim": false },
+    { "path_family": "transition_source_head_compare_and_append", "trusted_producer": "authenticated_independent_verifier_observation_and_journal_broker_atomic_persistence_boundary", "consumer": "checkpoint_reconstructor", "storage": "transition_protected_append_receipt", "caller_claim": false },
+    { "path_family": "unchanged_source_heads_and_permitted_delta", "trusted_producer": "fixed_function_finalizer_from_exact_pre_and_post_observations", "consumer": "checkpoint_reconstructor", "storage": "d9.resolver.checkpoint-transitions.v1.2", "caller_claim": false },
+    { "path_family": "runtime_generation_actor_endpoint_build_and_times", "trusted_producer": "authenticated_active_generation_and_trusted_launcher_clock", "consumer": "all_components", "storage": "all_v1_2_namespaces", "caller_claim": false },
+    { "path_family": "protected_append_sequence_predecessor_and_receipt", "trusted_producer": "authenticated_journal_broker", "consumer": "reconstructor_and_auditor", "storage": "both_v1_2_namespaces", "caller_claim": false },
+    { "path_family": "technical_evidence_only_and_authority_granted", "trusted_producer": "reviewed_contract_constant", "consumer": "all_components", "storage": "all_v1_2_records", "caller_claim": false }
+  ]
+}

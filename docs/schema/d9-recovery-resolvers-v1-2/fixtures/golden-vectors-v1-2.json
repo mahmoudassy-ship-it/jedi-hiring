@@ -1,0 +1,10 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-golden-vectors",
+  "format_version": "1.2.0",
+  "vectors": [
+    { "vector_code": "arrays_null_unicode", "input": { "z": "Ω", "arr": [3, 2, 1], "a": null }, "canonical_utf8": "{\"a\":null,\"arr\":[3,2,1],\"z\":\"Ω\"}", "sha256": "f80d3d21a1559aa06be5ccdceb68021122581e5a2ab03a37bf0e3cea89d35d2c" },
+    { "vector_code": "astral_bmp_utf16_key_order", "input": { "": 2, "😀": 1, "a": 0 }, "canonical_utf8": "{\"a\":0,\"😀\":1,\"\":2}", "sha256": "356bb09cec7ab06ff968a7e17eb81536156726241da02a0b315c0293b5f1a97a" },
+    { "vector_code": "progression_identity", "input": { "value": "fixed", "sequence": 2, "namespace_code": "d9.resolver.checkpoint-transitions.v1.2" }, "canonical_utf8": "{\"namespace_code\":\"d9.resolver.checkpoint-transitions.v1.2\",\"sequence\":2,\"value\":\"fixed\"}", "sha256": "a4f44b621b2aa1371bed33250a30d1dfe2ccf28e10e8ffe8b0eef641d6fa43af" },
+    { "vector_code": "single_d940_delta", "input": { "source_namespace_code": "d940.global.control-journal.v1", "delta_code": "single_authorized_assessment_append" }, "canonical_utf8": "{\"delta_code\":\"single_authorized_assessment_append\",\"source_namespace_code\":\"d940.global.control-journal.v1\"}", "sha256": "1463ab2a776dcb071430f2d1d4c3d2afa53eb9cb92f96421d278c9a342d4606d" }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-classifications",
+  "format_version": "1.2.0",
+  "status_code": "design_only_contract_freeze",
+  "namespaces": ["d9.resolver.progression-intents.v1.2", "d9.resolver.checkpoint-transitions.v1.2"],
+  "record_kinds": ["assessment_append_request", "assessment_append_broker_receipt", "checkpoint_transition", "protected_append_receipt"],
+  "outcomes": ["persisted", "exact_replay_no_op", "not_yet_appendable", "reconciliation_required", "rejected"],
+  "errors": ["assessment_absent", "receipt_absent", "head_mismatch", "unexplained_head_change", "concurrent_append", "fork", "gap", "rollback", "replay_collision", "expired_append_authorization", "wrong_producer", "wrong_delta", "corrupt_state", "incomplete_state", "ambiguous_state"],
+  "producer_matrix": [
+    { "record_family": "assessment_append_request", "semantic_role": "independent_verifier", "persistence_role": "journal_broker" },
+    { "record_family": "assessment_append_broker_receipt", "observation_role": "independent_verifier", "persistence_role": "journal_broker" },
+    { "record_family": "checkpoint_transition", "orchestrator_role": "trusted_launcher", "semantic_role": "independent_verifier", "persistence_role": "journal_broker" },
+    { "record_family": "protected_append_receipt", "semantic_role": "journal_broker", "persistence_role": "journal_broker" }
+  ],
+  "progression_rules": {
+    "baseline": "exact_prior_checkpoint_and_attested_pre_append_source_heads",
+    "authorized_append": "one_exact_d940_recovery_assessment_at_the_requested_predecessor_and_sequence",
+    "resulting_head": "durable_d940_receipt_plus_independently_observed_post_append_source_head_derived_by_the_frozen_v1_raw_payload_commitment_profile",
+    "unchanged_heads": "all_five_non_d940_heads_byte_identical",
+    "permitted_delta": "d940_sequence_plus_one_with_exact_receipt_bound_assessment_and_frozen_v1_derived_post_head",
+    "new_checkpoint": "prior_sequence_plus_one_with_prior_record_and_append_receipt_as_predecessor",
+    "transition_persistence": "atomic_transition_journal_compare_and_append_plus_exact_d940_source_head_compare_at_persist_time",
+    "catch_up": "forbidden",
+    "automatic_inference": "forbidden"
+  },
+  "restart_matrix": [
+    { "state_code": "attestation_durable_assessment_absent", "transition_allowed": false, "result": "not_yet_appendable", "fixed_function_action": "none" },
+    { "state_code": "assessment_appended_receipt_response_lost", "transition_allowed": true, "result": "reconstruct_exact_broker_receipt_then_finalize", "fixed_function_action": "read_exact_durable_d940_assessment_and_receipt" },
+    { "state_code": "assessment_and_receipt_durable_transition_missing", "transition_allowed": true, "result": "finalize_exact_transition", "fixed_function_action": "append_exact_transition_only" },
+    { "state_code": "transition_persisted_response_lost", "transition_allowed": false, "result": "exact_replay_no_op", "fixed_function_action": "return_retained_transition_receipt" },
+    { "state_code": "another_append_before_transition", "transition_allowed": false, "result": "reconciliation_required", "fixed_function_action": "none" },
+    { "state_code": "missing_corrupt_forked_gapped_rolled_back_stale_or_ambiguous", "transition_allowed": false, "result": "reconciliation_required", "fixed_function_action": "none" }
+  ],
+  "authority_boundary": {
+    "technical_journal_continuity_only": true,
+    "recovery_action_authorized": false,
+    "evidence_acceptance_established": false,
+    "officiality_established": false,
+    "legal_identity_established": false,
+    "legal_status_established": false,
+    "legal_effect_established": false,
+    "legal_verification_established": false,
+    "deletion_authorized": false,
+    "restoration_authorized": false,
+    "publication_eligibility_established": false,
+    "d95_authority_granted": false
+  }
+}

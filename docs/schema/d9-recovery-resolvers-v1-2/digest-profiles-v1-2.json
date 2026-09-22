@@ -1,0 +1,14 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-digest-profiles",
+  "format_version": "1.2.0",
+  "canonicalization": { "encoding": "utf-8", "unicode_normalization": "none", "object_key_order": "utf-16-code-unit-ascending", "array_order": "preserved", "number_policy": "nonnegative-safe-integers-only", "duplicate_keys": "reject", "line_ending": "none" },
+  "profiles": [
+    { "profile_code": "progression_record_v1_2", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "source_head_set_v1_2", "included_fields": ["source_namespace_code", "source_contract_fingerprint_sha256", "head_sequence", "head_digest_sha256", "head_persisted_at", "inventory_digest_sha256"], "ordering": "source_namespace_code_binary_ascending_unique" },
+    { "profile_code": "d940_single_append_delta_v1_2", "included_fields": ["source_namespace_code", "before", "after", "delta_code"] },
+    { "profile_code": "frozen_v1_raw_payload_commitments", "included_fields": ["source_namespace_code", "head_sequence", "payload_commitments"], "payload_commitment_fields": ["source_payload_code", "raw_payload_sha256"], "head_fields": ["source_namespace_code", "head_sequence", "head_persisted_at", "inventory_digest_sha256"], "ordering": "frozen_source_boundary_payload_code_order" },
+    { "profile_code": "progression_journal_chain_v1_2", "included_fields": ["namespace_code", "sequence", "predecessor_record_digest_sha256", "payload_record_digest_sha256", "persisted_at"] },
+    { "profile_code": "exact_canonical_utf8_payload", "excluded_top_level_field": null },
+    { "profile_code": "exact_file_bytes", "excluded_top_level_field": null }
+  ]
+}

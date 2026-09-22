@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-2/finalization-result-v1-2.schema.json",
+  "title": "Noncanonical checkpoint progression finalization result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "result_code", "operation_id", "append_request_record_digest_sha256", "outcome_code", "error_code", "transition_record_digest_sha256", "transition_append_receipt_record_digest_sha256", "observed_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-recovery-checkpoint-progression-finalization-result" },
+    "format_version": { "const": "1.2.0" },
+    "result_code": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-2.schema.json#/$defs/stableCode" },
+    "append_request_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+    "outcome_code": { "enum": ["persisted", "exact_replay_no_op", "not_yet_appendable", "reconciliation_required", "rejected"] },
+    "error_code": { "type": ["string", "null"], "enum": [null, "assessment_absent", "receipt_absent", "head_mismatch", "unexplained_head_change", "concurrent_append", "fork", "gap", "rollback", "replay_collision", "expired_append_authorization", "wrong_producer", "wrong_delta", "corrupt_state", "incomplete_state", "ambiguous_state"] },
+    "transition_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-2.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "transition_append_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "common-v1-2.schema.json#/$defs/sha256" }, { "type": "null" }] },
+    "observed_at": { "$ref": "common-v1-2.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "outcome_code": { "enum": ["persisted", "exact_replay_no_op"] } }, "required": ["outcome_code"] },
+      "then": {
+        "properties": {
+          "error_code": { "type": "null" },
+          "transition_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" },
+          "transition_append_receipt_record_digest_sha256": { "$ref": "common-v1-2.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "outcome_code": { "const": "not_yet_appendable" } }, "required": ["outcome_code"] },
+      "then": {
+        "properties": {
+          "error_code": { "enum": ["assessment_absent", "receipt_absent"] },
+          "transition_record_digest_sha256": { "type": "null" },
+          "transition_append_receipt_record_digest_sha256": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "outcome_code": { "enum": ["reconciliation_required", "rejected"] } }, "required": ["outcome_code"] },
+      "then": {
+        "properties": {
+          "error_code": { "not": { "type": "null" } },
+          "transition_record_digest_sha256": { "type": "null" },
+          "transition_append_receipt_record_digest_sha256": { "type": "null" }
+        }
+      }
+    }
+  ]
+}
