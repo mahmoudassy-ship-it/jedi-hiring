@@ -1,0 +1,25 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-invalid-fixtures",
+  "format_version": "1.2.0",
+  "mutations": [
+    { "mutation_code": "component_missing" },
+    { "mutation_code": "component_reordered" },
+    { "mutation_code": "prior_checkpoint_receipt" },
+    { "mutation_code": "assessment_bytes" },
+    { "mutation_code": "idempotency" },
+    { "mutation_code": "wrong_verifier" },
+    { "mutation_code": "wrong_generation" },
+    { "mutation_code": "expired" },
+    { "mutation_code": "authority" },
+    { "mutation_code": "observer" },
+    { "mutation_code": "receipt_target" },
+    { "mutation_code": "post_head" },
+    { "mutation_code": "profile" },
+    { "mutation_code": "request_receipt" },
+    { "mutation_code": "broker_store_receipt" },
+    { "mutation_code": "predecessor_receipt" },
+    { "mutation_code": "unchanged_head" },
+    { "mutation_code": "extra_delta" },
+    { "mutation_code": "wrong_finalizer" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-valid-fixture",
+  "format_version": "1.2.0",
+  "fixture_policy": "synthetic_templates_resealed_by_offline_validator",
+  "actors": {
+    "launcher": { "runtime_role_code": "trusted_launcher", "binding_code": "binding.filler.19", "endpoint_code": "ipc.launcher", "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1", "binding_generation": 1 },
+    "verifier": { "runtime_role_code": "independent_verifier", "binding_code": "binding.independent.verifier.synthetic", "endpoint_code": "ipc.verifier", "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c", "binding_generation": 1 },
+    "broker": { "runtime_role_code": "journal_broker", "binding_code": "binding.journal.synthetic", "endpoint_code": "ipc.journal", "executable_build_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848", "binding_generation": 1 }
+  },
+  "runtime_generation": { "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86", "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752", "binding_generation": 1 },
+  "initial_anchor_policy": "derive_frozen_v1_heads_from_pinned_source_state_and_bind_exact_v1_1_checkpoint_plus_receipt",
+  "operations": [
+    { "operation_id": "operation.progression.001", "operation_nonce": "1111111111111111111111111111111111111111111111111111111111111111", "authorized_at": "2030-01-01T00:10:00.000Z", "append_revalidate_by": "2030-01-01T00:10:01.000Z", "assessment_recorded_at": "2030-01-01T00:10:00.400Z", "assessment_persisted_at": "2030-01-01T00:10:00.500Z", "post_head_observed_at": "2030-01-01T00:10:00.600Z", "finalizer_observed_at": "2030-01-01T00:10:00.700Z", "transition_persisted_at": "2030-01-01T00:10:00.800Z" },
+    { "operation_id": "operation.progression.002", "operation_nonce": "2222222222222222222222222222222222222222222222222222222222222222", "authorized_at": "2030-01-01T00:10:02.000Z", "append_revalidate_by": "2030-01-01T00:10:03.000Z", "assessment_recorded_at": "2030-01-01T00:10:02.400Z", "assessment_persisted_at": "2030-01-01T00:10:02.500Z", "post_head_observed_at": "2030-01-01T00:10:02.600Z", "finalizer_observed_at": "2030-01-01T00:10:02.700Z", "transition_persisted_at": "2030-01-01T00:10:02.800Z" }
+  ]
+}

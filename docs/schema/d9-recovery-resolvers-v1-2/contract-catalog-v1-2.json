@@ -1,0 +1,67 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-contract-catalog",
+  "format_version": "1.2.0",
+  "status_code": "design_only_contract_freeze",
+  "authority_code": "technical_journal_continuity_only_no_operational_authority",
+  "supersedes_contract_version": "1.1.0",
+  "supersedes_scope": "post_assessment_checkpoint_progression_only",
+  "preserved_contracts": {
+    "resolver_v1_catalog_sha256": "df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3",
+    "resolver_v1_root_inventory_sha256": "93832dc8a6f12ae030515781169fd8ac9dd5431aa68f62699168469da3da6f31",
+    "durability_v1_1_catalog_sha256": "aa846c01c5d055050c810249316d11eba7a48d1080681f9538be3e71d371bb26",
+    "durability_v1_1_root_inventory_sha256": "b3711db55ed73a1a74621a808014aae35b2e05319e5cf0aeba5df0d62b1933bf"
+  },
+  "approved_dependencies": {
+    "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+    "d940_catalog_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+    "d91_implementation_commit": "79046c27dfa6923383be33a1d0aaa5a7641f5d1f",
+    "d92_implementation_commit": "460547b7fe75a94f689dabc97fd91ee6f803934a",
+    "d931_implementation_commit": "d960a03f4b8ac8a78d3f6b40ba909eb24b5f3442"
+  },
+  "schemas": [
+    { "file": "common-v1-2.schema.json", "raw_sha256": "8829e8eaed05c1c69f376c7512103aedf65d62b902e67350c263b536d949eae1" },
+    { "file": "assessment-append-request-v1-2.schema.json", "raw_sha256": "f23bf3588207eeae4e7a6e2ee347476756c9aa14a431d14d78420e0be0af2542" },
+    { "file": "assessment-append-broker-receipt-v1-2.schema.json", "raw_sha256": "a2750ad27e5ac65bd255b6f2c87dc9d27a57e4a311b0f74e23c3ee86264f79fb" },
+    { "file": "checkpoint-transition-v1-2.schema.json", "raw_sha256": "350af4c04ce8e39decb36657ab88545bf1382ef02b1fa60a8050323a5d3de115" },
+    { "file": "protected-append-receipt-v1-2.schema.json", "raw_sha256": "db049b5a2cf3b504ac1063c5e6ab30990f49b0a2fa9f0b96a5af35471c3487d2" },
+    { "file": "finalization-result-v1-2.schema.json", "raw_sha256": "f4d15e5d945d9a057877d38d0cdb61cb95d06aeb1056a87db152ce9a291fcd91" }
+  ],
+  "registries": [
+    { "file": "classifications-v1-2.json", "raw_sha256": "ba84bef36d9026978cbfdb83da1e327fed4ff77194a0a85a87000c8b7e36a080" },
+    { "file": "digest-profiles-v1-2.json", "raw_sha256": "d2f0abe41f0a6b56d870744d4929b7544a311df84ca05b416420886b29a259d6" },
+    { "file": "field-source-registry-v1-2.json", "raw_sha256": "ef058880ae16ed47bc8ade75839d1118a5beb718482025af49d141e173ebac6c" },
+    { "file": "storage-profiles-v1-2.json", "raw_sha256": "8425ca7279b297375e0e52db392cf692516b5bf2ace7e6145daf96d3a34d3bf0" }
+  ],
+  "fixtures": [
+    { "file": "fixtures/golden-vectors-v1-2.json", "raw_sha256": "4334840150c61e7df16f9481922b686ed5674b75f06d4deed1aae9441718acab" },
+    { "file": "fixtures/invalid-progression-v1-2.json", "raw_sha256": "380c879509b2e69f3308c96415a8031aeac4fdc2414634d49fa70ddbf1b44ac2" },
+    { "file": "fixtures/valid-progression-v1-2.json", "raw_sha256": "23c484694d611f5d9afe494863e033eab719d2b6e5ceb5c282f23c558959fdca" }
+  ],
+  "validators": [
+    { "file": "../validate-d9-recovery-resolvers-v1-2.mjs", "raw_sha256": "4708ae4c43fe8bfd83e13e216b1d5fc8fc15077e6ec38e24eda78f0b859f5ad7" },
+    { "file": "../validate-d9-recovery-resolvers.mjs", "raw_sha256": "bc36de4475ee6d8b9fd354f80163799f431496ae91765b5dd4903fdde9763ef5" },
+    { "file": "../validate-d9-recovery-resolvers-v1-1.mjs", "raw_sha256": "f6e8aa1f242198febd6e3b5bfa0a93ddf0f9829bc4850d920a1ca9be941235c5" },
+    { "file": "../validate-d9-4-0.mjs", "raw_sha256": "711f575425a1bffcbd09255f327b966df8dacc5ca58e10312bfa189a6a6f8ef6" }
+  ],
+  "migration_sha256": {
+    "001_schema.sql": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094",
+    "002_reference_data.sql": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923",
+    "003_seed_eu_core.sql": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700",
+    "004_tranche_1a_foundations.sql": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2",
+    "005_tranche_2a_source_quarantine.sql": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+  },
+  "instance_policy": {
+    "runtime_implementation_authorized": false,
+    "operational_activation_authorized": false,
+    "credentials_authorized": false,
+    "atlas_writes_authorized": false,
+    "recovery_actions_authorized": false,
+    "evidence_acceptance_authorized": false,
+    "legal_conclusions_authorized": false,
+    "deletion_authorized": false,
+    "restoration_authorized": false,
+    "publication_authorized": false,
+    "d95_authority_granted": false
+  }
+}

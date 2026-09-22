@@ -1,0 +1,16 @@
+{
+  "format": "jedi-atlas-recovery-checkpoint-progression-storage-profiles",
+  "format_version": "1.2.0",
+  "profiles": [
+    { "namespace_code": "d9.resolver.progression-intents.v1.2", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "assessment_append_request_plus_protected_append_receipt_or_broker_receipt_plus_protected_append_receipt", "retention": "permanent_with_referenced_attestation_assessment_receipt_and_transition" },
+    { "namespace_code": "d9.resolver.checkpoint-transitions.v1.2", "owner_role_code": "journal_broker", "writer_role_code": "journal_broker", "read_roles": ["independent_verifier", "journal_broker", "trusted_launcher"], "append_only": true, "no_replace": true, "atomic_unit": "checkpoint_transition_plus_protected_append_receipt_plus_exact_d940_source_head_compare_at_persist_time", "retention": "permanent_gapless_chain_including_superseded_transitions" }
+  ],
+  "reconstruction_order": ["verify pinned v1 v1.1 d940 and v1.2 semantic-validator bytes", "verify the exact retained v1.1 checkpoint and append receipt anchor", "verify both v1.2 journal chains from empty heads", "verify request and broker-receipt protected append receipts", "verify exact canonical assessment and d940 receipt bytes", "resolve every frozen component composite append-attestation and durable-wrapper digest", "derive the post head with the frozen v1 raw payload commitment profile", "verify append-time d940 source-head compare-and-append", "verify five unchanged heads and exactly one d940 plus-one delta", "verify transition sequence predecessor receipt and source-set digest", "reject unexplained or ambiguous state"],
+  "crash_rules": [
+    { "boundary": "after_attestation_before_assessment_append", "classification": "not_yet_appendable", "automatic_transition": false },
+    { "boundary": "after_assessment_and_d940_receipt_before_broker_response", "classification": "reconstruct_exact_receipt", "automatic_transition": "allowed_only_if_exact_durable_records_and_current_post_head_match" },
+    { "boundary": "after_broker_receipt_before_transition", "classification": "finalize_exact_transition", "automatic_transition": "allowed_only_if_exact_durable_records_and_current_post_head_match" },
+    { "boundary": "after_transition_before_response", "classification": "exact_replay_no_op", "automatic_transition": false },
+    { "boundary": "extra_append_or_any_ambiguous_state", "classification": "reconciliation_required", "automatic_transition": false }
+  ]
+}
