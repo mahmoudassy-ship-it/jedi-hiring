@@ -1,0 +1,41 @@
+{
+  "format": "jedi-atlas-recovery-projection-resolver-golden-vectors",
+  "format_version": "1.0.0",
+  "vectors": [
+    {
+      "vector_code": "unicode-array-null-fixed",
+      "canonical_utf8": "{\"a\":[null,1],\"astral\":\"😀\",\"z\":\"é\"}",
+      "sha256": "6ff507406909ad1adabaab1d294ed88d81602faff2bab4ddc7988ee5f9e67980"
+    },
+    {
+      "vector_code": "nested-array-fixed",
+      "canonical_utf8": "{\"array\":[3,null,false],\"nested\":{\"a\":1,\"b\":2}}",
+      "sha256": "6253015fc2104ab46cd1cdab445c351610396ef051260bdad46e3e97705f2b24"
+    },
+    {
+      "vector_code": "utf16-astral-bmp-escaping-fixed",
+      "canonical_utf8": "{\"a\":\"line\\n\",\"😀\":1,\"\":2}",
+      "sha256": "cbc1681b96ee5476123d1e5b945ff749cdbc18bf7a89ecc0be84a0764bc32b38"
+    },
+    {
+      "vector_code": "complete-composite-response-fixed",
+      "fixture_pointer": "/composite_response",
+      "canonical_utf8_byte_length": 8989,
+      "canonical_sha256": "eae77b1d8e3849829edcfbbca5b1956a2d048a5652d3f2d2988c1912a4118c85",
+      "record_digest_sha256": "6308273e49d0b7d77ff8fab4c57b8312f01e52be6ae2f5ad8da604831dee6a20",
+      "projection_sha256": "5876792e6fbe7d023ee60ab5dea3385ff80698bb5d7723bb8fe5b2156e56eaea",
+      "snapshot_digest_sha256": "0564667e842edaf206723ce664882c0669583044e9a08245598db6d977aee100"
+    }
+  ],
+  "fixed_record_digests": {
+    "request.control-access.001": "a080d4876a6bd78433290d3f207ce519284f8fcf4a4b03dfc44e2fac5b63f625",
+    "request.accepted-evidence.001": "99f7c864705b8c1c5da3be19cf352b6303f0e684e1fc8e3886c65b85eeceb693",
+    "request.custody.001": "87133091786b33a339d81b0adf133670ab6665e1f8a4393536303e936d107c7e",
+    "response.control-access.001": "998575a5272aaaa253bff35253baf07f288c6d5bf3599c20dd2399c66432cd26",
+    "response.accepted-evidence.001": "e02bb8e5c7ddcff48fd0fcce96d5954973016c09da8b00d2ea1b2925691b5950",
+    "response.custody.001": "cba2c3fc5b1ec6aa7c598ee6d5840af80dd1d3508d05c24bbd0f7f665d1d8b6f",
+    "request.composite.001": "d3241c098dfecb23d3f6df476b3267979753554efa03a0f944b2ff8c2084f240",
+    "response.composite.001": "6308273e49d0b7d77ff8fab4c57b8312f01e52be6ae2f5ad8da604831dee6a20",
+    "attestation.composite.001": "51696b0d4c34728da8803dbe1a61c19c34c7b6bda2b826c242d86e58f09c94d7"
+  }
+}

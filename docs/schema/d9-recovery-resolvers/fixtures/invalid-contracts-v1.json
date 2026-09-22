@@ -1,0 +1,23 @@
+{
+  "format": "jedi-atlas-recovery-projection-resolver-invalid-fixtures",
+  "format_version": "1.0.0",
+  "mutations": [
+    { "case_code": "missing-required-field", "target_code": "request.control-access.001", "pointer": "/subject", "operation": "delete", "expected_error_code": "SCHEMA_REJECTED" },
+    { "case_code": "subject-substitution", "target_code": "request.control-access.001", "pointer": "/subject/subject_identity_sha256", "operation": "replace", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expected_error_code": "REPLAY_COLLISION" },
+    { "case_code": "role-substitution", "target_code": "request.control-access.001", "pointer": "/sender/runtime_role_code", "operation": "replace", "value": "trusted_launcher", "expected_error_code": "ROLE_ROUTE_REJECTED" },
+    { "case_code": "build-substitution", "target_code": "request.control-access.001", "pointer": "/sender/executable_build_sha256", "operation": "replace", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expected_error_code": "IDENTITY_BINDING_REJECTED" },
+    { "case_code": "generation-substitution", "target_code": "request.control-access.001", "pointer": "/runtime_generation/binding_generation", "operation": "replace", "value": 2, "expected_error_code": "IDENTITY_GENERATION_REJECTED" },
+    { "case_code": "profile-substitution", "target_code": "request.control-access.001", "pointer": "/runtime_generation/runtime_profile_record_digest_sha256", "operation": "replace", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expected_error_code": "IDENTITY_GENERATION_REJECTED" },
+    { "case_code": "ordering-mutation", "target_code": "request.control-access.001", "pointer": "/prior_accepted_source_heads", "operation": "reverse", "expected_error_code": "ORDERING_REJECTED" },
+    { "case_code": "stale-time", "target_code": "response.control-access.001", "pointer": "/responded_at", "operation": "replace", "value": "2030-01-01T00:10:06.000Z", "expected_error_code": "RESPONSE_STALE" },
+    { "case_code": "future-head", "target_code": "response.control-access.001", "pointer": "/source_observations/0/before/head_persisted_at", "operation": "replace", "value": "2030-01-01T00:10:01.000Z", "expected_error_code": "SOURCE_HEAD_UNSTABLE" },
+    { "case_code": "head-movement", "target_code": "response.control-access.001", "pointer": "/source_observations/0/after/head_sequence", "operation": "replace", "value": 9, "expected_error_code": "SOURCE_HEAD_UNSTABLE" },
+    { "case_code": "rollback", "target_code": "response.control-access.001", "pointer": "/source_observations/0/before/head_sequence", "operation": "replace", "value": 1, "expected_error_code": "SOURCE_HEAD_UNSTABLE" },
+    { "case_code": "gap", "target_code": "response.control-access.001", "pointer": "/projection/known_through_receipt_sequence", "operation": "replace", "value": 8, "expected_error_code": "PROJECTION_SOURCE_MISMATCH" },
+    { "case_code": "fork", "target_code": "response.control-access.001", "pointer": "/source_observations/0/before/head_digest_sha256", "operation": "replace", "value": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "expected_error_code": "SOURCE_HEAD_UNSTABLE" },
+    { "case_code": "legal-authority-claim", "target_code": "response.composite.001", "pointer": "/authority_granted", "operation": "replace", "value": true, "expected_error_code": "SCHEMA_REJECTED" },
+    { "case_code": "recovery-authority-claim", "target_code": "response.composite.001", "pointer": "/technical_evidence_only", "operation": "replace", "value": false, "expected_error_code": "SCHEMA_REJECTED" },
+    { "case_code": "replay-collision", "target_code": "response.custody.001", "pointer": "/response_code", "operation": "replace", "value": "response.custody.changed", "expected_error_code": "REPLAY_COLLISION" },
+    { "case_code": "unavailable-with-projection", "target_code": "response.accepted-evidence.001", "pointer": "/result_code", "operation": "replace", "value": "unavailable", "expected_error_code": "RESULT_PROJECTION_MISMATCH" }
+  ]
+}

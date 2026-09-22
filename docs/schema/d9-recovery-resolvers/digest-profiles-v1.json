@@ -1,0 +1,28 @@
+{
+  "format": "jedi-atlas-recovery-projection-resolver-digest-profiles",
+  "format_version": "1.0.0",
+  "canonicalization": {
+    "encoding": "utf-8",
+    "unicode_normalization": "none",
+    "object_key_order": "utf-16-code-unit-ascending",
+    "array_order": "preserved",
+    "number_policy": "nonnegative-safe-integers-only",
+    "duplicate_keys": "reject",
+    "line_ending": "none"
+  },
+  "profiles": [
+    { "profile_code": "resolver_record_v1", "excluded_top_level_field": "record_digest_sha256" },
+    { "profile_code": "resolver_projection_v1", "excluded_top_level_field": "projection_sha256" },
+    { "profile_code": "d940_recovery_snapshot_v1", "included_fields": ["journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "subject_lineage_projection_sha256", "inventory_snapshot_sha256", "custody_leaf_projection_sha256"] },
+    { "profile_code": "resolver_idempotency_key_v1", "included_fields": ["resolver_kind_code", "request_code", "operation_id", "operation_nonce", "sender", "recipient", "runtime_generation", "subject", "requested_at", "expires_at", "knowledge_boundary", "prior_accepted_source_heads", "source_contract_fingerprints", "input_response_record_digests"] },
+    { "profile_code": "source_head_v1", "included_fields": ["source_namespace_code", "source_contract_fingerprint_sha256", "head_sequence", "head_digest_sha256", "head_persisted_at", "inventory_digest_sha256"] },
+    { "profile_code": "exact_file_bytes", "excluded_top_level_field": null }
+  ],
+  "ordering_rules": {
+    "prior_accepted_source_heads": "source_namespace_code_binary_ascending",
+    "source_observations": "before.source_namespace_code_binary_ascending",
+    "source_contract_fingerprints": "lowercase_hex_binary_ascending_unique",
+    "input_response_record_digests": "resolver_order_d901_d920_d930",
+    "composite_source_response_record_digests": "resolver_order_d901_d920_d930"
+  }
+}

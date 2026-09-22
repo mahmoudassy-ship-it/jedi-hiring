@@ -1,0 +1,88 @@
+{
+  "format": "jedi-atlas-recovery-projection-resolver-classifications",
+  "format_version": "1.0.0",
+  "status_code": "design_only_contract_freeze",
+  "source_profiles": [
+    { "source_namespace_code": "d901.capability-state.v1", "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12" },
+    { "source_namespace_code": "d901.control-state.v1", "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12" },
+    { "source_namespace_code": "d920.accepted-evidence.v1", "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc" },
+    { "source_namespace_code": "d930.custody-journal.v1", "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099" },
+    { "source_namespace_code": "d930.primary-receipts.v1", "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099" },
+    { "source_namespace_code": "d940.global.control-journal.v1", "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7" }
+  ],
+  "result_codes": ["resolved", "unavailable", "ambiguous", "reconciliation_required"],
+  "error_codes": ["source_unavailable", "source_head_moved", "source_head_missing", "source_head_stale", "source_head_future", "source_head_forked", "source_head_gapped", "source_head_rolled_back", "source_substituted", "source_contradictory", "mixed_generation", "mixed_profile", "mixed_subject", "mixed_source_head", "replay_collision", "global_snapshot_unprovable"],
+  "result_error_rules": [
+    { "result_code": "unavailable", "error_codes": ["source_unavailable", "source_head_missing", "source_head_stale"] },
+    { "result_code": "ambiguous", "error_codes": ["source_head_moved", "source_head_future", "source_head_forked", "source_head_gapped", "source_head_rolled_back", "source_substituted", "source_contradictory", "mixed_generation", "mixed_profile", "mixed_subject", "mixed_source_head", "replay_collision"] },
+    { "result_code": "reconciliation_required", "error_codes": ["global_snapshot_unprovable"] }
+  ],
+  "resolver_rules": [
+    {
+      "resolver_kind_code": "d901_control_access",
+      "request_sender_role_code": "independent_verifier",
+      "request_recipient_role_code": "trusted_launcher",
+      "response_sender_role_code": "trusted_launcher",
+      "response_recipient_role_code": "independent_verifier",
+      "required_source_namespaces": ["d901.capability-state.v1", "d901.control-state.v1", "d930.custody-journal.v1", "d940.global.control-journal.v1"],
+      "output_fields": ["journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256"]
+    },
+    {
+      "resolver_kind_code": "d920_accepted_evidence",
+      "request_sender_role_code": "trusted_launcher",
+      "request_recipient_role_code": "independent_verifier",
+      "response_sender_role_code": "independent_verifier",
+      "response_recipient_role_code": "trusted_launcher",
+      "required_source_namespaces": ["d920.accepted-evidence.v1"],
+      "output_fields": ["known_through_bundle_sequence", "accepted_receipt_prefix_sha256", "accepted_logical_state_sha256", "subject_lineage_projection_sha256"]
+    },
+    {
+      "resolver_kind_code": "d930_custody",
+      "request_sender_role_code": "independent_verifier",
+      "request_recipient_role_code": "journal_broker",
+      "response_sender_role_code": "journal_broker",
+      "response_recipient_role_code": "independent_verifier",
+      "required_source_namespaces": ["d930.custody-journal.v1", "d930.primary-receipts.v1"],
+      "output_fields": ["known_through_journal_sequence", "known_through_journal_persisted_at", "custody_journal_head_digest_sha256", "primary_receipt_prefix_sha256", "custody_leaf_projection_sha256"]
+    },
+    {
+      "resolver_kind_code": "d940_composite_snapshot",
+      "request_sender_role_code": "trusted_launcher",
+      "request_recipient_role_code": "independent_verifier",
+      "response_sender_role_code": "independent_verifier",
+      "response_recipient_role_code": "trusted_launcher",
+      "required_source_namespaces": ["d901.capability-state.v1", "d901.control-state.v1", "d920.accepted-evidence.v1", "d930.custody-journal.v1", "d930.primary-receipts.v1", "d940.global.control-journal.v1"],
+      "output_fields": ["journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "subject_lineage_projection_sha256", "inventory_snapshot_sha256", "custody_leaf_projection_sha256"]
+    }
+  ],
+  "freshness_rules": {
+    "trusted_clock_role_code": "trusted_launcher",
+    "maximum_request_lifetime_ms": 5000,
+    "maximum_response_age_at_append_ms": 1000,
+    "maximum_composite_observation_window_ms": 1000,
+    "stable_observation_code": "same_namespace_sequence_digest_persisted_at_and_inventory_before_and_after",
+    "rollback_code": "sequence_below_prior_or_same_sequence_with_different_digest_reject",
+    "future_code": "head_persisted_at_after_known_at_or_response_time_reject",
+    "append_revalidation_code": "separate_deterministic_attestation_bound_to_composite_response_and_exact_heads",
+    "cross_source_code": "double_collect_stability_only_no_atomic_global_snapshot",
+    "unprovable_code": "reconciliation_required"
+  },
+  "authority_boundary": {
+    "technical_recovery_evidence_only": true,
+    "evidence_acceptance_established": false,
+    "officiality_established": false,
+    "legal_identity_established": false,
+    "legal_status_established": false,
+    "legal_effect_established": false,
+    "legal_verification_established": false,
+    "publication_eligibility_established": false,
+    "compliance_established": false,
+    "cleanup_authority_granted": false,
+    "retry_authority_granted": false,
+    "restore_authority_granted": false,
+    "correction_authority_granted": false,
+    "restriction_authority_granted": false,
+    "deletion_authority_granted": false,
+    "d95_authority_granted": false
+  }
+}

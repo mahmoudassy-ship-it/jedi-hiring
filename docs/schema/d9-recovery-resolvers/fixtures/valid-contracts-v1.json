@@ -1,0 +1,881 @@
+{
+  "fixture_code": "synthetic-recovery-projection-resolution-001",
+  "requests": [
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-request",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d901_control_access",
+      "request_code": "request.control-access.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "idempotency_key_sha256": "bf69affec243ad7ea7b9bf8a20998f031d25db3c3b021af487e002e6afc780d1",
+      "sender": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "recipient": {
+        "runtime_role_code": "trusted_launcher",
+        "binding_code": "binding.filler.19",
+        "endpoint_code": "ipc.launcher",
+        "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "requested_at": "2030-01-01T00:10:00.000Z",
+      "expires_at": "2030-01-01T00:10:05.000Z",
+      "knowledge_boundary": {
+        "known_at": "2030-01-01T00:10:00.000Z",
+        "known_through_receipt_sequence": 7,
+        "trusted_clock_role_code": "trusted_launcher"
+      },
+      "prior_accepted_source_heads": [
+        {
+          "source_namespace_code": "d901.capability-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 3,
+          "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+          "head_persisted_at": "2030-01-01T00:09:59.000Z",
+          "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+        },
+        {
+          "source_namespace_code": "d901.control-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 4,
+          "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+          "head_persisted_at": "2030-01-01T00:09:59.050Z",
+          "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+        },
+        {
+          "source_namespace_code": "d930.custody-journal.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 5,
+          "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+          "head_persisted_at": "2030-01-01T00:09:59.200Z",
+          "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+        },
+        {
+          "source_namespace_code": "d940.global.control-journal.v1",
+          "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+          "head_sequence": 7,
+          "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+          "head_persisted_at": "2030-01-01T00:09:59.300Z",
+          "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+        }
+      ],
+      "source_contract_fingerprints": [
+        "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+        "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+        "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12"
+      ],
+      "input_response_record_digests": [],
+      "record_digest_sha256": "a080d4876a6bd78433290d3f207ce519284f8fcf4a4b03dfc44e2fac5b63f625"
+    },
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-request",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d920_accepted_evidence",
+      "request_code": "request.accepted-evidence.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "idempotency_key_sha256": "c28cc08f5604256e236b57039a02ad5873b5084813bbef93010ce8f7a257052f",
+      "sender": {
+        "runtime_role_code": "trusted_launcher",
+        "binding_code": "binding.filler.19",
+        "endpoint_code": "ipc.launcher",
+        "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+      },
+      "recipient": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "requested_at": "2030-01-01T00:10:00.000Z",
+      "expires_at": "2030-01-01T00:10:05.000Z",
+      "knowledge_boundary": {
+        "known_at": "2030-01-01T00:10:00.000Z",
+        "known_through_receipt_sequence": 7,
+        "trusted_clock_role_code": "trusted_launcher"
+      },
+      "prior_accepted_source_heads": [
+        {
+          "source_namespace_code": "d920.accepted-evidence.v1",
+          "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+          "head_sequence": 2,
+          "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+          "head_persisted_at": "2030-01-01T00:09:59.100Z",
+          "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+        }
+      ],
+      "source_contract_fingerprints": [
+        "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc"
+      ],
+      "input_response_record_digests": [],
+      "record_digest_sha256": "99f7c864705b8c1c5da3be19cf352b6303f0e684e1fc8e3886c65b85eeceb693"
+    },
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-request",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d930_custody",
+      "request_code": "request.custody.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "idempotency_key_sha256": "2421e9a1b6b0da81d149371b6e4a597555d687506eb49bcec53f67d51e654964",
+      "sender": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "recipient": {
+        "runtime_role_code": "journal_broker",
+        "binding_code": "binding.journal.synthetic",
+        "endpoint_code": "ipc.journal",
+        "executable_build_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "requested_at": "2030-01-01T00:10:00.000Z",
+      "expires_at": "2030-01-01T00:10:05.000Z",
+      "knowledge_boundary": {
+        "known_at": "2030-01-01T00:10:00.000Z",
+        "known_through_receipt_sequence": 7,
+        "trusted_clock_role_code": "trusted_launcher"
+      },
+      "prior_accepted_source_heads": [
+        {
+          "source_namespace_code": "d930.custody-journal.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 5,
+          "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+          "head_persisted_at": "2030-01-01T00:09:59.200Z",
+          "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+        },
+        {
+          "source_namespace_code": "d930.primary-receipts.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 1,
+          "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+          "head_persisted_at": "2030-01-01T00:09:59.250Z",
+          "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+        }
+      ],
+      "source_contract_fingerprints": [
+        "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099"
+      ],
+      "input_response_record_digests": [],
+      "record_digest_sha256": "87133091786b33a339d81b0adf133670ab6665e1f8a4393536303e936d107c7e"
+    }
+  ],
+  "responses": [
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-response",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d901_control_access",
+      "response_code": "response.control-access.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "request_record_digest_sha256": "a080d4876a6bd78433290d3f207ce519284f8fcf4a4b03dfc44e2fac5b63f625",
+      "idempotency_key_sha256": "bf69affec243ad7ea7b9bf8a20998f031d25db3c3b021af487e002e6afc780d1",
+      "sender": {
+        "runtime_role_code": "trusted_launcher",
+        "binding_code": "binding.filler.19",
+        "endpoint_code": "ipc.launcher",
+        "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+      },
+      "recipient": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "result_code": "resolved",
+      "error_code": null,
+      "observed_at": "2030-01-01T00:10:00.100Z",
+      "responded_at": "2030-01-01T00:10:00.500Z",
+      "append_revalidate_by": "2030-01-01T00:10:01.500Z",
+      "source_observations": [
+        {
+          "before": {
+            "source_namespace_code": "d901.capability-state.v1",
+            "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+            "head_sequence": 3,
+            "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+            "head_persisted_at": "2030-01-01T00:09:59.000Z",
+            "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+          },
+          "after": {
+            "source_namespace_code": "d901.capability-state.v1",
+            "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+            "head_sequence": 3,
+            "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+            "head_persisted_at": "2030-01-01T00:09:59.000Z",
+            "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d901.capability-state.v1"
+        },
+        {
+          "before": {
+            "source_namespace_code": "d901.control-state.v1",
+            "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+            "head_sequence": 4,
+            "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+            "head_persisted_at": "2030-01-01T00:09:59.050Z",
+            "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+          },
+          "after": {
+            "source_namespace_code": "d901.control-state.v1",
+            "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+            "head_sequence": 4,
+            "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+            "head_persisted_at": "2030-01-01T00:09:59.050Z",
+            "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d901.control-state.v1"
+        },
+        {
+          "before": {
+            "source_namespace_code": "d930.custody-journal.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 5,
+            "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+            "head_persisted_at": "2030-01-01T00:09:59.200Z",
+            "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+          },
+          "after": {
+            "source_namespace_code": "d930.custody-journal.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 5,
+            "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+            "head_persisted_at": "2030-01-01T00:09:59.200Z",
+            "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d930.custody-journal.v1"
+        },
+        {
+          "before": {
+            "source_namespace_code": "d940.global.control-journal.v1",
+            "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+            "head_sequence": 7,
+            "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+            "head_persisted_at": "2030-01-01T00:09:59.300Z",
+            "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+          },
+          "after": {
+            "source_namespace_code": "d940.global.control-journal.v1",
+            "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+            "head_sequence": 7,
+            "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+            "head_persisted_at": "2030-01-01T00:09:59.300Z",
+            "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d940.global.control-journal.v1"
+        }
+      ],
+      "projection": {
+        "projection_kind_code": "d901_control_access",
+        "journal_namespace_code": "d940.global.control-journal.v1",
+        "known_through_receipt_sequence": 7,
+        "known_through_persisted_at": "2030-01-01T00:09:59.300Z",
+        "control_ledger_head_receipt_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+        "control_head_projection_sha256": "fe1f85f6b98f1603060c95730d6297a19a19110089358ed6155aff99121c4567",
+        "access_head_projection_sha256": "9f98bdb3e179d30657aa5266fa9a0f98fc630db803c5c9e9195521054536190c",
+        "projection_sha256": "092f9f7d95be21d23f19970fbcaa5b44669fad1dc8c97e36e7ccc99334afdfc3"
+      },
+      "technical_evidence_only": true,
+      "authority_granted": false,
+      "record_digest_sha256": "998575a5272aaaa253bff35253baf07f288c6d5bf3599c20dd2399c66432cd26"
+    },
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-response",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d920_accepted_evidence",
+      "response_code": "response.accepted-evidence.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "request_record_digest_sha256": "99f7c864705b8c1c5da3be19cf352b6303f0e684e1fc8e3886c65b85eeceb693",
+      "idempotency_key_sha256": "c28cc08f5604256e236b57039a02ad5873b5084813bbef93010ce8f7a257052f",
+      "sender": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "recipient": {
+        "runtime_role_code": "trusted_launcher",
+        "binding_code": "binding.filler.19",
+        "endpoint_code": "ipc.launcher",
+        "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "result_code": "resolved",
+      "error_code": null,
+      "observed_at": "2030-01-01T00:10:00.100Z",
+      "responded_at": "2030-01-01T00:10:00.500Z",
+      "append_revalidate_by": "2030-01-01T00:10:01.500Z",
+      "source_observations": [
+        {
+          "before": {
+            "source_namespace_code": "d920.accepted-evidence.v1",
+            "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+            "head_sequence": 2,
+            "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+            "head_persisted_at": "2030-01-01T00:09:59.100Z",
+            "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+          },
+          "after": {
+            "source_namespace_code": "d920.accepted-evidence.v1",
+            "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+            "head_sequence": 2,
+            "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+            "head_persisted_at": "2030-01-01T00:09:59.100Z",
+            "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d920.accepted-evidence.v1"
+        }
+      ],
+      "projection": {
+        "projection_kind_code": "d920_accepted_evidence",
+        "known_through_bundle_sequence": 2,
+        "accepted_receipt_prefix_sha256": "7e34f256993f6db67110ef5b24c7f9935f01ee36626c2d5af0b9790446ed0cfa",
+        "accepted_logical_state_sha256": "c2b5d2cd69e021ec1752ef47f90e459f05b96d7a4dd0f93f122223f8a0a99a80",
+        "subject_lineage_projection_sha256": "b76b5671115ec79dd6ea7abb497f6a2439577ffba14bcb124e300afd68d4c65f",
+        "projection_sha256": "2a114e4b9a1fbcbf4aa20c9041e14094fbfb84179af45f8dafc30a48dd860571"
+      },
+      "technical_evidence_only": true,
+      "authority_granted": false,
+      "record_digest_sha256": "e02bb8e5c7ddcff48fd0fcce96d5954973016c09da8b00d2ea1b2925691b5950"
+    },
+    {
+      "format": "jedi-atlas-recovery-projection-resolution-response",
+      "format_version": "1.0.0",
+      "resolver_kind_code": "d930_custody",
+      "response_code": "response.custody.001",
+      "operation_id": "operation.recovery.001",
+      "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "request_record_digest_sha256": "87133091786b33a339d81b0adf133670ab6665e1f8a4393536303e936d107c7e",
+      "idempotency_key_sha256": "2421e9a1b6b0da81d149371b6e4a597555d687506eb49bcec53f67d51e654964",
+      "sender": {
+        "runtime_role_code": "journal_broker",
+        "binding_code": "binding.journal.synthetic",
+        "endpoint_code": "ipc.journal",
+        "executable_build_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848"
+      },
+      "recipient": {
+        "runtime_role_code": "independent_verifier",
+        "binding_code": "binding.independent.verifier.synthetic",
+        "endpoint_code": "ipc.verifier",
+        "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+      },
+      "runtime_generation": {
+        "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+        "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+        "binding_generation": 1
+      },
+      "subject": {
+        "subject_kind_code": "artifact",
+        "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      "result_code": "resolved",
+      "error_code": null,
+      "observed_at": "2030-01-01T00:10:00.100Z",
+      "responded_at": "2030-01-01T00:10:00.500Z",
+      "append_revalidate_by": "2030-01-01T00:10:01.500Z",
+      "source_observations": [
+        {
+          "before": {
+            "source_namespace_code": "d930.custody-journal.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 5,
+            "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+            "head_persisted_at": "2030-01-01T00:09:59.200Z",
+            "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+          },
+          "after": {
+            "source_namespace_code": "d930.custody-journal.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 5,
+            "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+            "head_persisted_at": "2030-01-01T00:09:59.200Z",
+            "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d930.custody-journal.v1"
+        },
+        {
+          "before": {
+            "source_namespace_code": "d930.primary-receipts.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 1,
+            "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+            "head_persisted_at": "2030-01-01T00:09:59.250Z",
+            "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+          },
+          "after": {
+            "source_namespace_code": "d930.primary-receipts.v1",
+            "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+            "head_sequence": 1,
+            "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+            "head_persisted_at": "2030-01-01T00:09:59.250Z",
+            "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+          },
+          "observed_before_at": "2030-01-01T00:10:00.100Z",
+          "observed_after_at": "2030-01-01T00:10:00.400Z",
+          "stability_code": "stable",
+          "source_namespace_code": "d930.primary-receipts.v1"
+        }
+      ],
+      "projection": {
+        "projection_kind_code": "d930_custody",
+        "known_through_journal_sequence": 5,
+        "known_through_journal_persisted_at": "2030-01-01T00:09:59.200Z",
+        "custody_journal_head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+        "primary_receipt_prefix_sha256": "1e7f0c13658b57af53e0956614809e3ed1be6778894b9976205f325b5c098d90",
+        "custody_leaf_projection_sha256": "2dc6cce98b8c1ffd5a66e3f38945731a4faa7a201dc698e04d55edab9d656a5d",
+        "projection_sha256": "a7577da5d42a1999524e7ac4ec29242bc2f442c2dde8a9f1f16d5e9a48402887"
+      },
+      "technical_evidence_only": true,
+      "authority_granted": false,
+      "record_digest_sha256": "cba2c3fc5b1ec6aa7c598ee6d5840af80dd1d3508d05c24bbd0f7f665d1d8b6f"
+    }
+  ],
+  "composite_request": {
+    "format": "jedi-atlas-recovery-projection-resolution-request",
+    "format_version": "1.0.0",
+    "resolver_kind_code": "d940_composite_snapshot",
+    "request_code": "request.composite.001",
+    "operation_id": "operation.recovery.001",
+    "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "idempotency_key_sha256": "428703e62724f63007b0b198cfe326f81ea840aadff5e16860aa31b589cb6703",
+    "sender": {
+      "runtime_role_code": "trusted_launcher",
+      "binding_code": "binding.filler.19",
+      "endpoint_code": "ipc.launcher",
+      "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+    },
+    "recipient": {
+      "runtime_role_code": "independent_verifier",
+      "binding_code": "binding.independent.verifier.synthetic",
+      "endpoint_code": "ipc.verifier",
+      "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+    },
+    "runtime_generation": {
+      "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+      "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+      "binding_generation": 1
+    },
+    "subject": {
+      "subject_kind_code": "artifact",
+      "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "requested_at": "2030-01-01T00:10:00.600Z",
+    "expires_at": "2030-01-01T00:10:05.600Z",
+    "knowledge_boundary": {
+      "known_at": "2030-01-01T00:10:00.500Z",
+      "known_through_receipt_sequence": 7,
+      "trusted_clock_role_code": "trusted_launcher"
+    },
+    "prior_accepted_source_heads": [
+      {
+        "source_namespace_code": "d901.capability-state.v1",
+        "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+        "head_sequence": 3,
+        "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+        "head_persisted_at": "2030-01-01T00:09:59.000Z",
+        "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+      },
+      {
+        "source_namespace_code": "d901.control-state.v1",
+        "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+        "head_sequence": 4,
+        "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+        "head_persisted_at": "2030-01-01T00:09:59.050Z",
+        "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+      },
+      {
+        "source_namespace_code": "d920.accepted-evidence.v1",
+        "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+        "head_sequence": 2,
+        "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+        "head_persisted_at": "2030-01-01T00:09:59.100Z",
+        "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+      },
+      {
+        "source_namespace_code": "d930.custody-journal.v1",
+        "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+        "head_sequence": 5,
+        "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+        "head_persisted_at": "2030-01-01T00:09:59.200Z",
+        "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+      },
+      {
+        "source_namespace_code": "d930.primary-receipts.v1",
+        "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+        "head_sequence": 1,
+        "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+        "head_persisted_at": "2030-01-01T00:09:59.250Z",
+        "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+      },
+      {
+        "source_namespace_code": "d940.global.control-journal.v1",
+        "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+        "head_sequence": 7,
+        "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+        "head_persisted_at": "2030-01-01T00:09:59.300Z",
+        "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+      }
+    ],
+    "source_contract_fingerprints": [
+      "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+      "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+      "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+      "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc"
+    ],
+    "input_response_record_digests": [
+      "998575a5272aaaa253bff35253baf07f288c6d5bf3599c20dd2399c66432cd26",
+      "e02bb8e5c7ddcff48fd0fcce96d5954973016c09da8b00d2ea1b2925691b5950",
+      "cba2c3fc5b1ec6aa7c598ee6d5840af80dd1d3508d05c24bbd0f7f665d1d8b6f"
+    ],
+    "record_digest_sha256": "d3241c098dfecb23d3f6df476b3267979753554efa03a0f944b2ff8c2084f240"
+  },
+  "composite_response": {
+    "format": "jedi-atlas-recovery-projection-resolution-response",
+    "format_version": "1.0.0",
+    "resolver_kind_code": "d940_composite_snapshot",
+    "response_code": "response.composite.001",
+    "operation_id": "operation.recovery.001",
+    "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "request_record_digest_sha256": "d3241c098dfecb23d3f6df476b3267979753554efa03a0f944b2ff8c2084f240",
+    "idempotency_key_sha256": "428703e62724f63007b0b198cfe326f81ea840aadff5e16860aa31b589cb6703",
+    "sender": {
+      "runtime_role_code": "independent_verifier",
+      "binding_code": "binding.independent.verifier.synthetic",
+      "endpoint_code": "ipc.verifier",
+      "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+    },
+    "recipient": {
+      "runtime_role_code": "trusted_launcher",
+      "binding_code": "binding.filler.19",
+      "endpoint_code": "ipc.launcher",
+      "executable_build_sha256": "60c832c45498db04638b0dc769b64efffe3fe2a2fccc2f352bf29d78d15f07a1"
+    },
+    "runtime_generation": {
+      "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+      "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+      "binding_generation": 1
+    },
+    "subject": {
+      "subject_kind_code": "artifact",
+      "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "result_code": "resolved",
+    "error_code": null,
+    "observed_at": "2030-01-01T00:10:00.700Z",
+    "responded_at": "2030-01-01T00:10:00.900Z",
+    "append_revalidate_by": "2030-01-01T00:10:01.900Z",
+    "source_observations": [
+      {
+        "before": {
+          "source_namespace_code": "d901.capability-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 3,
+          "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+          "head_persisted_at": "2030-01-01T00:09:59.000Z",
+          "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+        },
+        "after": {
+          "source_namespace_code": "d901.capability-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 3,
+          "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+          "head_persisted_at": "2030-01-01T00:09:59.000Z",
+          "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d901.capability-state.v1"
+      },
+      {
+        "before": {
+          "source_namespace_code": "d901.control-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 4,
+          "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+          "head_persisted_at": "2030-01-01T00:09:59.050Z",
+          "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+        },
+        "after": {
+          "source_namespace_code": "d901.control-state.v1",
+          "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+          "head_sequence": 4,
+          "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+          "head_persisted_at": "2030-01-01T00:09:59.050Z",
+          "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d901.control-state.v1"
+      },
+      {
+        "before": {
+          "source_namespace_code": "d920.accepted-evidence.v1",
+          "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+          "head_sequence": 2,
+          "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+          "head_persisted_at": "2030-01-01T00:09:59.100Z",
+          "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+        },
+        "after": {
+          "source_namespace_code": "d920.accepted-evidence.v1",
+          "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+          "head_sequence": 2,
+          "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+          "head_persisted_at": "2030-01-01T00:09:59.100Z",
+          "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d920.accepted-evidence.v1"
+      },
+      {
+        "before": {
+          "source_namespace_code": "d930.custody-journal.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 5,
+          "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+          "head_persisted_at": "2030-01-01T00:09:59.200Z",
+          "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+        },
+        "after": {
+          "source_namespace_code": "d930.custody-journal.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 5,
+          "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+          "head_persisted_at": "2030-01-01T00:09:59.200Z",
+          "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d930.custody-journal.v1"
+      },
+      {
+        "before": {
+          "source_namespace_code": "d930.primary-receipts.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 1,
+          "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+          "head_persisted_at": "2030-01-01T00:09:59.250Z",
+          "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+        },
+        "after": {
+          "source_namespace_code": "d930.primary-receipts.v1",
+          "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+          "head_sequence": 1,
+          "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+          "head_persisted_at": "2030-01-01T00:09:59.250Z",
+          "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d930.primary-receipts.v1"
+      },
+      {
+        "before": {
+          "source_namespace_code": "d940.global.control-journal.v1",
+          "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+          "head_sequence": 7,
+          "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+          "head_persisted_at": "2030-01-01T00:09:59.300Z",
+          "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+        },
+        "after": {
+          "source_namespace_code": "d940.global.control-journal.v1",
+          "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+          "head_sequence": 7,
+          "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+          "head_persisted_at": "2030-01-01T00:09:59.300Z",
+          "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+        },
+        "observed_before_at": "2030-01-01T00:10:00.700Z",
+        "observed_after_at": "2030-01-01T00:10:00.800Z",
+        "stability_code": "stable",
+        "source_namespace_code": "d940.global.control-journal.v1"
+      }
+    ],
+    "projection": {
+      "projection_kind_code": "d940_composite_snapshot",
+      "consistency_code": "stable_double_collect_no_atomic_global_snapshot",
+      "source_response_record_digests": [
+        "998575a5272aaaa253bff35253baf07f288c6d5bf3599c20dd2399c66432cd26",
+        "e02bb8e5c7ddcff48fd0fcce96d5954973016c09da8b00d2ea1b2925691b5950",
+        "cba2c3fc5b1ec6aa7c598ee6d5840af80dd1d3508d05c24bbd0f7f665d1d8b6f"
+      ],
+      "snapshot": {
+        "journal_namespace_code": "d940.global.control-journal.v1",
+        "known_through_receipt_sequence": 7,
+        "known_through_persisted_at": "2030-01-01T00:09:59.300Z",
+        "control_ledger_head_receipt_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+        "control_head_projection_sha256": "fe1f85f6b98f1603060c95730d6297a19a19110089358ed6155aff99121c4567",
+        "access_head_projection_sha256": "9f98bdb3e179d30657aa5266fa9a0f98fc630db803c5c9e9195521054536190c",
+        "subject_lineage_projection_sha256": "b76b5671115ec79dd6ea7abb497f6a2439577ffba14bcb124e300afd68d4c65f",
+        "inventory_snapshot_sha256": "2bb8ec47e9de649452f4daf5059db81b815f2eaa0c1167e83fe4d54e4678cf5d",
+        "custody_leaf_projection_sha256": "2dc6cce98b8c1ffd5a66e3f38945731a4faa7a201dc698e04d55edab9d656a5d"
+      },
+      "snapshot_digest_sha256": "0564667e842edaf206723ce664882c0669583044e9a08245598db6d977aee100",
+      "projection_sha256": "5876792e6fbe7d023ee60ab5dea3385ff80698bb5d7723bb8fe5b2156e56eaea"
+    },
+    "technical_evidence_only": true,
+    "authority_granted": false,
+    "record_digest_sha256": "6308273e49d0b7d77ff8fab4c57b8312f01e52be6ae2f5ad8da604831dee6a20"
+  },
+  "append_revalidation_attestation": {
+    "format": "jedi-atlas-recovery-projection-append-revalidation-attestation",
+    "format_version": "1.0.0",
+    "attestation_code": "attestation.composite.001",
+    "operation_id": "operation.recovery.001",
+    "operation_nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "composite_response_record_digest_sha256": "6308273e49d0b7d77ff8fab4c57b8312f01e52be6ae2f5ad8da604831dee6a20",
+    "sender": {
+      "runtime_role_code": "independent_verifier",
+      "binding_code": "binding.independent.verifier.synthetic",
+      "endpoint_code": "ipc.verifier",
+      "executable_build_sha256": "a6f8ce50752a711c662bf5ddb639b015460997e97513476067f9e1a2f867c70c"
+    },
+    "recipient": {
+      "runtime_role_code": "journal_broker",
+      "binding_code": "binding.journal.synthetic",
+      "endpoint_code": "ipc.journal",
+      "executable_build_sha256": "2014cc47285d516169898414f7d0827127290bd8252c747239f05ca2dd5f5848"
+    },
+    "runtime_generation": {
+      "runtime_profile_record_digest_sha256": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86",
+      "identity_bindings_record_digest_sha256": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752",
+      "binding_generation": 1
+    },
+    "subject": {
+      "subject_kind_code": "artifact",
+      "subject_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "observed_at": "2030-01-01T00:10:00.950Z",
+    "completed_at": "2030-01-01T00:10:00.975Z",
+    "result_code": "revalidated",
+    "error_code": null,
+    "source_heads": [
+      {
+        "source_namespace_code": "d901.capability-state.v1",
+        "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+        "head_sequence": 3,
+        "head_digest_sha256": "c4d3ba0b9e34ea8374e36fe0db02b2a16d829b05802cc5fd55c07882f09ae9ef",
+        "head_persisted_at": "2030-01-01T00:09:59.000Z",
+        "inventory_digest_sha256": "1258bc43d338c72b514428d2532a02a76645a5c38d472dba7c4820442f4daf91"
+      },
+      {
+        "source_namespace_code": "d901.control-state.v1",
+        "source_contract_fingerprint_sha256": "4571a6c91fe9cd9730876a831f1cdbb1b7751c0cd82beaf549a38705f8698a12",
+        "head_sequence": 4,
+        "head_digest_sha256": "bead7f0bdb2eb5e32a38635930b841870b3874216ffa91bcece83eeb95c076f2",
+        "head_persisted_at": "2030-01-01T00:09:59.050Z",
+        "inventory_digest_sha256": "3d6ec064629873b4496e64d7d6a72a3f75384907fa93dada6826d42858649603"
+      },
+      {
+        "source_namespace_code": "d920.accepted-evidence.v1",
+        "source_contract_fingerprint_sha256": "50a156edd11c9ac7886685b205d6df30ef932ceb37bfc750c20bd30e94900cfc",
+        "head_sequence": 2,
+        "head_digest_sha256": "317730d4aaa33afd520ae15774302f212de773b95836f56e1e0621a92098b064",
+        "head_persisted_at": "2030-01-01T00:09:59.100Z",
+        "inventory_digest_sha256": "0250e9f827fc2a9f96df686f2c5ff2642533de53d39b03696abed7208d7a2de9"
+      },
+      {
+        "source_namespace_code": "d930.custody-journal.v1",
+        "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+        "head_sequence": 5,
+        "head_digest_sha256": "01dac5593ca0366d7263bacafea0967948a1ab22bed8b826e0a6b496aa789559",
+        "head_persisted_at": "2030-01-01T00:09:59.200Z",
+        "inventory_digest_sha256": "4de48d6840288b8502c5ec3c1ef167d9b5bf25a291d301aca5850350aa59feec"
+      },
+      {
+        "source_namespace_code": "d930.primary-receipts.v1",
+        "source_contract_fingerprint_sha256": "1a8df91388febb0853374c185a1aa5f9fe33aa48096ccdb79949aa07d16cc099",
+        "head_sequence": 1,
+        "head_digest_sha256": "476d090c186e507470f9c66e84e798ccc03142b9cb1748c649b887bb03260a09",
+        "head_persisted_at": "2030-01-01T00:09:59.250Z",
+        "inventory_digest_sha256": "5e006ffee1ff4f9fc6a239635e1bbc9e8527cd91d069c7756aa68cd4d7222687"
+      },
+      {
+        "source_namespace_code": "d940.global.control-journal.v1",
+        "source_contract_fingerprint_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+        "head_sequence": 7,
+        "head_digest_sha256": "0ad03425c8e3324956a3060ffc9ce904186516c5380ae4964fa114c32f24158c",
+        "head_persisted_at": "2030-01-01T00:09:59.300Z",
+        "inventory_digest_sha256": "7a186238b8de498216b96376158cb71ed73f458257dc03300107d138921a6d69"
+      }
+    ],
+    "technical_evidence_only": true,
+    "authority_granted": false,
+    "record_digest_sha256": "51696b0d4c34728da8803dbe1a61c19c34c7b6bda2b826c242d86e58f09c94d7"
+  }
+}
