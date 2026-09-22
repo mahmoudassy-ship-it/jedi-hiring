@@ -1,6 +1,8 @@
 # D9 recovery-resolver durability extension 1.1.0
 
-Status: **design-only proposal awaiting approval**. This compatible extension preserves the approved recovery-resolver `1.0.0` root byte-for-byte. It supersedes only its incomplete checkpoint, durable-record, replay, and assessment-linkage semantics. It neither changes the projection messages nor grants operational authority.
+Status: **approved design-only contract freeze**. Revision `1.1.0` was approved externally at reviewed commit `29157dd584c81ed421dfa52313f0763ce2e0b568`. This compatible extension preserves the approved recovery-resolver `1.0.0` root byte-for-byte. It supersedes only its incomplete checkpoint, durable-record, replay, and assessment-linkage semantics. Approval freezes the exact contract, catalog, registries, inventory, fixtures, validator, and fingerprints at that commit; it neither changes the projection messages nor grants operational authority.
+
+Approval confirms only the protected-checkpoint, durable-attestation, restart-safe-replay, trusted-producer, and recovery-assessment-linkage design. It grants no runtime authority, recovery action, evidence acceptance, legal verification, deletion, restoration, publication, or D9.5 permission. Approval is recorded in documentation and does not modify the fingerprinted `design_only_contract_freeze` root.
 
 ## Decision and boundary
 
@@ -54,7 +56,7 @@ Replay decisions use durable state only. Identical canonical bytes at the same i
 
 All semantic and persistence actors resolve through the exact active D9.0.1 generation. Message fields are not authentication. The launcher owns trusted time and generation selection; the independent verifier owns technical correspondence; the journal broker alone owns the three protected append namespaces. The semantic actor and persistence actor must be distinct. Callers cannot supply source state, actor identity, trusted time, checkpoint state, journal sequence, or outcome through callbacks or arbitrary fields.
 
-This proposal defines contracts only. It does not allocate handles, implement a broker, add a writer, activate credentials, or resume D9.4.1. A later implementation must fit the already approved least-privilege partitions or stop for a separately versioned authority decision.
+This approved design-only contract freeze defines contracts only. It does not allocate handles, implement a broker, add a writer, activate credentials, or resume D9.4.1. A later implementation must fit the already approved least-privilege partitions or stop for a separately versioned authority decision.
 
 ## Retention and reconstruction
 
@@ -70,19 +72,19 @@ The mutation inventory covers missing or substituted heads, nonempty bootstrap, 
 
 ## Versioning
 
-The approved `1.0.0` files remain historically valid and unchanged. `1.1.0` references them as frozen dependencies and adds durability semantics; it does not rewrite or reapprove them. If approved, `1.1.0` becomes the required extension for D9.4.1 recovery-assessment persistence. Approval must be recorded externally and must not rewrite `design_only_contract_freeze` or activate runtime use.
+The approved `1.0.0` files remain historically valid and unchanged. Approved revision `1.1.0` references them as frozen dependencies and adds durability semantics; it does not rewrite or reapprove them. Revision `1.1.0` is the required design contract for any later, separately reviewed D9.4.1 recovery-assessment persistence implementation. Approval is recorded externally and does not rewrite `design_only_contract_freeze` or activate runtime use.
 
 ## Remaining prerequisites
 
-Before D9.4.1 can resume, a separately reviewed implementation must provide authenticated adapters, protected stores, trusted-clock assurance, atomic compare-and-append, crash-safe receipts, independent append-time revalidation, and exact assessment linkage. D9.5 must later provide backup, restore, deletion-aware reconstruction, and recovery authority. No real evidence import or operational bootstrap may rely on this design proposal.
+Before D9.4.1 can resume under separate authorization, its implementation must provide authenticated adapters, protected stores, trusted-clock assurance, atomic compare-and-append, crash-safe receipts, independent append-time revalidation, and exact assessment linkage. D9.5 must later provide backup, restore, deletion-aware reconstruction, and recovery authority. No real evidence import or operational bootstrap may rely on this design-only contract freeze by itself.
 
 ## Independent review correction pass
 
 The security review rejected circular bootstrap, placeholder source fingerprints, generation-by-integer, conflated producer/verifier/persister roles, and mutable replay disposition. The determinism review additionally rejected unretained payload bytes, unvalidated chains, underconstrained receipts, orphan assessment hashes, and generic-only golden vectors. The bounded correction pass added bootstrap-only genesis observations; exact D9.0.1 generation, role/build/endpoint, and source-profile checks; canonical payload retention; separate original producer, independent semantic verifier, and persistence actor; genuine gap/fork/rollback and link checks; immutable receipts plus separate operational results; D9.4 receipt linkage; cross-store crash states; and a complete independent golden vector. No finding was resolved by widening operational authority.
 
-## Proposed fingerprints
+## Approved integrity anchors
 
-Fingerprints below are generated from the exact proposed root after the bounded correction pass. They are integrity anchors, not authentication or authority.
+The following values identify the exact reviewed bytes at commit `29157dd584c81ed421dfa52313f0763ce2e0b568`. The catalog pins every schema, registry, fixture, predecessor contract, implementation dependency, and migration; the root inventory pins every file in the contract root except its self-excluded inventory. These hashes are integrity anchors, not authentication or authority.
 
 - Catalog: `aa846c01c5d055050c810249316d11eba7a48d1080681f9538be3e71d371bb26`
 - Classifications: `62972ec8950fe4faea53ddb51343f31d3623ca02e159ea5eee41ebcfc2b0903c`
@@ -90,3 +92,7 @@ Fingerprints below are generated from the exact proposed root after the bounded 
 - Field/source registry: `71b377184580d9f8290e3726fca61505e282a0ac0f0d58c63dc27c891fece406`
 - Storage profiles: `5fc9526f0f4cf740057a9036df94e28713ccd73b0479d31ea2b248434ad22cc7`
 - Root inventory: `b3711db55ed73a1a74621a808014aae35b2e05319e5cf0aeba5df0d62b1933bf`
+- Standalone validator: `f6e8aa1f242198febd6e3b5bfa0a93ddf0f9829bc4850d920a1ca9be941235c5`
+- Golden-vector fixture: `a07bc80e56986b57a6106b660c6d11f5ddc7f8ab4dce57f2a790e232327bb326`
+- Invalid-contract fixture: `45b538cc79c50962591a913ab46a6f0fb42151436936a7884f7d23cd452d094b`
+- Valid-contract fixture: `854cc6e2cc396b90f7c49b6e7a75830ec40cf937169a85dac181ff42df8b9042`

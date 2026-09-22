@@ -1,6 +1,6 @@
 # D9 recovery-projection resolver contract freeze
 
-Compatibility note: approved revision `1.0.0` remains frozen here. The separately versioned [durability extension 1.1.0](d9-recovery-resolver-durability-extension.md) is a design-only proposal that addresses checkpoint bootstrap/advancement, durable journal linkage, replay, and recovery-assessment linkage without modifying this root.
+Compatibility note: approved revision `1.0.0` remains frozen here. The separately versioned [durability extension 1.1.0](d9-recovery-resolver-durability-extension.md) is approved as a design-only contract freeze at reviewed commit `29157dd584c81ed421dfa52313f0763ce2e0b568`. It addresses checkpoint bootstrap/advancement, durable journal linkage, replay, and recovery-assessment linkage without modifying this root or granting operational authority.
 
 Status: **approved design-only contract freeze**. Version `1.0.0` was approved externally at reviewed commit `d4f21787ebc4b99e032a9a2966cc828366159447`. The fingerprinted catalog retains the lifecycle-neutral `design_only_contract_freeze` value; approval is recorded in this documentation and must not modify the contract root. The version is isolated under [`docs/schema/d9-recovery-resolvers`](schema/d9-recovery-resolvers/) and changes no frozen D9 contract, migration, approved implementation, database row, runtime service, credential, API, or frontend. The unapproved D9.4.1 work at commit `7c44d7fdea7c398949c0bec3cc9f915c6cb41687` was inspected read-only and remains untouched.
 
