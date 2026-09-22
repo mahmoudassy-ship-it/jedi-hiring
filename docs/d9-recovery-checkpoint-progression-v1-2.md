@@ -1,8 +1,10 @@
 # D9 recovery checkpoint progression correction 1.2.0
 
-Status: **design-only proposal awaiting approval**. Revision `1.2.0` is an additive, separately versioned correction. It does not modify or reapprove the frozen resolver `1.0.0` or durability `1.1.0` roots. It supersedes only the post-assessment checkpoint-progression rule that otherwise deadlocks after the first persisted D9.4 assessment.
+Status: **approved design-only contract freeze**. Revision `1.2.0` was approved externally at reviewed commit `ec83429ad3b9f77d655970f96d0be054f345a60a`. It is an additive, separately versioned correction. It does not modify or reapprove the frozen resolver `1.0.0` or durability `1.1.0` roots. It supersedes only the post-assessment checkpoint-progression rule that otherwise deadlocks after the first persisted D9.4 assessment. Approval leaves the fingerprinted `design_only_contract_freeze` root unchanged and records status only in reviewed documentation.
 
-This proposal proves technical journal continuity only. It grants no recovery action, evidence acceptance, officiality, legal identity, legal status, legal effect, legal verification, deletion, restoration, publication eligibility, compliance conclusion, runtime activation, credential authority, or D9.5 authority.
+Approval covers only receipt-proven checkpoint progression from an attested pre-append state to the exact authorized post-append state. It grants no runtime activation, recovery action, evidence acceptance, legal verification, deletion, restoration, publication, or D9.5 authority.
+
+This approved design-only contract freeze proves technical journal continuity only. It grants no recovery action, evidence acceptance, officiality, legal identity, legal status, legal effect, legal verification, deletion, restoration, publication eligibility, compliance conclusion, runtime activation, credential authority, or D9.5 authority.
 
 ## Confirmed liveness conflict
 
@@ -155,9 +157,9 @@ Semantic verifier and persistence broker remain distinct. The broker receipt is 
 
 All canonical records use UTF-8, no Unicode normalization, UTF-16 code-unit ascending object keys, preserved array order, duplicate-key rejection and nonnegative safe integers. Every record self-digest excludes only its own top-level `record_digest_sha256`. Canonical embedded assessment and D9.4 receipt strings must reparse to byte-identical canonical content.
 
-The catalog pins frozen v1/v1.1 roots, their semantic validators, the D9.4 semantic validator, D9.0.1/D9.3.0/D9.4.0 catalogs, implementation commits, migrations `001–005`, and this revision's effective validator. The root inventory pins every new contract artifact except itself. Exact proposal fingerprints are generated from the completed reviewed files and recorded below before approval.
+The catalog pins frozen v1/v1.1 roots, their semantic validators, the D9.4 semantic validator, D9.0.1/D9.3.0/D9.4.0 catalogs, implementation commits, migrations `001–005`, and this revision's effective validator. The root inventory pins every new contract artifact except itself. The exact approved fingerprints generated from the completed reviewed files are recorded below.
 
-## Proposal fingerprints
+## Approved fingerprints
 
 - Catalog: `b6fd085a5718fdccc51ae4cfbf10645aaa3a1f79929d9ebe896247350d3ddb3c`
 - Classification: `ba84bef36d9026978cbfdb83da1e327fed4ff77194a0a85a87000c8b7e36a080`
@@ -168,7 +170,7 @@ The catalog pins frozen v1/v1.1 roots, their semantic validators, the D9.4 seman
 - Effective validator: `4708ae4c43fe8bfd83e13e216b1d5fc8fc15077e6ec38e24eda78f0b859f5ad7`
 - Root inventory: `3bc242bbd7147597e9b34aad16293d8e397cb23d4b7b7a6ca3578b371403c1ad`
 
-Approval, if later granted, must be recorded externally and must not rewrite the fingerprinted `design_only_contract_freeze` root.
+The approved freeze pins the catalog, classification, digest-profile, field-registry, storage-profile, effective-validator, and root-inventory fingerprints above exactly. Approval is recorded externally and does not rewrite the fingerprinted `design_only_contract_freeze` root. The valid synthetic fixture digest remains part of the reviewed inventory but is not a grant of runtime authority.
 
 ## Independent review and bounded correction
 
