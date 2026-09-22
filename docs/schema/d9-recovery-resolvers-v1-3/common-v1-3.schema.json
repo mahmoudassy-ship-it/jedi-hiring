@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/common-v1-3.schema.json",
+  "title": "D9 recovery source-head and receipt-identity correction shared definitions",
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "positiveInteger": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "nonnegativeInteger": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "timestamp": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$" },
+    "stableCode": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$" },
+    "runtimeGeneration": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/runtimeGeneration" },
+    "actor": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-1/common-v1-1.schema.json#/$defs/actor" },
+    "subject": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/subject" },
+    "operationNonce": { "$ref": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers/common-v1.schema.json#/$defs/operationNonce" },
+    "d940StateHead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_namespace_code", "source_contract_fingerprint_sha256", "head_sequence", "head_persisted_at", "raw_payload_inventory_digest_sha256", "state_head_digest_sha256", "derivation_profile_code"],
+      "properties": {
+        "source_namespace_code": { "const": "d940.global.control-journal.v1" },
+        "source_contract_fingerprint_sha256": { "const": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7" },
+        "head_sequence": { "$ref": "#/$defs/nonnegativeInteger" },
+        "head_persisted_at": { "$ref": "#/$defs/timestamp" },
+        "raw_payload_inventory_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "state_head_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "derivation_profile_code": { "const": "frozen_v1_raw_payload_commitments" }
+      }
+    },
+    "d940JournalTip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["journal_namespace_code", "receipt_sequence", "receipt_record_digest_sha256", "target_format", "target_record_code", "target_record_digest_sha256", "predecessor_receipt_record_digest_sha256", "receipt_persisted_at"],
+      "properties": {
+        "journal_namespace_code": { "const": "d940.global.control-journal.v1" },
+        "receipt_sequence": { "$ref": "#/$defs/nonnegativeInteger" },
+        "receipt_record_digest_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "target_format": { "type": ["string", "null"], "enum": [null, "jedi-atlas-custody-control-record", "jedi-atlas-access-revocation-record", "jedi-atlas-deletion-execution-record", "jedi-atlas-deletion-receipt", "jedi-atlas-backup-coordination-record", "jedi-atlas-d940-recovery-assessment"] },
+        "target_record_code": { "oneOf": [{ "$ref": "#/$defs/stableCode" }, { "type": "null" }] },
+        "target_record_digest_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "predecessor_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "receipt_persisted_at": { "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] }
+      },
+      "allOf": [{
+        "if": { "properties": { "receipt_sequence": { "const": 0 } }, "required": ["receipt_sequence"] },
+        "then": { "properties": { "receipt_record_digest_sha256": { "type": "null" }, "target_format": { "type": "null" }, "target_record_code": { "type": "null" }, "target_record_digest_sha256": { "type": "null" }, "predecessor_receipt_record_digest_sha256": { "type": "null" }, "receipt_persisted_at": { "type": "null" } } },
+        "else": { "properties": { "receipt_record_digest_sha256": { "$ref": "#/$defs/sha256" }, "target_format": { "type": "string" }, "target_record_code": { "$ref": "#/$defs/stableCode" }, "target_record_digest_sha256": { "$ref": "#/$defs/sha256" }, "receipt_persisted_at": { "$ref": "#/$defs/timestamp" } } }
+      }]
+    },
+    "rawPayloadCommitment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_payload_code", "raw_payload_canonical_utf8", "raw_payload_sha256"],
+      "properties": {
+        "source_payload_code": { "const": "control_records" },
+        "raw_payload_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 8388608 },
+        "raw_payload_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "receiptPrefixEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_sequence", "receipt_canonical_utf8", "receipt_record_digest_sha256", "predecessor_receipt_record_digest_sha256", "target_format", "target_record_code", "target_record_digest_sha256", "receipt_persisted_at"],
+      "properties": {
+        "receipt_sequence": { "$ref": "#/$defs/positiveInteger" },
+        "receipt_canonical_utf8": { "type": "string", "minLength": 2, "maxLength": 1048576 },
+        "receipt_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "predecessor_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "target_format": { "enum": ["jedi-atlas-custody-control-record", "jedi-atlas-access-revocation-record", "jedi-atlas-deletion-execution-record", "jedi-atlas-deletion-receipt", "jedi-atlas-backup-coordination-record", "jedi-atlas-d940-recovery-assessment"] },
+        "target_record_code": { "$ref": "#/$defs/stableCode" },
+        "target_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "receipt_persisted_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "correspondenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correspondence_code", "correspondence_record_digest_sha256", "state_head_digest_sha256", "journal_tip_receipt_record_digest_sha256", "receipt_sequence"],
+      "properties": {
+        "correspondence_code": { "$ref": "#/$defs/stableCode" },
+        "correspondence_record_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "state_head_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "journal_tip_receipt_record_digest_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "receipt_sequence": { "$ref": "#/$defs/nonnegativeInteger" }
+      },
+      "allOf": [{
+        "if": { "properties": { "receipt_sequence": { "const": 0 } }, "required": ["receipt_sequence"] },
+        "then": { "properties": { "journal_tip_receipt_record_digest_sha256": { "type": "null" } } },
+        "else": { "properties": { "journal_tip_receipt_record_digest_sha256": { "$ref": "#/$defs/sha256" } } }
+      }]
+    }
+  }
+}

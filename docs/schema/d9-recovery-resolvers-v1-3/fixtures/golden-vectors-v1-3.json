@@ -1,0 +1,22 @@
+{
+  "format": "jedi-atlas-recovery-source-head-identity-golden-vectors",
+  "format_version": "1.3.0",
+  "vectors": [
+    {
+      "vector_code": "distinct_state_head_identity",
+      "canonical_utf8": "{\"derivation_profile_code\":\"frozen_v1_raw_payload_commitments\",\"head_persisted_at\":\"2030-01-01T00:11:01.200Z\",\"head_sequence\":1,\"raw_payload_inventory_digest_sha256\":\"aeb62de4603179827ce09c4adab1492ba8294b2390d7b0d3f5b33a38c4b5c6ce\",\"source_contract_fingerprint_sha256\":\"12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7\",\"source_namespace_code\":\"d940.global.control-journal.v1\",\"state_head_digest_sha256\":\"08f11373afb68505bc104f7dfa073d2ab389af88adc89a544f23fb8213788f76\"}",
+      "sha256": "7c946f6f53bf151fe5fbb6a313709a4310026e4a458f5e86974aeb6f6d2727ba"
+    },
+    {
+      "vector_code": "distinct_journal_tip_identity",
+      "canonical_utf8": "{\"journal_namespace_code\":\"d940.global.control-journal.v1\",\"predecessor_receipt_record_digest_sha256\":null,\"receipt_persisted_at\":\"2030-01-01T00:11:01.200Z\",\"receipt_record_digest_sha256\":\"e664896c83a0bfdafa7d375f9a2dd01189f5104ec04eb03c4a274f25625bfd30\",\"receipt_sequence\":1,\"target_format\":\"jedi-atlas-d940-recovery-assessment\",\"target_record_code\":\"assessment.identity.1\",\"target_record_digest_sha256\":\"3a675029d8cd132e0eee2c9d95334c0bf34583477a6fe21e8e92d002e60ab1a9\"}",
+      "sha256": "ff31c22eea9fc5aa134e06b1aec247c3140e00d8eb710bea8f11b55e157bac4a"
+    },
+    {
+      "vector_code": "complete_correspondence",
+      "excluded_top_level_field": "record_digest_sha256",
+      "canonical_byte_length": 5092,
+      "sha256": "87b2afd51705574196ef96c6bca877995e69aec921baba3e4ffd892f45668237"
+    }
+  ]
+}

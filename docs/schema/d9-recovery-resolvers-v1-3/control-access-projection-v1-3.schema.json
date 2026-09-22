@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-recovery-resolvers-v1-3/control-access-projection-v1-3.schema.json",
+  "title": "Corrected complete D9.1 control/access projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "projection_code", "operation_id", "operation_nonce", "runtime_generation", "subject", "source_correspondence", "journal_namespace_code", "known_through_receipt_sequence", "known_through_persisted_at", "control_ledger_head_receipt_digest_sha256", "d940_state_head_digest_sha256", "control_head_projection_sha256", "access_head_projection_sha256", "semantic_actor", "observed_at", "technical_evidence_only", "authority_granted", "record_digest_sha256"],
+  "properties": {
+    "format": { "const": "jedi-atlas-d940-control-access-projection" },
+    "format_version": { "const": "1.3.0" },
+    "projection_code": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1-3.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "$ref": "common-v1-3.schema.json#/$defs/operationNonce" },
+    "runtime_generation": { "$ref": "common-v1-3.schema.json#/$defs/runtimeGeneration" },
+    "subject": { "$ref": "common-v1-3.schema.json#/$defs/subject" },
+    "source_correspondence": { "$ref": "common-v1-3.schema.json#/$defs/correspondenceReference" },
+    "journal_namespace_code": { "const": "d940.global.control-journal.v1" },
+    "known_through_receipt_sequence": { "$ref": "common-v1-3.schema.json#/$defs/positiveInteger" },
+    "known_through_persisted_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "control_ledger_head_receipt_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "d940_state_head_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "control_head_projection_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "access_head_projection_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" },
+    "semantic_actor": { "$ref": "common-v1-3.schema.json#/$defs/actor" },
+    "observed_at": { "$ref": "common-v1-3.schema.json#/$defs/timestamp" },
+    "technical_evidence_only": { "const": true },
+    "authority_granted": { "const": false },
+    "record_digest_sha256": { "$ref": "common-v1-3.schema.json#/$defs/sha256" }
+  }
+}
