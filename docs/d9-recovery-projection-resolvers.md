@@ -1,10 +1,10 @@
-# D9 recovery-projection resolver contract proposal
+# D9 recovery-projection resolver contract freeze
 
-Status: **design-only, unapproved contract proposal**. Version `1.0.0` is isolated under [`docs/schema/d9-recovery-resolvers`](schema/d9-recovery-resolvers/). It changes no frozen D9 contract, migration, approved implementation, database row, runtime service, credential, API, or frontend. The unapproved D9.4.1 work at commit `7c44d7fdea7c398949c0bec3cc9f915c6cb41687` was inspected read-only and remains untouched.
+Status: **approved design-only contract freeze**. Version `1.0.0` was approved externally at reviewed commit `d4f21787ebc4b99e032a9a2966cc828366159447`. The fingerprinted catalog retains the lifecycle-neutral `design_only_contract_freeze` value; approval is recorded in this documentation and must not modify the contract root. The version is isolated under [`docs/schema/d9-recovery-resolvers`](schema/d9-recovery-resolvers/) and changes no frozen D9 contract, migration, approved implementation, database row, runtime service, credential, API, or frontend. The unapproved D9.4.1 work at commit `7c44d7fdea7c398949c0bec3cc9f915c6cb41687` was inspected read-only and remains untouched.
 
-## Decision requested
+## Approved decision
 
-Approve or modify the separately versioned resolver protocol that allows a future D9.4.1 recovery classifier to obtain an exact, source-head-bound D9.4 recovery snapshot from the approved D9.1, D9.2, and D9.3 boundaries. Approval would freeze messages and validation semantics only. It would not implement a resolver, resume D9.4.1, activate a service, or authorize any recovery action.
+The separately versioned resolver protocol is approved to allow a future, separately reviewed D9.4.1 recovery classifier to obtain an exact, source-head-bound D9.4 recovery snapshot from the approved D9.1, D9.2, and D9.3 boundaries. Approval freezes messages and validation semantics only. It does not implement a resolver, resume D9.4.1, activate a service, or authorize any recovery action.
 
 ## Why this contract is required
 
@@ -180,7 +180,7 @@ The output is technical recovery evidence only. It establishes no evidence accep
 
 ## Remaining prerequisites
 
-Approval would leave these separate and unimplemented:
+Approval leaves these separate and unimplemented:
 
 1. exact least-privilege IPC/handle allocation compatible with D9.0.1;
 2. authenticated runtime activation and protected checkpoint storage;
@@ -193,7 +193,7 @@ Approval would leave these separate and unimplemented:
 
 No resolver should run against canonical data until those controls are implemented and separately reviewed.
 
-## Proposal fingerprints
+## Approved fingerprints
 
 - Catalog raw SHA-256: `df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3`
 - Classifications raw SHA-256: `9f137c1ca9905b5a02754292a1b828bbdd7174af78bd385b3b4a3584fd1abe04`
@@ -202,4 +202,4 @@ No resolver should run against canonical data until those controls are implement
 - Projection profiles raw SHA-256: `c9c7a09c4a29814b1a6b55112e9b11075f1e1cc654e393561e6e3d79ad1ae6ff`
 - Root inventory raw SHA-256: `93832dc8a6f12ae030515781169fd8ac9dd5431aa68f62699168469da3da6f31`
 
-These are proposal anchors, not approval, authentication, or activation.
+These exact fingerprints are approved as the version `1.0.0` design-only contract freeze at commit `d4f21787ebc4b99e032a9a2966cc828366159447`. They are contract-integrity anchors, not authentication, activation, recovery authority, legal verification, publication eligibility, or operational permission.
