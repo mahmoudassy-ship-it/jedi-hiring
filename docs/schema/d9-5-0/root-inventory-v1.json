@@ -1,0 +1,91 @@
+{
+  "format": "jedi-atlas-d950-root-inventory",
+  "format_version": "1.0.0",
+  "self_excluded_path": "root-inventory-v1.json",
+  "files": [
+    {
+      "path": "backup-durability-receipt-v1.schema.json",
+      "raw_sha256": "1e856f8566533c9dc36464e25540b7ee442249d8a01a22c3b7bf7e15a45dbbdd"
+    },
+    {
+      "path": "backup-manifest-v1.schema.json",
+      "raw_sha256": "9e3c51d9a74bfe08798eb13eb010564c0353041ba0d4bdef25c4324a9a07c05b"
+    },
+    {
+      "path": "classifications-v1.json",
+      "raw_sha256": "bc2af2235a81c6830600c8ac339b953089862c858b8ef662c540d922a67b02fe"
+    },
+    {
+      "path": "common-v1.schema.json",
+      "raw_sha256": "7bbbc845393e72602398cb16694779c8dad6a5b6f5a2f299b5d6456f3fffde19"
+    },
+    {
+      "path": "contract-catalog-v1.json",
+      "raw_sha256": "7bd5805b2aa6646f40f09636060636ce7fdc32ef57bac6fc7e826b4de41d17fe"
+    },
+    {
+      "path": "deletion-aware-reconstruction-v1.schema.json",
+      "raw_sha256": "cdee37bb07eba659784fc8e772b1c105e8ea9eb4abca531720b59260c1fd8139"
+    },
+    {
+      "path": "digest-profiles-v1.json",
+      "raw_sha256": "15d8198f536b86b5441e51ed98d6cfab7a71650de71e2716353811a2f810bbfe"
+    },
+    {
+      "path": "field-source-registry-v1.json",
+      "raw_sha256": "ba5ed915ea7a7ffed2916cfba082de170e17ec35ce8946c38090c3cf24c45d6e"
+    },
+    {
+      "path": "fixtures/golden-vectors-v1.json",
+      "raw_sha256": "d47d8fbc1b54968e73280999471d76c4c94faa8b99fdcd19e83a9be12ad009d7"
+    },
+    {
+      "path": "fixtures/invalid-contracts-v1.json",
+      "raw_sha256": "37a01eeb524ccebdff8e0fe10fd4743fe23854818781d247c93ce449ee552189"
+    },
+    {
+      "path": "fixtures/valid-contracts-v1.json",
+      "raw_sha256": "c54b58648a757d861727b4da3ffd9d2a6ac3a9c1012326a81197acb01c78685c"
+    },
+    {
+      "path": "ipc-message-v1.schema.json",
+      "raw_sha256": "1b213f7ad12a737939a57af8c0d803d6a6a29480a827fbe430eb8fa6f682f12a"
+    },
+    {
+      "path": "journal-append-receipt-v1.schema.json",
+      "raw_sha256": "b556f57c6e724d7b75273cfbd1c43b83c1376dd6bae1931f1245edcead88598b"
+    },
+    {
+      "path": "operational-profile-v1.schema.json",
+      "raw_sha256": "82c9631a352502f54fd1bef3bb75c7b6c4a51d0c41a7e18bb0a5db01f9925d1e"
+    },
+    {
+      "path": "restore-authorization-v1.schema.json",
+      "raw_sha256": "2af71cbf6ec98fc4ddf4878fd1446cf36b43b78123e62403edbd2b898152264f"
+    },
+    {
+      "path": "restore-drill-record-v1.schema.json",
+      "raw_sha256": "1b047d30d77be67cea34b0577f6e62c48dbc589e6c1ebd4bd8dc21608e0889b1"
+    },
+    {
+      "path": "restore-lifecycle-record-v1.schema.json",
+      "raw_sha256": "db21533ad5040d130aa7ead592bab1812035018218619a03a8dad3ce46dea8c6"
+    },
+    {
+      "path": "restore-plan-v1.schema.json",
+      "raw_sha256": "5161bfbbd0244699c08fbedd8d894d7c4354600fd837b104a22216c3cd5c9c73"
+    },
+    {
+      "path": "retention-control-record-v1.schema.json",
+      "raw_sha256": "3a6052ab1343aeb83defc405eab447b3dfcc5eb895b254fa781220d5edecc6b4"
+    },
+    {
+      "path": "retention-head-attestation-v1.schema.json",
+      "raw_sha256": "9f3fda2697c4cb131af86a60021548de011eefc86efe5266fa48ab2867331c7e"
+    },
+    {
+      "path": "storage-profiles-v1.json",
+      "raw_sha256": "704d7d947946a78986e71c8d6a1b600d8451560b017ac483d537f8e0a1d3f26c"
+    }
+  ]
+}

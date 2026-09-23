@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-5-0/ipc-message-v1.schema.json",
+  "title": "JEDI Atlas D9.5.0 authenticated fixed-function IPC message",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "message_kind_code",
+    "route_code",
+    "request_code",
+    "operation_id",
+    "operation_nonce",
+    "request_sequence",
+    "sender",
+    "recipient",
+    "payload_format",
+    "payload_record_digest_sha256",
+    "response_to_request_digest_sha256",
+    "outcome_code",
+    "error_code",
+    "retryability_code",
+    "sent_at",
+    "expires_at",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-d950-ipc-message" },
+    "format_version": { "const": "1.0.0" },
+    "message_kind_code": { "enum": ["request", "response"] },
+    "route_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "request_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "request_sequence": { "$ref": "common-v1.schema.json#/$defs/positiveInteger" },
+    "sender": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "recipient": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "payload_format": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "payload_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "response_to_request_digest_sha256": {
+      "oneOf": [
+        { "$ref": "common-v1.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "outcome_code": { "enum": ["submitted", "accepted", "rejected", "recovery_required"] },
+    "error_code": {
+      "enum": ["none", "authentication_failed", "authorization_failed", "profile_mismatch", "build_mismatch", "replay_conflict", "expired", "malformed", "state_changed", "recovery_required"]
+    },
+    "retryability_code": { "enum": ["not_retryable", "exact_replay_only", "new_request_required", "human_reconciliation_required"] },
+    "sent_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "expires_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" }
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "format": "jedi-atlas-d950-field-source-registry",
+  "format_version": "1.0.0",
+  "mapping_semantics": "exact_top_level_family_with_more_restrictive_nested_overrides",
+  "field_families": [
+    {
+      "field_family_code": "contract_identity",
+      "pointer_patterns": [
+        "/format",
+        "/format_version"
+      ],
+      "trusted_producer_code": "reviewed_contract",
+      "consumer_codes": [
+        "all_d950_parsers"
+      ],
+      "storage_code": "protected_append_only_record",
+      "confidentiality_code": "internal",
+      "canonicality_code": "canonical"
+    },
+    {
+      "field_family_code": "verified_actor_context",
+      "pointer_patterns": [
+        "/**/runtime_profile_record_digest_sha256",
+        "/**/identity_bindings_record_digest_sha256",
+        "/**/authority_roster_record_digest_sha256",
+        "/**/binding_code",
+        "/**/runtime_role_code"
+      ],
+      "trusted_producer_code": "verified_d901_identity_generation_and_d940_roster_projector",
+      "consumer_codes": ["all_d950_authorizers", "all_d950_ipc_verifiers"],
+      "storage_code": "protected_append_only_record",
+      "confidentiality_code": "highly_restricted_identity",
+      "canonicality_code": "canonical_verified_projection_not_caller_claim"
+    },
+    {
+      "field_family_code": "source_checkpoint",
+      "pointer_patterns": [
+        "/source_checkpoint",
+        "/control_snapshot",
+        "/pre_restore_control_snapshot"
+      ],
+      "trusted_producer_code": "verified_recovery_v13_resolver",
+      "consumer_codes": [
+        "backup_producer",
+        "control_state_verifier",
+        "restore_executor",
+        "restored_state_verifier"
+      ],
+      "storage_code": "protected_d950_journal",
+      "confidentiality_code": "highly_restricted_integrity",
+      "canonicality_code": "canonical_resolver_output_not_caller_claim"
+    },
+    {
+      "field_family_code": "backup_inventory",
+      "pointer_patterns": [
+        "/source_inventory",
+        "/source_copy_coverage",
+        "/backup_copies",
+        "/copy_class_inventory"
+      ],
+      "trusted_producer_code": "fixed_function_inventory_collector",
+      "consumer_codes": [
+        "backup_verifier",
+        "control_state_verifier",
+        "restored_state_verifier"
+      ],
+      "storage_code": "protected_backup_manifest_store",
+      "confidentiality_code": "restricted_operational",
+      "canonicality_code": "canonical_bounded_observation"
+    },
+    {
+      "field_family_code": "artifact_and_copy_identity",
+      "pointer_patterns": [
+        "/**/artifact",
+        "/**/copy_identity_sha256",
+        "/**/backend_reference"
+      ],
+      "trusted_producer_code": "backup_adapter_with_independent_rehash",
+      "consumer_codes": [
+        "backup_verifier",
+        "restore_executor",
+        "restored_state_verifier"
+      ],
+      "storage_code": "protected_backup_manifest_store",
+      "confidentiality_code": "highly_restricted_custody",
+      "canonicality_code": "canonical_technical_identity_not_legal_identity"
+    },
+    {
+      "field_family_code": "human_authorization",
+      "pointer_patterns": [
+        "/requester",
+        "/approvals",
+        "/authorization_scope_sha256",
+        "/approvals/*/decision_payload_sha256",
+        "/approvals/*/submission_request_record_digest_sha256",
+        "/approvals/*/broker_response_record_digest_sha256"
+      ],
+      "trusted_producer_code": "authenticated_human_via_fixed_function_broker",
+      "consumer_codes": [
+        "restore_authorization_evaluator",
+        "restore_executor",
+        "journal_broker"
+      ],
+      "storage_code": "protected_authorization_store",
+      "confidentiality_code": "highly_restricted_personnel",
+      "canonicality_code": "canonical_operational_decision_not_legal_review"
+    },
+    {
+      "field_family_code": "d940_control_evidence",
+      "pointer_patterns": [
+        "/control_evidence",
+        "/control_directives",
+        "/control_revalidation"
+      ],
+      "trusted_producer_code": "verified_recovery_v13_resolver_with_append_time_revalidation",
+      "consumer_codes": ["control_state_verifier", "restore_executor", "restored_state_verifier"],
+      "storage_code": "protected_restore_control_store",
+      "confidentiality_code": "highly_restricted_operational",
+      "canonicality_code": "canonical_typed_technical_evidence_not_recovery_authority"
+    },
+    {
+      "field_family_code": "retention_control_history",
+      "pointer_patterns": [
+        "/retention",
+        "/retention_control_record_digest_sha256",
+        "/retention_head",
+        "/retention_head_attestation_record_digest_sha256",
+        "/retention_head_receipt_record_digest_sha256",
+        "/decision_code",
+        "/hold_state_code"
+      ],
+      "trusted_producer_code": "authenticated_human_decision_and_protected_retention_head_via_fixed_function_broker",
+      "consumer_codes": ["restore_authorization_evaluator", "restore_executor", "auditor"],
+      "storage_code": "protected_retention_control_store",
+      "confidentiality_code": "highly_restricted_operational",
+      "canonicality_code": "canonical_append_only_control_history"
+    },
+    {
+      "field_family_code": "execution_observation",
+      "pointer_patterns": [
+        "/stage_code",
+        "/outcome_code",
+        "/error_code",
+        "/bytes_accessible",
+        "/atomic_promotion_observed",
+        "/restored_inventory_digest_sha256"
+      ],
+      "trusted_producer_code": "authenticated_fixed_function_executor_or_verifier_by_stage",
+      "consumer_codes": [
+        "journal_broker",
+        "recovery_classifier",
+        "auditor"
+      ],
+      "storage_code": "protected_restore_lifecycle_store",
+      "confidentiality_code": "highly_restricted_operational",
+      "canonicality_code": "canonical_bounded_observation"
+    },
+    {
+      "field_family_code": "knowledge_order",
+      "pointer_patterns": [
+        "/**/persisted_at",
+        "/**/receipt_sequence",
+        "/**/previous_receipt_record_digest_sha256"
+      ],
+      "trusted_producer_code": "journal_broker_trusted_clock",
+      "consumer_codes": [
+        "all_d950_projectors",
+        "recovery_classifier"
+      ],
+      "storage_code": "protected_d950_journal",
+      "confidentiality_code": "restricted_integrity",
+      "canonicality_code": "canonical_knowledge_order"
+    },
+    {
+      "field_family_code": "technical_non_authority_claims",
+      "pointer_patterns": [
+        "/**/technical_claims",
+        "/complete_erasure_claimed"
+      ],
+      "trusted_producer_code": "reviewed_contract_constant",
+      "consumer_codes": [
+        "all_d950_parsers",
+        "auditor"
+      ],
+      "storage_code": "every_d950_record",
+      "confidentiality_code": "internal",
+      "canonicality_code": "canonical_literal_false"
+    },
+    {
+      "field_family_code": "ephemeral_capability",
+      "pointer_patterns": [],
+      "trusted_producer_code": "trusted_launcher_runtime_only",
+      "consumer_codes": [
+        "authenticated_process_instance_only"
+      ],
+      "storage_code": "never_serialized_never_logged",
+      "confidentiality_code": "secret",
+      "canonicality_code": "prohibited_from_contract_records"
+    }
+  ],
+  "caller_claim_prohibitions": [
+    "source_checkpoint",
+    "control_snapshot",
+    "current_d940_head",
+    "binding_activity",
+    "actor_authority_context",
+    "executable_identity",
+    "persistence_time",
+    "receipt_sequence",
+    "copy_absence",
+    "atomic_promotion",
+    "retention_or_hold_state",
+    "retention_ledger_head",
+    "complete_erasure"
+  ],
+  "record_digest_sha256": "d2a5ea5476a1699cecf704dfd92b3071577ceee1e0cc46ed16c07f3854390c85"
+}

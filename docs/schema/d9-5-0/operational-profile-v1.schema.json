@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-5-0/operational-profile-v1.schema.json",
+  "title": "JEDI Atlas D9.5.0 design-only operational profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "profile_code",
+    "status_code",
+    "base_contracts",
+    "authority_context",
+    "allowed_operation_codes",
+    "role_bindings",
+    "ipc_routes",
+    "limits",
+    "storage_policy",
+    "authority_boundary",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-d950-operational-profile" },
+    "format_version": { "const": "1.0.0" },
+    "profile_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "status_code": { "const": "design_only_unactivated" },
+    "base_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "d901_catalog_sha256",
+        "d930_catalog_sha256",
+        "d940_catalog_sha256",
+        "recovery_v13_catalog_sha256",
+        "recovery_v13_root_inventory_sha256",
+        "d941_implementation_commit"
+      ],
+      "properties": {
+        "d901_catalog_sha256": { "const": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a" },
+        "d930_catalog_sha256": { "const": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c" },
+        "d940_catalog_sha256": { "const": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7" },
+        "recovery_v13_catalog_sha256": { "const": "0aa40744517d595cafca368852771345f52db4c0b2bda36751912607183bcc9a" },
+        "recovery_v13_root_inventory_sha256": { "const": "51d076dd244aa74c4fc7a433af6ab8121031f4b6194381477460c81ccd807fda" },
+        "d941_implementation_commit": { "const": "08899d984c063743701c537a45e2ec015f168982" }
+      }
+    },
+    "authority_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "binding_generation",
+        "authority_roster_record_digest_sha256",
+        "authority_roster_adoption_record_digest_sha256",
+        "activation_state_code"
+      ],
+      "properties": {
+        "runtime_profile_record_digest_sha256": { "const": "b2a4a486a587a9de403761377b032ea611bb7bcf22539f928df481d280563a86" },
+        "identity_bindings_record_digest_sha256": { "const": "8854e2b4f54748936b103eea75a92067650d14f02f3fb57248b0aa310affe752" },
+        "binding_generation": { "const": 1 },
+        "authority_roster_record_digest_sha256": { "const": "abdde453fd561d39a5110f0b7397b02f5e22dd5ae0a699d310d0abdb143d078c" },
+        "authority_roster_adoption_record_digest_sha256": { "const": "afdc9eb36612271905d4ca1fb4d642eb4572e7ad1a05fed825feecbe0b49e8a1" },
+        "activation_state_code": { "const": "design_only_unactivated" }
+      }
+    },
+    "allowed_operation_codes": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        { "const": "backup_create" },
+        { "const": "backup_verify" },
+        { "const": "restore_reconstruct" },
+        { "const": "restore_resume_classification" },
+        { "const": "synthetic_restore_drill" }
+      ],
+      "items": false
+    },
+    "role_bindings": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "common-v1.schema.json#/$defs/actor" }
+    },
+    "ipc_routes": {
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["route_code", "sender_role_code", "recipient_role_code", "endpoint_code", "request_format", "response_format"],
+        "properties": {
+          "route_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+          "sender_role_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+          "recipient_role_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+          "endpoint_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+          "request_format": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+          "response_format": { "$ref": "common-v1.schema.json#/$defs/stableCode" }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_bytes_max",
+        "inventory_entries_max",
+        "backup_set_bytes_max",
+        "restore_files_max",
+        "operation_timeout_ms",
+        "response_age_ms_max",
+        "checkpoint_age_seconds_max",
+        "human_approval_age_seconds_max"
+      ],
+      "properties": {
+        "manifest_bytes_max": { "const": 1048576 },
+        "inventory_entries_max": { "const": 4096 },
+        "backup_set_bytes_max": { "const": 1073741824 },
+        "restore_files_max": { "const": 4096 },
+        "operation_timeout_ms": { "const": 300000 },
+        "response_age_ms_max": { "const": 5000 },
+        "checkpoint_age_seconds_max": { "const": 86400 },
+        "human_approval_age_seconds_max": { "const": 86400 }
+      }
+    },
+    "storage_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "append_only_records",
+        "no_replace",
+        "canonical_json",
+        "retention_expiry_deletes_automatically",
+        "backup_bytes_access_code",
+        "restore_staging_access_code"
+      ],
+      "properties": {
+        "append_only_records": { "const": true },
+        "no_replace": { "const": true },
+        "canonical_json": { "const": "rfc8785-compatible-jcs-no-unicode-normalization" },
+        "retention_expiry_deletes_automatically": { "const": false },
+        "backup_bytes_access_code": { "const": "restricted_integrity_only" },
+        "restore_staging_access_code": { "const": "inaccessible_until_controls_applied" }
+      }
+    },
+    "authority_boundary": { "$ref": "common-v1.schema.json#/$defs/technicalClaims" },
+    "record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" }
+  }
+}

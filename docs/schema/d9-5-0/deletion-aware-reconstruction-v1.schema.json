@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-5-0/deletion-aware-reconstruction-v1.schema.json",
+  "title": "JEDI Atlas D9.5.0 deletion-aware reconstruction assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "operation_id",
+    "operation_nonce",
+    "backup_set_code",
+    "subject_identity_sha256",
+    "source_checkpoint_record_digest_sha256",
+    "control_snapshot",
+    "control_evidence",
+    "control_directives",
+    "copy_class_inventory",
+    "copy_class_inventory_digest_sha256",
+    "control_state_code",
+    "restore_disposition_code",
+    "bytes_accessible",
+    "bounded_copy_classes_complete",
+    "complete_erasure_claimed",
+    "limitations",
+    "semantic_verifier",
+    "persistence_broker",
+    "evaluated_at",
+    "persisted_at",
+    "technical_claims",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-deletion-aware-reconstruction" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "backup_set_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "subject_identity_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "source_checkpoint_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "control_snapshot": { "$ref": "common-v1.schema.json#/$defs/knowledgeBoundary" },
+    "control_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "common-v1.schema.json#/$defs/d940ControlEvidence" }
+    },
+    "control_directives": {
+      "type": "array",
+      "maxItems": 64,
+      "items": { "$ref": "common-v1.schema.json#/$defs/controlDirective" }
+    },
+    "copy_class_inventory": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": { "$ref": "common-v1.schema.json#/$defs/copyClassObservation" }
+    },
+    "copy_class_inventory_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "control_state_code": { "enum": ["complete_current_consistent", "missing", "stale", "contradictory", "unverifiable"] },
+    "restore_disposition_code": { "enum": ["eligible_with_controls", "withheld_restricted", "withheld_tombstoned", "withheld_do_not_restore", "reconciliation_required"] },
+    "bytes_accessible": { "const": false },
+    "bounded_copy_classes_complete": { "type": "boolean" },
+    "complete_erasure_claimed": { "const": false },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "enum": [
+          "bounded_registered_copy_classes_only",
+          "hidden_or_unregistered_copies_not_excluded",
+          "open_descriptor_inventory_is_runtime_bounded",
+          "storage_media_remanence_not_assessed",
+          "legal_compliance_not_assessed",
+          "technical_recovery_evidence_only"
+        ]
+      }
+    },
+    "semantic_verifier": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "persistence_broker": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "evaluated_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "technical_claims": { "$ref": "common-v1.schema.json#/$defs/technicalClaims" },
+    "record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" }
+  }
+}

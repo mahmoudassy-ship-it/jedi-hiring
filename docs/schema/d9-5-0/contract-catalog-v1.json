@@ -1,0 +1,146 @@
+{
+  "format": "jedi-atlas-d950-contract-catalog",
+  "format_version": "1.0.0",
+  "status_code": "design_only_contract_freeze",
+  "authority_code": "technical_backup_restore_and_reconstruction_evidence_only",
+  "hash_profile": "sha256-over-exact-file-bytes",
+  "approved_dependencies": {
+    "d901_catalog_sha256": "e0a5663b378453a00626f02961465a60a474e145dd5160bf85a1797cd9316d2a",
+    "d930_catalog_sha256": "cd91f67c25941a472b89fe2fa6f19b012714dec96661b65b76ecfacf7f48e87c",
+    "d940_catalog_sha256": "12da4237efade65cf6e2cc19d2df936e98caf505c8f6d30b38e7df8c4d349ad7",
+    "recovery_v1_catalog_sha256": "df33cbf575f8f4b430ef22384f0d73350e521abed6443f07006d13bb3b968ba3",
+    "recovery_v11_catalog_sha256": "aa846c01c5d055050c810249316d11eba7a48d1080681f9538be3e71d371bb26",
+    "recovery_v12_catalog_sha256": "b6fd085a5718fdccc51ae4cfbf10645aaa3a1f79929d9ebe896247350d3ddb3c",
+    "recovery_v13_catalog_sha256": "0aa40744517d595cafca368852771345f52db4c0b2bda36751912607183bcc9a",
+    "recovery_v13_root_inventory_sha256": "51d076dd244aa74c4fc7a433af6ab8121031f4b6194381477460c81ccd807fda"
+  },
+  "approved_commits": {
+    "d901": "58a10d43ee5fcc3121a368301b4f5a925f26a9e3",
+    "d91": "79046c27dfa6923383be33a1d0aaa5a7641f5d1f",
+    "d92": "460547b7fe75a94f689dabc97fd91ee6f803934a",
+    "d930": "89433cf058ca8f52b658ea1ce2d0391aaf44f7fe",
+    "d931": "d960a03f4b8ac8a78d3f6b40ba909eb24b5f3442",
+    "d940": "7db408fb0f9083f4a17c89cbaf1cb1a06bc44416",
+    "recovery_v1": "d4f21787ebc4b99e032a9a2966cc828366159447",
+    "recovery_v11": "29157dd584c81ed421dfa52313f0763ce2e0b568",
+    "recovery_v12": "ec83429ad3b9f77d655970f96d0be054f345a60a",
+    "recovery_v13": "d9eddd21494f59e27b2b6365456b53ee2719db2c",
+    "d941": "08899d984c063743701c537a45e2ec015f168982"
+  },
+  "migration_sha256": {
+    "001_schema.sql": "b941b0baa346d85207d55b62545bfe09d39970e725fa8707e233766223912094",
+    "002_reference_data.sql": "6ba08988489399c677d853e0394c52f22d72e03def967b8209ca6173db5d1923",
+    "003_seed_eu_core.sql": "a11a3f47715e31d9518288058f21fd730cf5a47f132da7f9a42d7c4c9c579700",
+    "004_tranche_1a_foundations.sql": "0702aca05253c7f96ad82bfcb35661b151ec0d409b441e2ffefac67a1995a9c2",
+    "005_tranche_2a_source_quarantine.sql": "1f83b484ca998be3bf5756492d4dffd958e2a6b37dbcc837e399226fdf41026b"
+  },
+  "schemas": [
+    {
+      "file": "common-v1.schema.json",
+      "raw_sha256": "7bbbc845393e72602398cb16694779c8dad6a5b6f5a2f299b5d6456f3fffde19"
+    },
+    {
+      "file": "operational-profile-v1.schema.json",
+      "raw_sha256": "82c9631a352502f54fd1bef3bb75c7b6c4a51d0c41a7e18bb0a5db01f9925d1e"
+    },
+    {
+      "file": "backup-manifest-v1.schema.json",
+      "raw_sha256": "9e3c51d9a74bfe08798eb13eb010564c0353041ba0d4bdef25c4324a9a07c05b"
+    },
+    {
+      "file": "backup-durability-receipt-v1.schema.json",
+      "raw_sha256": "1e856f8566533c9dc36464e25540b7ee442249d8a01a22c3b7bf7e15a45dbbdd"
+    },
+    {
+      "file": "restore-authorization-v1.schema.json",
+      "raw_sha256": "2af71cbf6ec98fc4ddf4878fd1446cf36b43b78123e62403edbd2b898152264f"
+    },
+    {
+      "file": "restore-plan-v1.schema.json",
+      "raw_sha256": "5161bfbbd0244699c08fbedd8d894d7c4354600fd837b104a22216c3cd5c9c73"
+    },
+    {
+      "file": "restore-lifecycle-record-v1.schema.json",
+      "raw_sha256": "db21533ad5040d130aa7ead592bab1812035018218619a03a8dad3ce46dea8c6"
+    },
+    {
+      "file": "deletion-aware-reconstruction-v1.schema.json",
+      "raw_sha256": "cdee37bb07eba659784fc8e772b1c105e8ea9eb4abca531720b59260c1fd8139"
+    },
+    {
+      "file": "restore-drill-record-v1.schema.json",
+      "raw_sha256": "1b047d30d77be67cea34b0577f6e62c48dbc589e6c1ebd4bd8dc21608e0889b1"
+    },
+    {
+      "file": "ipc-message-v1.schema.json",
+      "raw_sha256": "1b213f7ad12a737939a57af8c0d803d6a6a29480a827fbe430eb8fa6f682f12a"
+    },
+    {
+      "file": "journal-append-receipt-v1.schema.json",
+      "raw_sha256": "b556f57c6e724d7b75273cfbd1c43b83c1376dd6bae1931f1245edcead88598b"
+    },
+    {
+      "file": "retention-control-record-v1.schema.json",
+      "raw_sha256": "3a6052ab1343aeb83defc405eab447b3dfcc5eb895b254fa781220d5edecc6b4"
+    },
+    {
+      "file": "retention-head-attestation-v1.schema.json",
+      "raw_sha256": "9f3fda2697c4cb131af86a60021548de011eefc86efe5266fa48ab2867331c7e"
+    }
+  ],
+  "registries": [
+    {
+      "file": "classifications-v1.json",
+      "raw_sha256": "bc2af2235a81c6830600c8ac339b953089862c858b8ef662c540d922a67b02fe",
+      "semantic_sha256": "fa58f6701f33934eba9b59e58787a9075d3b2cdc619e0c9fbc4996bd0101247b"
+    },
+    {
+      "file": "digest-profiles-v1.json",
+      "raw_sha256": "15d8198f536b86b5441e51ed98d6cfab7a71650de71e2716353811a2f810bbfe",
+      "semantic_sha256": "e66777e1dcf6f03d1a6abaeaa68d75ad93735254b39b76159213db8b7c45c137"
+    },
+    {
+      "file": "field-source-registry-v1.json",
+      "raw_sha256": "ba5ed915ea7a7ffed2916cfba082de170e17ec35ce8946c38090c3cf24c45d6e",
+      "semantic_sha256": "d2a5ea5476a1699cecf704dfd92b3071577ceee1e0cc46ed16c07f3854390c85"
+    },
+    {
+      "file": "storage-profiles-v1.json",
+      "raw_sha256": "704d7d947946a78986e71c8d6a1b600d8451560b017ac483d537f8e0a1d3f26c",
+      "semantic_sha256": "a7ec47414e1553d37f2662b7991d8a5e45aaa5db1fe25e7e3d642eb11a768f32"
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "fixtures/valid-contracts-v1.json",
+      "raw_sha256": "c54b58648a757d861727b4da3ffd9d2a6ac3a9c1012326a81197acb01c78685c"
+    },
+    {
+      "file": "fixtures/invalid-contracts-v1.json",
+      "raw_sha256": "37a01eeb524ccebdff8e0fe10fd4743fe23854818781d247c93ce449ee552189"
+    },
+    {
+      "file": "fixtures/golden-vectors-v1.json",
+      "raw_sha256": "d47d8fbc1b54968e73280999471d76c4c94faa8b99fdcd19e83a9be12ad009d7"
+    }
+  ],
+  "validators": [
+    {
+      "file": "../validate-d9-5-0.mjs",
+      "raw_sha256": "27cce83bd58c7c3f7fcce467c2c286ba3b1490ba84405f986f03e3da4cb2553b"
+    }
+  ],
+  "instance_policy": {
+    "runtime_implementation_authorized": false,
+    "operational_activation_authorized": false,
+    "credentials_authorized": false,
+    "real_backups_authorized": false,
+    "restore_execution_authorized": false,
+    "deletion_execution_authorized": false,
+    "atlas_writes_authorized": false,
+    "evidence_import_authorized": false,
+    "legal_conclusions_authorized": false,
+    "publication_authorized": false,
+    "api_or_frontend_change_authorized": false
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "format": "jedi-atlas-d950-digest-profiles",
+  "format_version": "1.0.0",
+  "canonical_json_profile": {
+    "profile_code": "rfc8785-compatible-jcs-no-unicode-normalization",
+    "encoding": "utf-8",
+    "unicode_normalization": "none",
+    "object_key_order": "utf16_code_unit_ascending",
+    "array_order": "significant_preserved",
+    "numbers": "integers_only_for_d950_contracts",
+    "duplicate_keys": "reject_before_parse",
+    "unknown_fields": "reject",
+    "line_ending": "none"
+  },
+  "record_digest_profile": {
+    "algorithm_code": "sha256",
+    "input_code": "canonical_complete_object_excluding_only_top_level_record_digest_sha256",
+    "output_encoding": "lowercase_hex"
+  },
+  "payload_profiles": [
+    {
+      "profile_code": "backup_source_inventory_v1",
+      "input_fields": [
+        "source_checkpoint",
+        "source_inventory",
+        "source_copy_coverage"
+      ],
+      "ordering_code": "inventory_ordinal_then_stable_identity",
+      "output_field": "source_inventory_digest_sha256"
+    },
+    {
+      "profile_code": "backup_copy_inventory_v1",
+      "input_fields": [
+        "backup_copies"
+      ],
+      "ordering_code": "copy_code_ascending",
+      "output_field": "backup_copy_inventory_digest_sha256"
+    },
+    {
+      "profile_code": "backup_copy_identity_v1",
+      "input_fields": [
+        "copy_code",
+        "copy_class_code",
+        "backend_code",
+        "backend_generation",
+        "backend_reference",
+        "artifact"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "copy_identity_sha256"
+    },
+    {
+      "profile_code": "source_copy_operation_nonce_v1",
+      "input_fields": [
+        "copy_code",
+        "artifact",
+        "operation_id",
+        "operation_nonce"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "scope_sha256"
+    },
+    {
+      "profile_code": "artifact_bundle_copy_primary_receipt_operation_nonce_v1",
+      "input_fields": [
+        "bundle",
+        "artifact",
+        "copy_code",
+        "primary_receipt",
+        "operation_id",
+        "operation_nonce"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "scope_sha256"
+    },
+    {
+      "profile_code": "prior_logical_state_database_generation_operation_nonce_v1",
+      "input_fields": [
+        "bundle",
+        "prior_logical_state",
+        "database_generation",
+        "operation_id",
+        "operation_nonce"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "scope_sha256"
+    },
+    {
+      "profile_code": "resulting_logical_state_receipt_head_inventory_operation_nonce_v1",
+      "input_fields": [
+        "bundle",
+        "resulting_logical_state",
+        "receipt_head",
+        "constituent_receipt_record_digests",
+        "inventory_digest_sha256",
+        "operation_id",
+        "operation_nonce"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "scope_sha256"
+    },
+    {
+      "profile_code": "restore_authorization_scope_v1",
+      "input_fields": [
+        "operation_id",
+        "operation_nonce",
+        "backup_set_code",
+        "backup_manifest_record_digest_sha256",
+        "source_checkpoint_record_digest_sha256",
+        "target_environment_identity_sha256"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "authorization_scope_sha256"
+    },
+    {
+      "profile_code": "copy_class_inventory_v1",
+      "input_fields": [
+        "copy_class_inventory"
+      ],
+      "ordering_code": "fixed_primary_backup_derived_temporary_replica_open_descriptor_unknown",
+      "output_field": "copy_class_inventory_digest_sha256"
+    },
+    {
+      "profile_code": "d940_control_evidence_set_v1",
+      "input_fields": ["control_evidence"],
+      "ordering_code": "evidence_kind_then_record_code",
+      "output_field": "control_evidence_digest_sha256"
+    },
+    {
+      "profile_code": "restore_control_revalidation_v1",
+      "input_fields": ["resolver_request_record_digest_sha256", "resolver_response_record_digest_sha256", "before", "after", "retention_control_record_digest_sha256", "retention_chain_sequence", "retention_head_attestation_record_digest_sha256", "retention_head_receipt_record_digest_sha256", "source_stable"],
+      "ordering_code": "canonical_object",
+      "output_field": "control_revalidation_digest_sha256"
+    },
+    {
+      "profile_code": "restore_drill_comparison_v1",
+      "input_fields": ["expected_source_checkpoint", "observed_source_checkpoint_record_digest_sha256", "observed_source_state_head_digest_sha256", "observed_correspondence_record_digest_sha256", "expected_backup_chain_leaf_record_digest_sha256", "expected_backup_chain_leaf_sequence", "observed_backup_chain_leaf_record_digest_sha256", "observed_backup_chain_leaf_sequence", "expected_inventory_digest_sha256", "restored_inventory_digest_sha256"],
+      "ordering_code": "canonical_object",
+      "output_field": "record_digest_sha256"
+    },
+    {
+      "profile_code": "target_environment_identity_v1",
+      "input_fields": [
+        "target_environment_code",
+        "target_kind_code",
+        "runtime_profile_record_digest_sha256",
+        "identity_bindings_record_digest_sha256",
+        "binding_generation",
+        "migration_set_digest_sha256",
+        "target_root_identity_sha256",
+        "preexisting_state_code"
+      ],
+      "ordering_code": "canonical_object",
+      "output_field": "target_environment_identity_sha256"
+    }
+  ],
+  "external_byte_profiles": [
+    {
+      "byte_layer_code": "retrieved_body",
+      "hash_scope_code": "exact_http_response_body_octets_after_transfer_framing_before_content_decoding"
+    },
+    {
+      "byte_layer_code": "sqlite_database",
+      "hash_scope_code": "exact_closed_database_file_bytes_after_checkpoint_and_sync"
+    },
+    {
+      "byte_layer_code": "protected_record_bytes",
+      "hash_scope_code": "exact_canonical_utf8_record_bytes_no_bom_or_trailing_line_ending"
+    }
+  ],
+  "record_digest_sha256": "e66777e1dcf6f03d1a6abaeaa68d75ad93735254b39b76159213db8b7c45c137"
+}

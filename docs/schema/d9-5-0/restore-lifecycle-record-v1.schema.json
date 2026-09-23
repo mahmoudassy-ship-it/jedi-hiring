@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schema/d9-5-0/restore-lifecycle-record-v1.schema.json",
+  "title": "JEDI Atlas D9.5.0 append-only restore lifecycle record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "format_version",
+    "record_code",
+    "operation_id",
+    "operation_nonce",
+    "chain",
+    "restore_plan_record_digest_sha256",
+    "authorization_record_digest_sha256",
+    "stage_code",
+    "outcome_code",
+    "error_code",
+    "retryability_code",
+    "bytes_accessible",
+    "atomic_promotion_observed",
+    "source_checkpoint_record_digest_sha256",
+    "backup_manifest_record_digest_sha256",
+    "control_snapshot",
+    "control_revalidation",
+    "restored_inventory_digest_sha256",
+    "semantic_actor",
+    "persistence_actor",
+    "event_at",
+    "persisted_at",
+    "technical_claims",
+    "record_digest_sha256"
+  ],
+  "properties": {
+    "format": { "const": "jedi-atlas-restore-lifecycle-record" },
+    "format_version": { "const": "1.0.0" },
+    "record_code": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_id": { "$ref": "common-v1.schema.json#/$defs/stableCode" },
+    "operation_nonce": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "chain": { "$ref": "common-v1.schema.json#/$defs/appendChain" },
+    "restore_plan_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "authorization_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "stage_code": {
+      "enum": [
+        "authorized",
+        "staging_started",
+        "bytes_reconstructed_inaccessible",
+        "controls_revalidated",
+        "controls_applied",
+        "staged_state_verified",
+        "promotion_started",
+        "promoted",
+        "post_promotion_verified",
+        "completed",
+        "failed",
+        "recovery_required"
+      ]
+    },
+    "outcome_code": { "enum": ["progress", "succeeded", "withheld", "failed", "recovery_required"] },
+    "error_code": {
+      "enum": [
+        "none",
+        "authorization_invalid",
+        "source_head_mismatch",
+        "inventory_incomplete",
+        "corrupt_bytes",
+        "manifest_substituted",
+        "replay_conflict",
+        "chain_fork",
+        "chain_gap",
+        "rollback_detected",
+        "predecessor_missing",
+        "control_stale",
+        "control_contradictory",
+        "control_unavailable",
+        "tombstoned_content",
+        "do_not_restore",
+        "deletion_changed_during_restore",
+        "partial_restore",
+        "response_loss_ambiguous",
+        "concurrent_operation",
+        "actor_unauthorized",
+        "build_mismatch",
+        "bytes_unavailable",
+        "promotion_unverified",
+        "unknown_state"
+      ]
+    },
+    "retryability_code": { "enum": ["not_retryable", "new_authorization_required", "exact_replay_after_reconciliation", "human_reconciliation_required"] },
+    "bytes_accessible": { "type": "boolean" },
+    "atomic_promotion_observed": { "type": "boolean" },
+    "source_checkpoint_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "backup_manifest_record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" },
+    "control_snapshot": { "$ref": "common-v1.schema.json#/$defs/knowledgeBoundary" },
+    "control_revalidation": {
+      "oneOf": [
+        { "$ref": "common-v1.schema.json#/$defs/controlRevalidation" },
+        { "type": "null" }
+      ]
+    },
+    "restored_inventory_digest_sha256": {
+      "oneOf": [
+        { "$ref": "common-v1.schema.json#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "semantic_actor": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "persistence_actor": { "$ref": "common-v1.schema.json#/$defs/actor" },
+    "event_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "persisted_at": { "$ref": "common-v1.schema.json#/$defs/timestamp" },
+    "technical_claims": { "$ref": "common-v1.schema.json#/$defs/technicalClaims" },
+    "record_digest_sha256": { "$ref": "common-v1.schema.json#/$defs/sha256" }
+  }
+}
