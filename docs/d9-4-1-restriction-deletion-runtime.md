@@ -1,6 +1,10 @@
 # D9.4.1 synthetic restriction and primary-name deletion runtime
 
-Status: **implementation candidate awaiting separate approval**. This branch implements only the synthetic, unactivated D9.4.1 vertical slice against generated identities, generated records, disposable protected stores, and newly created temporary CAS directories. It does not activate the D9.4.0 `design_only_unactivated` profile or authorize operational restriction, deletion, evidence handling, legal verification, publication, API, frontend, or production use.
+Status: **approved synthetic, unactivated implementation** at commit `08899d984c063743701c537a45e2ec015f168982`. The preserved implementation began at commit `33b3401`, and reconciliation with the approved recovery source-head/receipt-identity v1.3 route was merged at `e7fdc07`. Approval covers only the tested D9.4.1 restriction, deletion-control, and recovery-classification vertical slice against generated identities, generated records, disposable protected stores, and newly created temporary CAS directories.
+
+The selected v1.3 route keeps independently derived source-state identity separate from journal-receipt identity and binds them through authenticated correspondence. It supersedes the conflicting runtime route only. V1.2 remains immutable historical/read-only compatibility and cannot be used for new progression writes.
+
+This approval does not activate the D9.4.0 `design_only_unactivated` profile and grants no production activation, operational credentials, recovery execution, repair, restoration, D9.5 behavior, real deletion authority, evidence import, Atlas writing, legal verification, publication, API, or frontend authority.
 
 ## Frozen-boundary audit
 
