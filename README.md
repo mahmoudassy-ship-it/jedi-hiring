@@ -41,11 +41,17 @@ The backend serves the built frontend and API on `127.0.0.1:3100` by default.
 
 The seed is an initial EU-level research set, verified against official URLs on 2026-09-02. It is a starting dataset, not a substitute for current national legal advice. Country overlays and counsel validation status are explicit parts of the schema.
 
+## Single-operator research candidates
+
+The operational evidence pilot remains **NO-GO**, but one researcher can organize official-source leads and unreviewed atomic proposition drafts in the separate [research track](docs/single-operator-research-track.md). The committed JSON manifests are the research source of truth; `npm run research:build` produces an ignored, disposable SQLite projection. These records are not accepted evidence, verified or current law, legal advice, or public content, and the application does not read them.
+
 Useful commands:
 
 ```bash
 npm run data:build       # apply pending migrations
 npm run data:check       # integrity, foreign-key, and seed checks
+npm run research:validate # validate the noncanonical research workflow
+npm run research:build    # rebuild the ignored disposable research database
 npm test                 # isolated database and HTTP API tests
 npm run build            # type-check and build the frontend
 npm run security:check   # check secret-file tracking and permissions

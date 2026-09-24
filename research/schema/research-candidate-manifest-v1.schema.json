@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jedi-hiring.invalid/schemas/research-candidate-manifest-v1.schema.json",
+  "title": "JEDI Hiring single-operator research candidate manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_code",
+    "recorded_at",
+    "synthetic_fixture",
+    "personal_data_declaration_code",
+    "preparation",
+    "source_candidate",
+    "proposition_drafts",
+    "editorial_notes",
+    "monitoring_candidates",
+    "canonical_digest_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "manifest_code": { "$ref": "#/$defs/stableCode" },
+    "recorded_at": { "$ref": "#/$defs/timestamp" },
+    "synthetic_fixture": { "type": "boolean" },
+    "personal_data_declaration_code": { "const": "none_present" },
+    "preparation": { "$ref": "#/$defs/preparation" },
+    "source_candidate": { "$ref": "#/$defs/sourceCandidate" },
+    "proposition_drafts": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/propositionDraft" }
+    },
+    "editorial_notes": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/editorialNote" }
+    },
+    "monitoring_candidates": {
+      "type": "array",
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/monitoringCandidate" }
+    },
+    "canonical_digest_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "stableCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 100,
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])$"
+    },
+    "shortCode": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "pattern": "^(?!\\s*$)[^\\u0000]*$"
+    },
+    "shortText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!\\s*$)[^\\u0000]*$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "url": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s\\u0000]+$"
+    },
+    "preparation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prepared_by_role_code", "preparation_mode_code", "automation_suggestions"],
+      "properties": {
+        "prepared_by_role_code": { "const": "single_operator_researcher" },
+        "preparation_mode_code": {
+          "enum": ["human_only", "human_with_automation"]
+        },
+        "automation_suggestions": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["suggestion_code", "tool_code", "tool_version", "scope_code", "disposition_code"],
+            "properties": {
+              "suggestion_code": { "$ref": "#/$defs/stableCode" },
+              "tool_code": { "$ref": "#/$defs/shortCode" },
+              "tool_version": { "$ref": "#/$defs/shortText" },
+              "scope_code": {
+                "enum": ["source_discovery", "metadata_suggestion", "proposition_draft", "editorial_draft", "monitoring_suggestion"]
+              },
+              "disposition_code": {
+                "enum": ["unreviewed_suggestion", "human_incorporated_into_unreviewed_draft", "rejected"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "sourceCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_candidate_code",
+        "status_code",
+        "official_landing_url_candidate",
+        "expected_identifiers",
+        "jurisdiction_candidate_code",
+        "document_family_code",
+        "language_tag",
+        "discovered_on",
+        "notes",
+        "provenance_candidate"
+      ],
+      "properties": {
+        "source_candidate_code": { "$ref": "#/$defs/stableCode" },
+        "status_code": {
+          "enum": ["discovered_unverified", "metadata_checked_single_researcher"]
+        },
+        "official_landing_url_candidate": { "$ref": "#/$defs/url" },
+        "expected_identifiers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scheme_code", "expected_value"],
+            "properties": {
+              "scheme_code": { "$ref": "#/$defs/shortCode" },
+              "expected_value": { "$ref": "#/$defs/shortText" }
+            }
+          }
+        },
+        "jurisdiction_candidate_code": { "$ref": "#/$defs/shortCode" },
+        "document_family_code": { "$ref": "#/$defs/shortCode" },
+        "language_tag": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 35,
+          "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+        },
+        "discovered_on": { "$ref": "#/$defs/date" },
+        "notes": { "$ref": "#/$defs/text" },
+        "provenance_candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["discovery_method_code", "source_scope_note", "limitations"],
+          "properties": {
+            "discovery_method_code": {
+              "enum": ["manual_official_site", "manual_official_registry", "automated_suggestion"]
+            },
+            "source_scope_note": { "$ref": "#/$defs/text" },
+            "limitations": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20,
+              "items": { "$ref": "#/$defs/shortText" }
+            }
+          }
+        }
+      }
+    },
+    "propositionDraft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposition_code",
+        "status_code",
+        "normative_effect_code",
+        "actor_text",
+        "normative_action_text",
+        "subject_text",
+        "jurisdiction_candidate_code",
+        "proposition_paraphrase",
+        "applicability_conditions",
+        "uncertainty_note",
+        "citation"
+      ],
+      "properties": {
+        "proposition_code": { "$ref": "#/$defs/stableCode" },
+        "status_code": {
+          "enum": ["draft_proposition_unreviewed", "awaiting_independent_review"]
+        },
+        "normative_effect_code": {
+          "enum": ["obligation", "prohibition", "permission", "right", "exception", "defence"]
+        },
+        "actor_text": { "$ref": "#/$defs/shortText" },
+        "normative_action_text": { "$ref": "#/$defs/shortText" },
+        "subject_text": { "$ref": "#/$defs/shortText" },
+        "jurisdiction_candidate_code": { "$ref": "#/$defs/shortCode" },
+        "proposition_paraphrase": { "$ref": "#/$defs/text" },
+        "applicability_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/shortText" }
+        },
+        "uncertainty_note": { "$ref": "#/$defs/text" },
+        "citation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_candidate_code", "locator_kind_code", "locator_value"],
+          "properties": {
+            "source_candidate_code": { "$ref": "#/$defs/stableCode" },
+            "locator_kind_code": {
+              "enum": ["article", "paragraph", "section", "annex", "recital", "page", "other"]
+            },
+            "locator_value": { "$ref": "#/$defs/shortText" }
+          }
+        }
+      }
+    },
+    "editorialNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["editorial_note_code", "proposition_code", "kind_code", "text", "status_code"],
+      "properties": {
+        "editorial_note_code": { "$ref": "#/$defs/stableCode" },
+        "proposition_code": { "$ref": "#/$defs/stableCode" },
+        "kind_code": {
+          "enum": ["legal_interpretation", "operational_recommendation", "inclusion_opportunity"]
+        },
+        "text": { "$ref": "#/$defs/text" },
+        "status_code": { "const": "unreviewed_editorial" }
+      }
+    },
+    "monitoringCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "monitoring_candidate_code",
+        "source_candidate_code",
+        "method_code",
+        "target_url_candidate",
+        "cadence_note",
+        "change_signal_codes",
+        "limitations"
+      ],
+      "properties": {
+        "monitoring_candidate_code": { "$ref": "#/$defs/stableCode" },
+        "source_candidate_code": { "$ref": "#/$defs/stableCode" },
+        "method_code": {
+          "enum": ["manual_landing_page_check", "manual_identifier_search"]
+        },
+        "target_url_candidate": { "$ref": "#/$defs/url" },
+        "cadence_note": { "$ref": "#/$defs/shortText" },
+        "change_signal_codes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "enum": ["metadata_change", "new_version", "corrigendum", "amendment", "repeal", "new_guidance", "unknown_change"]
+          }
+        },
+        "limitations": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}

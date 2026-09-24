@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_code": "synthetic.source.alpha",
+  "recorded_at": "2026-09-24T10:00:00Z",
+  "synthetic_fixture": true,
+  "personal_data_declaration_code": "none_present",
+  "preparation": {
+    "prepared_by_role_code": "single_operator_researcher",
+    "preparation_mode_code": "human_with_automation",
+    "automation_suggestions": [
+      {
+        "suggestion_code": "synthetic.suggestion.alpha",
+        "tool_code": "synthetic_helper",
+        "tool_version": "fixture-v1",
+        "scope_code": "proposition_draft",
+        "disposition_code": "human_incorporated_into_unreviewed_draft"
+      }
+    ]
+  },
+  "source_candidate": {
+    "source_candidate_code": "synthetic.source.alpha",
+    "status_code": "metadata_checked_single_researcher",
+    "official_landing_url_candidate": "https://official.example.invalid/legal/synthetic-act",
+    "expected_identifiers": [
+      {
+        "scheme_code": "synthetic_registry",
+        "expected_value": "SYNTHETIC-ACT-ALPHA"
+      }
+    ],
+    "jurisdiction_candidate_code": "synthetic.international",
+    "document_family_code": "synthetic_legal_act",
+    "language_tag": "en",
+    "discovered_on": "2026-09-24",
+    "notes": "Synthetic fixture only. The landing location and expected identifier are unverified research leads.",
+    "provenance_candidate": {
+      "discovery_method_code": "manual_official_site",
+      "source_scope_note": "A fictional official-site candidate used only to test the research workflow.",
+      "limitations": [
+        "No network retrieval, artifact capture, issuer verification, currency check, or legal review occurred."
+      ]
+    }
+  },
+  "proposition_drafts": [
+    {
+      "proposition_code": "synthetic.proposition.alpha",
+      "status_code": "draft_proposition_unreviewed",
+      "normative_effect_code": "obligation",
+      "actor_text": "A fictional hiring actor",
+      "normative_action_text": "must perform a fictional procedural step",
+      "subject_text": "a fictional application process",
+      "jurisdiction_candidate_code": "synthetic.international",
+      "proposition_paraphrase": "A fictional hiring actor must perform a fictional procedural step in the fictional application process.",
+      "applicability_conditions": [
+        "Only within this synthetic fixture and never as a statement of law."
+      ],
+      "uncertainty_note": "This is synthetic text and has not been independently reviewed or linked to captured evidence.",
+      "citation": {
+        "source_candidate_code": "synthetic.source.alpha",
+        "locator_kind_code": "article",
+        "locator_value": "Synthetic Article A"
+      }
+    }
+  ],
+  "editorial_notes": [
+    {
+      "editorial_note_code": "synthetic.interpretation.alpha",
+      "proposition_code": "synthetic.proposition.alpha",
+      "kind_code": "legal_interpretation",
+      "text": "Synthetic interpretation kept separate from the proposition draft.",
+      "status_code": "unreviewed_editorial"
+    },
+    {
+      "editorial_note_code": "synthetic.recommendation.alpha",
+      "proposition_code": "synthetic.proposition.alpha",
+      "kind_code": "operational_recommendation",
+      "text": "Synthetic operational recommendation kept separate from the proposition draft.",
+      "status_code": "unreviewed_editorial"
+    },
+    {
+      "editorial_note_code": "synthetic.inclusion.alpha",
+      "proposition_code": "synthetic.proposition.alpha",
+      "kind_code": "inclusion_opportunity",
+      "text": "Synthetic beyond-compliance opportunity kept separate from the proposition draft.",
+      "status_code": "unreviewed_editorial"
+    }
+  ],
+  "monitoring_candidates": [
+    {
+      "monitoring_candidate_code": "synthetic.monitor.alpha",
+      "source_candidate_code": "synthetic.source.alpha",
+      "method_code": "manual_landing_page_check",
+      "target_url_candidate": "https://official.example.invalid/legal/synthetic-act",
+      "cadence_note": "Candidate cadence only; no monitoring service or currency assurance exists.",
+      "change_signal_codes": [
+        "metadata_change",
+        "amendment",
+        "repeal"
+      ],
+      "limitations": "This candidate records a possible future check and does not establish monitoring coverage."
+    }
+  ],
+  "canonical_digest_sha256": "78c08836286094faaf544557c2c7ab550184ef4030311c91e1d9dd0972af10de"
+}

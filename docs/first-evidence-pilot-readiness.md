@@ -1,6 +1,6 @@
 # First controlled evidence pilot — operational-readiness proposal
 
-Status: **proposal awaiting human approval; current decision is NO-GO**. This document plans operationalization of the approved D9.0–D9.5 chain. It does not activate a runtime, approve a source, create a credential or identity, execute bootstrap, fetch or import evidence, create a backup, mutate Atlas, or authorize public use.
+Status: **approved planning and governance baseline; current operational decision remains NO-GO**. Approval is recorded at commit `2dfe6edab32d85d9cde5f970fcaf7cd26acaccbc`. Every DR decision remains pending. This document plans operationalization of the approved D9.0–D9.5 chain. It does not activate a runtime, approve a source, create a credential or identity, execute bootstrap, fetch or import evidence, create a backup, mutate Atlas, or authorize public use.
 
 Approved baseline: `main` at `14544b6358a0881d2619cdfeb5c6a56ab0e2b6eb`.
 
@@ -56,6 +56,10 @@ The approved implementations cannot simply be pointed at real paths. They expres
 - separate authorizations for the bootstrap ceremony, document pre-fetch envelope and exact post-capture import.
 
 Every missing item is fail-closed in the [go/no-go checklist](operations/first-evidence-pilot/go-no-go-checklist.md).
+
+### Single-operator research while NO-GO remains in force
+
+The [single-operator research track](single-operator-research-track.md) permits one researcher to record version-controlled source leads and unreviewed atomic proposition drafts in a separate manifest-derived disposable database. It does not resolve a DR item, satisfy an independent-human gate, enter the D9 evidence chain, or authorize retrieval/import. Research candidates cannot reach canonical Atlas tables, public surfaces, or training consumers, and must later begin again through operational evidence capture and independent review.
 
 ## Recommended operational profile
 
@@ -245,6 +249,6 @@ The selected bytes must pass rights/redistribution review, passive-PDF validatio
 
 No step authorizes Tranche 2B or publication. Publication remains blocked until source-backed authority drafting and version-specific human review/publication governance are separately implemented and approved.
 
-## Approval requested
+## Approval boundary
 
-Human approval of this proposal would approve only the operational-readiness model and the recommended path for resolving its decisions. It would not approve any current NO-GO item, the proposed source, the operational profile, RPO/RTO, a person-role assignment, bootstrap, retrieval, import, backup, restore, recovery, deletion, Atlas mutation, legal conclusion, API/frontend path, or publication.
+Approval covers only the operational-readiness model and the recommended path for resolving its decisions. It does not approve any current NO-GO item, the proposed source, the operational profile, RPO/RTO, a person-role assignment, bootstrap, retrieval, import, backup, restore, recovery, deletion, Atlas mutation, legal conclusion, API/frontend path, or publication.

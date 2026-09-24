@@ -16,6 +16,8 @@ build/
 *.sqlite
 *.sqlite-*
 data/cache/
+research/generated/*
+!research/generated/.gitkeep
 
 # Logs and local tooling
 *.log
