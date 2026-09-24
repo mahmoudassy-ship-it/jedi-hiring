@@ -2,6 +2,7 @@ import { canonicalSha256, canonicalize } from '../control-plane/canonical.mjs'
 import { randomBytes } from 'node:crypto'
 import { assertLinuxEnforcement } from '../control-plane/platform.mjs'
 import { failD951 } from './errors.mjs'
+import { deepFreeze } from './contracts.mjs'
 
 const authorities = new WeakSet()
 const sessions = new WeakSet()
@@ -12,6 +13,7 @@ export function createD951SyntheticAuthority({ contractSet, authorityContext, au
   }
   assertLinuxEnforcement(linuxEnforcement).probe()
   const rules = new Map(contractSet.classifications.role_assignment_rules.map((rule) => [rule.semantic_role_code, rule]))
+  if (authorityRegistry.authorityContext !== authorityContext) failD951('D951_AUTHORITY_INVALID', 'authority context is not the registry verified context')
   const generation = authorityContext.verifiedGeneration.identityBindings
   const roster = authorityContext.authorityRoster
   const authority = Object.freeze({
@@ -30,19 +32,26 @@ export function createD951SyntheticAuthority({ contractSet, authorityContext, au
       const expectedPeer = { uid: binding.unix_uid, executable_sha256: binding.principal_kind_code === 'service' ? binding.executable_sha256 : null, ipc_endpoint_code: binding.principal_kind_code === 'service' ? binding.ipc_endpoint_code : null }
       const observedPeer = { uid: exchange.peer_uid, executable_sha256: binding.principal_kind_code === 'service' ? linuxEnforcement.executableSha256 : null, ipc_endpoint_code: binding.principal_kind_code === 'service' ? exchange.authenticatedEndpointCode : null }
       if (canonicalize(observedPeer) !== canonicalize(expectedPeer)) failD951('D951_PEER_MISMATCH', 'kernel/build/endpoint facts do not match the verified binding')
+      const peer = { pid: exchange.peer_pid, uid: exchange.peer_uid, gid: exchange.peer_gid, executableSha256: binding.principal_kind_code === 'service' ? linuxEnforcement.executableSha256 : null, ipcEndpointCode: binding.principal_kind_code === 'service' ? exchange.authenticatedEndpointCode : null }
+      let resolved = null
       if (rule.d940_role_code !== null) {
-        const assignment = roster.assignments.find((item) => item.role_code === rule.d940_role_code && item.binding_code === bindingCode) ??
-          roster.human_identity_mappings.find((item) => item.d901_runtime_role_code === binding.runtime_role_code && item.binding_code === bindingCode)
-        if (!assignment) failD951('D951_AUTHORITY_MISMATCH', 'binding is absent from the adopted D9.4 authority roster')
+        resolved = authorityRegistry.resolveActor({ roleCode: rule.d940_role_code, bindingCode, peer, at: authenticatedAt })
       }
-      const session = Object.freeze({ semanticRoleCode, bindingCode, processInstanceCode, actorKindCode: binding.principal_kind_code, authenticatedAt, generationDigest: generation.record_digest_sha256, peerPid: exchange.peer_pid, receiverTerminated: exchange.receiverExitConfirmed })
+      const actor = { actor_kind_code: binding.principal_kind_code, semantic_role_code: semanticRoleCode, runtime_role_code: binding.runtime_role_code, binding_code: binding.binding_code, principal_code: resolved?.principal_code ?? binding.atlas_principal_code, ipc_endpoint_code: binding.ipc_endpoint_code, executable_build_sha256: binding.executable_sha256, binding_generation: generation.binding_generation, runtime_profile_record_digest_sha256: generation.runtime_profile_record_digest_sha256, identity_bindings_record_digest_sha256: generation.record_digest_sha256, authority_roster_record_digest_sha256: roster.record_digest_sha256, process_instance_code: processInstanceCode }
+      const session = deepFreeze({ semanticRoleCode, bindingCode, processInstanceCode, actorKindCode: binding.principal_kind_code, authenticatedAt, generationDigest: generation.record_digest_sha256, peer, receiverTerminated: exchange.receiverExitConfirmed, actor })
       sessions.add(session)
       return session
     },
     revalidate(session, expectedRole, at = trustedClock()) {
       if (!sessions.has(session) || session.semanticRoleCode !== expectedRole) failD951('D951_SESSION_UNTRUSTED', 'session was not issued for the required D9.5 role')
       authorityRegistry.stateAt(at)
-      if (!(session.authenticatedAt <= at && at < generation.expires_at)) failD951('D951_SESSION_EXPIRED', 'session is no longer current')
+      const binding = generation.bindings.find((item) => item.binding_code === session.bindingCode)
+      if (!binding || !(session.authenticatedAt <= at && at < generation.expires_at && binding.valid_from <= at && at < binding.valid_until) || session.generationDigest !== generation.record_digest_sha256 || session.actor.authority_roster_record_digest_sha256 !== roster.record_digest_sha256) failD951('D951_SESSION_EXPIRED', 'session is no longer current')
+      const rule = rules.get(expectedRole)
+      if (rule?.d940_role_code !== null) {
+        const resolved = authorityRegistry.resolveActor({ roleCode: rule.d940_role_code, bindingCode: session.bindingCode, peer: session.peer, at })
+        if (resolved.principal_code !== session.actor.principal_code || resolved.authority_roster_record_digest_sha256 !== session.actor.authority_roster_record_digest_sha256) failD951('D951_SESSION_EXPIRED', 'session no longer resolves through the adopted authority roster')
+      }
       return session
     },
   })
@@ -52,5 +61,10 @@ export function createD951SyntheticAuthority({ contractSet, authorityContext, au
 
 export function assertD951Authority(value) {
   if (!authorities.has(value)) failD951('D951_AUTHORITY_UNTRUSTED', 'authority was not created by the D9.5 launcher boundary')
+  return value
+}
+
+export function assertD951Session(value, expectedRole = null) {
+  if (!sessions.has(value) || (expectedRole !== null && value.semanticRoleCode !== expectedRole)) failD951('D951_SESSION_UNTRUSTED', 'session is not a branded D9.5 session for the required role')
   return value
 }

@@ -9,6 +9,8 @@ const stores = new WeakSet()
 const SAFE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/u
 
 function syncDirectory(directory) {
+  const procDescriptor = /^\/proc\/self\/fd\/(\d+)$/u.exec(directory)
+  if (procDescriptor) { fs.fsyncSync(Number(procDescriptor[1])); return }
   const descriptor = fs.openSync(directory, fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW | fs.constants.O_CLOEXEC)
   try { fs.fsyncSync(descriptor) } finally { fs.closeSync(descriptor) }
 }
@@ -57,13 +59,18 @@ export function createD951BackupStore({ rootPath, expectedUid = process.getuid()
   const opened = fs.fstatSync(rootDescriptor, { bigint: true })
   if (opened.dev !== original.dev || opened.ino !== original.ino) failD951('D951_STORAGE_ROOT_UNSAFE', 'backup root changed while opening')
   const root = `/proc/self/fd/${rootDescriptor}`
-  const objects = path.join(root, 'objects')
-  const pending = path.join(root, 'pending')
+  let objects = path.join(root, 'objects')
+  let pending = path.join(root, 'pending')
+  let objectsDescriptor
+  let pendingDescriptor
   try {
     protectedDirectory(objects, expectedUid, true); protectedDirectory(pending, expectedUid, true)
     if (fs.readdirSync(pending).length !== 0) failD951('D951_RECOVERY_REQUIRED', 'unresolved staged backup object exists')
     const exact = fs.readdirSync(root).toSorted()
     if (exact.join('\0') !== ['objects', 'pending'].join('\0')) failD951('D951_STORAGE_LAYOUT_INVALID', 'backup root has an unexpected namespace')
+    objectsDescriptor = fs.openSync(objects, fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW | fs.constants.O_CLOEXEC)
+    pendingDescriptor = fs.openSync(pending, fs.constants.O_RDONLY | fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW | fs.constants.O_CLOEXEC)
+    objects = `/proc/self/fd/${objectsDescriptor}`; pending = `/proc/self/fd/${pendingDescriptor}`
   } catch (error) { fs.closeSync(rootDescriptor); throw error }
   let closed = false
   const store = Object.freeze({
@@ -109,7 +116,7 @@ export function createD951BackupStore({ rootPath, expectedUid = process.getuid()
         const bytes = fs.readFileSync(path.join(objects, name)); return { sha256: name, byte_length: bytes.length }
       })
     },
-    close() { if (!closed) { closed = true; stores.delete(store); fs.closeSync(rootDescriptor) } },
+    close() { if (!closed) { closed = true; stores.delete(store); fs.closeSync(objectsDescriptor); fs.closeSync(pendingDescriptor); fs.closeSync(rootDescriptor) } },
   })
   stores.add(store)
   return store

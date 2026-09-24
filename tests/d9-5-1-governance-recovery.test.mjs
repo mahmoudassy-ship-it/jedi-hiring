@@ -8,26 +8,44 @@ const COPY_STATES = ['primary', 'backup', 'derived', 'temporary', 'replica', 'op
 test('D9.5.1 persists retention heads, bounded deletion-aware evidence, and deterministic drill outcomes', async (t) => {
   const fixture = await createD951Fixture(t)
   const { manifest } = fixture.runtime.createBackup(backupArgs(fixture, '201'))
-  const retention = fixture.runtime.recordRetention({ manifest, decisionCode: 'retain', retainUntil: '2031-01-01T00:00:00.000Z', holdStateCode: 'none', reasonCode: 'synthetic_policy', authoritySession: fixture.sessions.get('legal_records_authority'), persistenceSession: fixture.sessions.get('persistence_broker') })
+  const retention = fixture.runtime.recordRetention({ manifest, decisionCode: 'retain', retainUntil: '2031-01-01T00:00:00.000Z', holdStateCode: 'none_known', reasonCode: 'initial_retention', authoritySession: fixture.sessions.get('legal_records_authority'), persistenceSession: fixture.sessions.get('persistence_broker') })
   const head = fixture.runtime.attestRetentionHead({ manifest, operationId: 'retention.attest.201', operationNonce: '2'.repeat(64), verifierSession: fixture.sessions.get('control_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
   assert.equal(head.head_record_digest_sha256, retention.record_digest_sha256)
   const assessment = fixture.runtime.assessDeletionAware({ operationId: 'deletion.aware.201', operationNonce: '3'.repeat(64), manifest, copyClassStates: COPY_STATES, verifierSession: fixture.sessions.get('control_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
   assert.equal(assessment.complete_erasure_claimed, false); assert.equal(assessment.bytes_accessible, false)
-  const passed = fixture.runtime.recordDrill({ drillCode: 'synthetic.201', manifest, expectedInventoryDigestSha256: manifest.source_inventory_digest_sha256, observedInventoryDigestSha256: manifest.source_inventory_digest_sha256, schedulerSession: fixture.sessions.get('drill_scheduler'), verifierSession: fixture.sessions.get('restored_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
-  const failed = fixture.runtime.recordDrill({ drillCode: 'synthetic.202', manifest, expectedInventoryDigestSha256: manifest.source_inventory_digest_sha256, observedInventoryDigestSha256: 'f'.repeat(64), schedulerSession: fixture.sessions.get('drill_scheduler'), verifierSession: fixture.sessions.get('restored_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
-  assert.equal(passed.outcome_code, 'passed'); assert.equal(failed.outcome_code, 'failed'); assert.equal(failed.escalation_code, 'reconciliation_required')
+  const authorization = fixture.runtime.authorizeRestore(authorizationArgs(fixture, manifest, '201'))
+  const restored = fixture.runtime.restore(restoreArgs(fixture, manifest, authorization))
+  const passed = fixture.runtime.recordDrill({ drillCode: 'synthetic.201', manifest, schedulerSession: fixture.sessions.get('drill_scheduler'), verifierSession: fixture.sessions.get('restored_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
+  const bin = fs.readdirSync(restored.promotedPath).find((name) => name.endsWith('.bin'))
+  fs.writeFileSync(`${restored.promotedPath}/${bin}`, Buffer.from('corrupt synthetic restore\n'))
+  const failed = fixture.runtime.recordDrill({ drillCode: 'synthetic.202', manifest, schedulerSession: fixture.sessions.get('drill_scheduler'), verifierSession: fixture.sessions.get('restored_state_verifier'), persistenceSession: fixture.sessions.get('persistence_broker') })
+  assert.equal(passed.outcome_code, 'passed'); assert.equal(failed.outcome_code, 'failed'); assert.equal(failed.escalation_code, 'security_review_required')
 })
 
 test('D9.5.1 fails closed when control state moves between reconstruction and promotion', async (t) => {
   let fixture
   fixture = await createD951Fixture(t, { runtimeFault(code) {
-    if (code === 'after_controls_applied') fixture.controlResolver.replaceForSyntheticTest({ head_sequence: 2, head_digest_sha256: 'd'.repeat(64), directives: [{ directive_code: 'apply_tombstone_before_restore', basis_record_digest_sha256: 'e'.repeat(64) }] })
+    if (code === 'after_controls_applied') fixture.controlResolver.replaceForSyntheticTest(fixture.controlState('apply_tombstone_before_restore'))
   } })
   const { manifest } = fixture.runtime.createBackup(backupArgs(fixture, '203'))
   const authorization = fixture.runtime.authorizeRestore(authorizationArgs(fixture, manifest, '203'))
   assert.throws(() => fixture.runtime.restore(restoreArgs(fixture, manifest, authorization)), { code: 'D951_CONTROL_MOVED' })
-  assert.equal(fs.readdirSync(fixture.roots.promotion).length, 0)
+  assert.equal(fs.readdirSync(fixture.roots.promotion).filter((name) => name.startsWith('generation-')).length, 0)
   assert.equal(fs.readdirSync(fixture.roots.staging).length, 1)
+})
+
+test('D9.5.1 cancels promotion when a later retention leaf appears during restore', async (t) => {
+  let fixture; let changed = false; let manifest
+  fixture = await createD951Fixture(t, { runtimeFault(code) {
+    if (!changed && code === 'after_controls_applied') {
+      changed = true
+      fixture.runtime.recordRetention({ manifest, decisionCode: 'hold', retainUntil: '2031-01-01T00:00:00.000Z', holdStateCode: 'hold_active', reasonCode: 'legal_hold_asserted', authoritySession: fixture.sessions.get('legal_records_authority'), persistenceSession: fixture.sessions.get('persistence_broker') })
+    }
+  } })
+  manifest = fixture.runtime.createBackup(backupArgs(fixture, '206')).manifest
+  const authorization = fixture.runtime.authorizeRestore(authorizationArgs(fixture, manifest, '206'))
+  assert.throws(() => fixture.runtime.restore(restoreArgs(fixture, manifest, authorization)), { code: 'D951_RESTORE_PREREQUISITE_MISSING' })
+  assert.equal(fs.readdirSync(fixture.roots.promotion).filter((name) => name.startsWith('generation-')).length, 0)
 })
 
 test('D9.5.1 detects backup corruption, wrong references, missing bytes, and does not expose staged bytes', async (t) => {

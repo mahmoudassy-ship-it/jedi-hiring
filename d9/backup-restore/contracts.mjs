@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import Ajv2020 from 'ajv/dist/2020.js'
 import { canonicalSha256, sha256Bytes } from '../control-plane/canonical.mjs'
 import { failD951 } from './errors.mjs'
 
@@ -41,7 +42,7 @@ export function loadD950ContractSet() {
   if (catalog.status_code !== 'design_only_contract_freeze' || classifications.status_code !== 'design_only_contract_freeze') {
     failD951('D951_FROZEN_CONTRACT_MISMATCH', 'D9.5.0 lifecycle boundary changed')
   }
-  return Object.freeze({ catalog, classifications, digestProfiles, fieldRegistry, storageProfiles, rootInventory })
+  return deepFreeze({ catalog, classifications, digestProfiles, fieldRegistry, storageProfiles, rootInventory })
 }
 
 export function assertSha(value, label) {
@@ -59,5 +60,28 @@ export function assertTimestamp(value, label) {
 export function sealD951(record) {
   const value = structuredClone(record)
   value.record_digest_sha256 = canonicalSha256(value, { excludedTopLevelField: 'record_digest_sha256' })
-  return Object.freeze(value)
+  return deepFreeze(value)
+}
+
+export function deepFreeze(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) deepFreeze(child)
+    Object.freeze(value)
+  }
+  return value
+}
+
+const schemaFiles = ['common-v1.schema.json', 'operational-profile-v1.schema.json', 'backup-manifest-v1.schema.json', 'backup-durability-receipt-v1.schema.json', 'restore-authorization-v1.schema.json', 'restore-plan-v1.schema.json', 'restore-lifecycle-record-v1.schema.json', 'deletion-aware-reconstruction-v1.schema.json', 'restore-drill-record-v1.schema.json', 'ipc-message-v1.schema.json', 'journal-append-receipt-v1.schema.json', 'retention-control-record-v1.schema.json', 'retention-head-attestation-v1.schema.json']
+const ajv = new Ajv2020({ allErrors: true, strict: true })
+const schemas = new Map()
+for (const file of schemaFiles) { const schema = readJson(file); schemas.set(file, schema); ajv.addSchema(schema) }
+
+export function validateD950Record(schemaFile, record) {
+  const schema = schemas.get(schemaFile)
+  if (!schema) failD951('D951_SCHEMA_UNKNOWN', `unknown D9.5.0 schema ${schemaFile}`)
+  const validate = ajv.getSchema(schema.$id)
+  if (!validate(record)) failD951('D951_RECORD_SCHEMA_INVALID', `${schemaFile}: ${ajv.errorsText(validate.errors, { separator: '; ' })}`)
+  const expected = canonicalSha256(record, { excludedTopLevelField: 'record_digest_sha256' })
+  if (record.record_digest_sha256 !== expected) failD951('D951_RECORD_DIGEST_INVALID', `${schemaFile} record digest differs`)
+  return record
 }
