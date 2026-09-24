@@ -1,0 +1,99 @@
+{
+  "format": "jedi-atlas-d950-valid-synthetic-fixtures",
+  "format_version": "1.0.0",
+  "fixture_code": "synthetic.backup.restore.001",
+  "operation_id": "operation.synthetic.001",
+  "operation_nonce": "3333333333333333333333333333333333333333333333333333333333333333",
+  "backup_set_code": "backup.synthetic.set.001",
+  "subject_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "timeline": {
+    "checkpoint_captured_at": "2030-01-01T00:00:00.000Z",
+    "backup_created_at": "2030-01-01T00:01:00.000Z",
+    "backup_verified_at": "2030-01-01T00:02:00.000Z",
+    "authorization_from": "2030-01-01T00:03:00.000Z",
+    "authorization_until": "2030-01-01T01:03:00.000Z",
+    "restore_planned_at": "2030-01-01T00:04:00.000Z",
+    "restore_expires_at": "2030-01-01T00:14:00.000Z",
+    "restore_started_at": "2030-01-01T00:05:00.000Z",
+    "restore_completed_at": "2030-01-01T00:10:00.000Z",
+    "drill_scheduled_for": "2030-01-02T00:00:00.000Z",
+    "drill_started_at": "2030-01-02T00:00:00.000Z",
+    "drill_completed_at": "2030-01-02T00:05:00.000Z"
+  },
+  "actor_processes": [
+    { "semantic_role_code": "backup_producer", "binding_code": "binding.backup.synthetic", "d940_role_code": "backup_operator", "process_instance_code": "process.backup.001" },
+    { "semantic_role_code": "backup_verifier", "binding_code": "binding.independent.verifier.synthetic", "d940_role_code": "independent_verifier", "process_instance_code": "process.backup.verifier.001" },
+    { "semantic_role_code": "restore_requester", "binding_code": "binding.requester.synthetic", "d940_role_code": "requester", "process_instance_code": "session.requester.001" },
+    { "semantic_role_code": "recovery_authority", "binding_code": "binding.security.synthetic", "d940_role_code": "recovery_authority", "process_instance_code": "session.recovery.001" },
+    { "semantic_role_code": "legal_records_authority", "binding_code": "binding.records.synthetic", "d940_role_code": "legal_records_authority", "process_instance_code": "session.records.001" },
+    { "semantic_role_code": "privacy_authority", "binding_code": "binding.privacy.synthetic", "d940_role_code": "privacy_authority", "process_instance_code": "session.privacy.001" },
+    { "semantic_role_code": "restore_executor", "binding_code": "binding.cloner.synthetic", "d940_role_code": null, "process_instance_code": "process.restorer.001" },
+    { "semantic_role_code": "control_state_verifier", "binding_code": "binding.independent.verifier.synthetic", "d940_role_code": "independent_verifier", "process_instance_code": "process.control.verifier.001" },
+    { "semantic_role_code": "restored_state_verifier", "binding_code": "binding.independent.verifier.synthetic", "d940_role_code": "independent_verifier", "process_instance_code": "process.restore.verifier.001" },
+    { "semantic_role_code": "persistence_broker", "binding_code": "binding.journal.synthetic", "d940_role_code": "journal_broker", "process_instance_code": "process.journal.001" },
+    { "semantic_role_code": "trusted_launcher", "binding_code": "binding.filler.19", "d940_role_code": "trusted_launcher", "process_instance_code": "process.launcher.001" },
+    { "semantic_role_code": "drill_scheduler", "binding_code": "binding.filler.19", "d940_role_code": "trusted_launcher", "process_instance_code": "process.drill.scheduler.001" }
+  ],
+  "source_checkpoint": {
+    "checkpoint_code": "checkpoint.synthetic.001",
+    "checkpoint_sequence": 3,
+    "checkpoint_record_digest_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
+    "checkpoint_cas_sha256": "3232323232323232323232323232323232323232323232323232323232323232",
+    "source_state_head_digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "journal_tip_receipt_digest_sha256": "3434343434343434343434343434343434343434343434343434343434343434",
+    "correspondence_record_digest_sha256": "3535353535353535353535353535353535353535353535353535353535353535",
+    "logical_state_seal_record_digest_sha256": "3636363636363636363636363636363636363636363636363636363636363636",
+    "atlas_schema_digest_sha256": "3737373737373737373737373737373737373737373737373737373737373737",
+    "migration_ledger_digest_sha256": "3838383838383838383838383838383838383838383838383838383838383838",
+    "captured_at": "2030-01-01T00:00:00.000Z"
+  },
+  "inventory_entries": [
+    { "ordinal": 1, "entry_kind_code": "atlas_database", "stable_identity_code": "atlas.database.synthetic.001", "byte_layer_code": "sqlite_database", "subject_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "content_sha256": "4141414141414141414141414141414141414141414141414141414141414141", "byte_length": 8192, "source_record_digest_sha256": "4242424242424242424242424242424242424242424242424242424242424242" },
+    { "ordinal": 2, "entry_kind_code": "evidence_artifact", "stable_identity_code": "artifact.synthetic.001", "byte_layer_code": "retrieved_body", "subject_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "content_sha256": "6666666666666666666666666666666666666666666666666666666666666666", "byte_length": 16, "source_record_digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444" },
+    { "ordinal": 3, "entry_kind_code": "protected_control_record", "stable_identity_code": "control.synthetic.001", "byte_layer_code": "protected_record_bytes", "subject_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "content_sha256": "4545454545454545454545454545454545454545454545454545454545454545", "byte_length": 512, "source_record_digest_sha256": "4646464646464646464646464646464646464646464646464646464646464646" }
+  ],
+  "backup_copies": [
+    {
+      "copy_code": "copy.backup.synthetic.001",
+      "copy_class_code": "backup",
+      "backend_code": "backend.synthetic.restricted.001",
+      "backend_generation": 1,
+      "backend_reference": "objects/sha256/41/4141414141414141414141414141414141414141414141414141414141414141",
+      "artifact": { "artifact_code": "artifact.database.synthetic.001", "byte_layer_code": "sqlite_database", "hash_algorithm_code": "sha256", "sha256": "4141414141414141414141414141414141414141414141414141414141414141", "byte_length": 8192 },
+      "copy_identity_sha256": "0101010101010101010101010101010101010101010101010101010101010101"
+    },
+    {
+      "copy_code": "copy.backup.synthetic.002", "copy_class_code": "backup", "backend_code": "backend.synthetic.restricted.001", "backend_generation": 1,
+      "backend_reference": "objects/sha256/66/6666666666666666666666666666666666666666666666666666666666666666",
+      "artifact": { "artifact_code": "artifact.evidence.synthetic.001", "byte_layer_code": "retrieved_body", "hash_algorithm_code": "sha256", "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "byte_length": 16 },
+      "copy_identity_sha256": "0202020202020202020202020202020202020202020202020202020202020202"
+    },
+    {
+      "copy_code": "copy.backup.synthetic.003", "copy_class_code": "backup", "backend_code": "backend.synthetic.restricted.001", "backend_generation": 1,
+      "backend_reference": "objects/sha256/45/4545454545454545454545454545454545454545454545454545454545454545",
+      "artifact": { "artifact_code": "artifact.control.synthetic.001", "byte_layer_code": "protected_record_bytes", "hash_algorithm_code": "sha256", "sha256": "4545454545454545454545454545454545454545454545454545454545454545", "byte_length": 512 },
+      "copy_identity_sha256": "0303030303030303030303030303030303030303030303030303030303030303"
+    }
+  ],
+  "control_directives": [
+    { "directive_code": "apply_restriction_before_restore", "d940_coordination_record_digest_sha256": "5151515151515151515151515151515151515151515151515151515151515151", "basis_control_record_digest_sha256": "5252525252525252525252525252525252525252525252525252525252525252", "disposition_code": "applied_before_exposure" }
+  ],
+  "copy_class_states": [
+    { "copy_class_code": "primary", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6161616161616161616161616161616161616161616161616161616161616161", "evidence_record_digests": ["6262626262626262626262626262626262626262626262626262626262626262"] },
+    { "copy_class_code": "backup", "state_code": "present", "bounded_count": 3, "inventory_digest_sha256": "6363636363636363636363636363636363636363636363636363636363636363", "evidence_record_digests": ["6464646464646464646464646464646464646464646464646464646464646464"] },
+    { "copy_class_code": "derived", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6565656565656565656565656565656565656565656565656565656565656565", "evidence_record_digests": ["6666666666666666666666666666666666666666666666666666666666666666"] },
+    { "copy_class_code": "temporary", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6767676767676767676767676767676767676767676767676767676767676767", "evidence_record_digests": ["6868686868686868686868686868686868686868686868686868686868686868"] },
+    { "copy_class_code": "replica", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6969696969696969696969696969696969696969696969696969696969696969", "evidence_record_digests": ["6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a"] },
+    { "copy_class_code": "open_descriptor", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b", "evidence_record_digests": ["6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c"] },
+    { "copy_class_code": "unknown", "state_code": "absent_verified", "bounded_count": 0, "inventory_digest_sha256": "6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d6d", "evidence_record_digests": ["6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e"] }
+  ],
+  "expected": {
+    "backup_receipt_kinds": ["source_copy", "artifact_copy", "source_copy", "prior_database", "final_consistent_set"],
+    "restore_stage_count": 10,
+    "restore_outcome_code": "succeeded",
+    "drill_outcome_code": "passed",
+    "technical_claims_all_false": true,
+    "atlas_rows_written": 0,
+    "runtime_components_created": 0
+  }
+}

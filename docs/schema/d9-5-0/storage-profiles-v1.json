@@ -1,0 +1,119 @@
+{
+  "format": "jedi-atlas-d950-storage-profiles",
+  "format_version": "1.0.0",
+  "namespaces": [
+    {
+      "namespace_code": "d950.backup.manifests.v1",
+      "record_format": "jedi-atlas-backup-set-manifest",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.backup.receipts.v1",
+      "record_format": "jedi-atlas-backup-durability-receipt",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.restore.authorizations.v1",
+      "record_format": "jedi-atlas-restore-authorization",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.restore.plans.v1",
+      "record_format": "jedi-atlas-restore-plan",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.restore.lifecycle.v1",
+      "record_format": "jedi-atlas-restore-lifecycle-record",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.restore.deletion-aware.v1",
+      "record_format": "jedi-atlas-deletion-aware-reconstruction",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.retention.controls.v1",
+      "record_format": "jedi-atlas-backup-retention-control",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.retention.head-attestations.v1",
+      "record_format": "jedi-atlas-retention-head-attestation",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.retention.journal.v1",
+      "record_format": "jedi-atlas-d950-journal-append-receipt",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.restore.drills.v1",
+      "record_format": "jedi-atlas-restore-drill-record",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    },
+    {
+      "namespace_code": "d950.global.journal.v1",
+      "record_format": "jedi-atlas-d950-journal-append-receipt",
+      "append_only": true,
+      "no_replace": true,
+      "writer_role_code": "persistence_broker"
+    }
+  ],
+  "backup_byte_storage": {
+    "identity_code": "content_addressed_exact_byte_layer_sha256_length",
+    "manifest_separate_from_bytes": true,
+    "deduplication_broadens_access": false,
+    "copy_identity_includes_backend": true,
+    "retention_expiry_is_not_deletion_authority": true,
+    "tombstone_preserved_after_byte_removal": true
+  },
+  "restore_staging": {
+    "separate_inaccessible_namespace_required": true,
+    "symlink_and_root_escape_forbidden": true,
+    "no_follow_open_required": true,
+    "atomic_generation_promotion_required": true,
+    "partial_promotion_forbidden": true,
+    "failed_staging_cleanup_automatic": false
+  },
+  "reconstruction_rules": {
+    "from_zero_requires_all_exact_bytes": true,
+    "missing_or_unavailable_bytes_fail_closed": true,
+    "source_inventory_requires_exact_source_to_copy_coverage": true,
+    "control_records_reconstructed_before_access": true,
+    "control_heads_re_resolved_immediately_before_promotion": true,
+    "source_head_movement_cancels_promotion": true,
+    "deletion_receipts_and_tombstones_precede_exposure": true,
+    "unknown_copy_class_blocks_erasure_claim": true
+  },
+  "retention_rules": {
+    "contract_records_append_only": true,
+    "receipt_history_append_only": true,
+    "drill_history_append_only": true,
+    "byte_retention_change_requires_new_record": true,
+    "retention_and_hold_history_has_gapless_append_chain": true,
+    "current_leaf_requires_fresh_protected_head_attestation": true,
+    "automatic_expiry_deletion": false
+  },
+  "record_digest_sha256": "a7ec47414e1553d37f2662b7991d8a5e45aaa5db1fe25e7e3d642eb11a768f32"
+}
