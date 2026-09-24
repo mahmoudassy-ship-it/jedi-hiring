@@ -1,8 +1,8 @@
 # D9.5.1 synthetic backup and restore runtime
 
-Status: implementation candidate on `implementation/d9-5-1-backup-restore-runtime`; unapproved, unactivated, synthetic-only.
+Status: **approved synthetic, unactivated implementation** on `implementation/d9-5-1-backup-restore-runtime`. Approval covers the initial implementation at `5ebe7d6` as hardened by reviewed commit `7cc08a0a3040e4e77ca44ac9a083ad9fdb14b6fe`. It covers only the tested runtime using generated identities and disposable storage; it is not production-ready or operationally activated.
 
-This vertical slice implements the approved D9.5.0 technical contract boundary for disposable tests. It creates no operational backup, recovery authority, credential, Atlas row, evidence record, legal conclusion, API, or frontend path. Exact-byte custody and restore auditability do not establish evidence acceptance, officiality, legal identity or status, legal effect, human legal verification, publication eligibility, compliance, or complete erasure.
+This vertical slice implements the approved D9.5.0 technical contract boundary for disposable tests. Approval grants no production activation, operational credential, real backup or restoration, recovery authority, complete-erasure claim, evidence acceptance, legal verification, publication, Atlas mutation, API authority, or frontend authority. Exact-byte custody and restore auditability do not establish evidence acceptance, officiality, legal identity or status, legal effect, human legal verification, publication eligibility, compliance, or complete erasure.
 
 ## Implemented boundary
 
@@ -40,3 +40,5 @@ The independent security and durability reviews rejected the checkpoint implemen
 ## Unimplemented prerequisites
 
 D9.5.1 is not operational. It lacks real credentials, isolated service accounts, a protected operational clock, independently administered backup media, external rollback resistance, operational RPO/RTO decisions, incident runbooks, recovery-authority activation, scheduled drills, alerts, and a production promotion target. No real bootstrap, evidence import, restriction, deletion, backup, restore or recovery may use this code before separate approval and activation work.
+
+Active restrictions withhold restoration fail-closed because operational restricted-capability enforcement remains outside D9.5.1. This approved synthetic behavior is not a substitute for that future operational enforcement boundary.
