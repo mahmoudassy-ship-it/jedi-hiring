@@ -1,6 +1,6 @@
 # D9.5.0 backup, restore, and deletion-aware reconstruction contracts
 
-Status: **design-only proposal awaiting approval**. This contract root defines technical backup and restore evidence only. It creates no runtime component, credential, backup, restore action, deletion authority, evidence acceptance, legal verification, publication eligibility, Atlas write, API behavior, or frontend behavior.
+Status: **approved design-only contract freeze** at reviewed commit `120b1ef1436483349bd8fc2beb78fe851de6e1f3`. Approval is recorded outside the fingerprinted contract root and does not modify it. This contract root defines technical backup and restore evidence only. It creates no runtime component, credential, backup, restore action, deletion authority, evidence acceptance, legal verification, publication eligibility, Atlas write, API behavior, or frontend behavior.
 
 ## Decision boundary
 
@@ -50,7 +50,19 @@ The versioned root is `docs/schema/d9-5-0/`.
 | `fixtures/*.json` | Synthetic valid, invalid, and independently fixed canonical/hash vectors. |
 | `../validate-d9-5-0.mjs` | Offline schema, semantic, mutation, frozen-boundary, database, and inventory validator. |
 
-The current proposal fingerprints are listed in the validator output and must be reviewed and pinned at approval. They are lifecycle-neutral design fingerprints; approval is external and must not mutate the contract root.
+### Approved fingerprints
+
+The external approval pins these lifecycle-neutral design fingerprints exactly. Approval does not mutate the contract root.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Catalog | `7bd5805b2aa6646f40f09636060636ce7fdc32ef57bac6fc7e826b4de41d17fe` |
+| Classifications | `fa58f6701f33934eba9b59e58787a9075d3b2cdc619e0c9fbc4996bd0101247b` |
+| Digest profiles | `e66777e1dcf6f03d1a6abaeaa68d75ad93735254b39b76159213db8b7c45c137` |
+| Field registry | `d2a5ea5476a1699cecf704dfd92b3071577ceee1e0cc46ed16c07f3854390c85` |
+| Storage profiles | `a7ec47414e1553d37f2662b7991d8a5e45aaa5db1fe25e7e3d642eb11a768f32` |
+| Validator | `27cce83bd58c7c3f7fcce467c2c286ba3b1490ba84405f986f03e3da4cb2553b` |
+| Root inventory | `8f25289beae9c844d587d8aacbdd88caf213ac29beb95effbc1d775705abd9f7` |
 
 ## Trust boundary and roles
 
@@ -216,4 +228,6 @@ Until then, no real backup, restore, deletion, evidence import, Atlas mutation, 
 
 ## Approval decision
 
-Approval would freeze this exact **design-only D9.5.0 contract root** and its reviewed fingerprints. It would approve only the technical contract for backup creation, deletion-aware reconstruction, restore lifecycle, and drills. It would not authorize implementation, activation, credentials, real storage, real backup or restore, deletion, evidence import, legal review, publication, API, or frontend changes.
+Approval freezes this exact **design-only D9.5.0 revision 1.0.0 contract root** and the fingerprints above. It covers only the reviewed technical contract for backup creation, deletion-aware reconstruction, retention, restore lifecycle, and drills. It does not approve operational RPO/RTO values; activate recovery authority; create backups; restore data; prove complete erasure; accept evidence; establish legal compliance, legal authority, officiality, or publication eligibility; or authorize production use. D9.5.1 remains separately reviewed and unimplemented.
+
+Activation continues to require protected clocks and stores, authenticated IPC, operational credentials, service isolation, external rollback resistance, tested atomic promotion, incident procedures, and separately approved recovery authority.
